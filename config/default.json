@@ -1,0 +1,69 @@
+{
+  "production":{
+    "dbHost":"127.0.0.1",
+    "dbPort":"27017",
+    "dbName":"cmc-IoT",
+    "authUrl":"http://localhost:3005",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "microserviceConf": {
+      "port": 3030,
+      "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
+    },
+    "logfile":"/var/log/progressBar.log",
+    "limit":50,
+    "skip":0,
+    "fastForwardPsw":"f@5tF0rwardP5w"
+  },
+  "dev":{
+    "dbHost":"127.0.0.1",
+    "dbPort":"27017",
+    "dbName":"cmc-IoT-DevMode",
+    "authUrl":"http://localhost:3005",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "microserviceConf": {
+      "port": 3030,
+      "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
+    },
+    "logfile":"/var/log/progressBar.log",
+    "limit":50,
+    "skip":0,
+    "fastForwardPsw":"f@5tF0rwardP5w"
+  },
+  "test":{
+    "dbHost":"127.0.0.1",
+    "dbPort":"27017",
+    "dbName":"cmc-IoT-TestMode",
+    "authUrl":"http://localhost:3005",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "microserviceConf": {
+      "port": 3030,
+      "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
+    },
+    "logfile":"/var/log/progressBar.log",
+    "limit":50,
+    "skip":0,
+    "fastForwardPsw":"f@5tF0rwardP5w",
+    "testConfig":{
+      "usertokens":["UserType1"],
+      "adminokens":["admin"],
+      "authApptokens":["webui"],
+      "adminLogin": {
+        "username": "admin@admin.com",
+        "password": "admin"
+      },
+      "userTypeTest":{
+        "name": "Micio",
+        "email": "mario@cmc.com",
+        "password": "miciomicio",
+        "surname":"Macio"
+      },
+      "webUiAppTest":{
+        "email": "webui@webui.it",
+        "password": "miciomicio"
+      },
+      "msName":"cmc-user",
+      "testUrl": "http://localhost",
+      "testPort": 3010
+    }
+  }
+}
