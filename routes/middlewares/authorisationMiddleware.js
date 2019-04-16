@@ -2,22 +2,22 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                                 *
+ *                         Copyright 2019 CRS4                               *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
- *                                                                            *
- *       CMC-IoT is free software: you can redistribute it and/or modify     *
- *     it under the terms of the GNU General Public License as published by   *
- *       the Free Software Foundation, either version 3 of the License, or    *
- *                    (at your option) any later version.                     *
- *                                                                            *
- *       CMC-IoT is distributed in the hope that it will be useful,          *
- *      but WITHOUT ANY WARRANTY; without even the implied warranty of        *
- *       MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
- *               GNU General Public License for more details.                 *
- *                                                                            *
- *       You should have received a copy of the GNU General Public License    *
- *       along with CMC-IoT.  If not, see <http://www.gnu.org/licenses/>.    *
- * ############################################################################
+ *                                                                          *
+ *     CMC-IoT is free software: you can redistribute it and/or modify      *
+ *   it under the terms of the GNU General Public License as published by   *
+ *    the Free Software Foundation, either version 3 of the License, or     *
+ *                 (at your option) any later version.                      *
+ *                                                                          *
+ *    CMC-IoT is distributed in the hope that it will be useful,            *
+ *    but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+ *     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the        *
+ *            GNU General Public License for more details.                  *
+ *                                                                          *
+ *     You should have received a copy of the GNU General Public License    *
+ *     along with CMC-IoT.  If not, see <http://www.gnu.org/licenses/>.     *
+ ############################################################################
  */
 
 var conf = require('propertiesmanager').conf;
@@ -63,14 +63,14 @@ exports.checkToken = function(req, res, next) {
                 request.post(rqparams, function (error, response, body) {
                     try {
                         if (error) {
-                            errorLog.printErrorLog(errorHeader + " checkToken due to " + error);
+                            errorLog.printErrorLog(errorHeader + " checkToken(response from cmc-auth) due to " + error);
                             return res.boom.badImplementation(error);
                         } else {
 
                             decoded = JSON.parse(body);
 
                             if (_.isUndefined(decoded.valid)) {
-                                errorLog.printErrorLog(errorHeader + " checkToken due to " + decoded.error_message);
+                                errorLog.printErrorLog(errorHeader + " checkToken(token validity check) due to " + decoded.error_message);
                                 return res.boom.badImplementation(decoded.error_message);
                             } else {
                                 if (decoded.valid == true) {
@@ -82,7 +82,7 @@ exports.checkToken = function(req, res, next) {
                             }
                         }
                     } catch (ex) {
-                        errorLog.printErrorLog(errorHeader + " checkToken due to " + ex);
+                        errorLog.printErrorLog(errorHeader + " checkToken( exception from cmc-auth request) due to " + ex);
                         return res.boom.badImplementation(ex);
                     }
                 });
@@ -91,7 +91,7 @@ exports.checkToken = function(req, res, next) {
                 return res.boom.badRequest("Unauthorized: Access token required, you are not allowed to use the resource");
             }
         } catch (ex) {
-            errorLog.printErrorLog(errorHeader + " checkToken due to " + ex);
+            errorLog.printErrorLog(errorHeader + " checkToken(method exception) due to " + ex);
             return res.boom.badImplementation(ex);
         }
     }

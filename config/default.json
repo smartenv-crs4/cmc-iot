@@ -4,7 +4,7 @@
     "dbPort":"27017",
     "dbName":"cmc-IoT",
     "authUrl":"http://localhost:3005",
-    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDYxNzU0MzIwMn0.sqCOfq8HvQQmxWLCrAtFf1s3GvxAFPQ_ZhCyFuukpBs",
     "microserviceConf": {
       "port": 3030,
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
@@ -19,7 +19,7 @@
     "dbPort":"27017",
     "dbName":"cmc-IoT-DevMode",
     "authUrl":"http://localhost:3005",
-    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDYxNzU0MzIwMn0.sqCOfq8HvQQmxWLCrAtFf1s3GvxAFPQ_ZhCyFuukpBs",
     "microserviceConf": {
       "port": 3030,
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
@@ -34,7 +34,7 @@
     "dbPort":"27017",
     "dbName":"cmc-IoT-TestMode",
     "authUrl":"http://localhost:3005",
-    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLXVzZXIiLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4NDQwNjUzMTc3NjR9.caioKfxBVbeUxGniHLNDk6jYTUpKKTEmIII9ZKiRiMA",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDY5MDU2NDE1N30.tJyuf8laVp1Iy6seegiQt9Ig4HemeHq_BkBzs49Ommo",
     "microserviceConf": {
       "port": 3030,
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
@@ -61,7 +61,7 @@
         "email": "webui@webui.it",
         "password": "miciomicio"
       },
-      "msName":"cmc-user",
+      "msName":"cmc-IoT",
       "testUrl": "http://localhost",
       "testPort": 3010
     }
