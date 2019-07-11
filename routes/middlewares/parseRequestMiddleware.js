@@ -43,12 +43,18 @@ exports.parseFields = function (req, res, next) {
 //Adds dbPagination to request
 exports.parsePagination = function (req, res, next) {
 
-    var skip = req.query.skip && !isNaN(parseInt(req.query.skip)) ? parseInt(req.query.skip) : conf.skip;
-    var limit = req.query.limit && parseInt(req.query.limit) < conf.limit ? parseInt(req.query.limit) : conf.limit;
+    var skip = req.query.skip && !isNaN(parseInt(req.query.skip)) ? parseInt(req.query.skip) : conf.pagination.skip;
+    var limit = req.query.limit && !isNaN(parseInt(req.query.limit)) ? parseInt(req.query.limit): conf.pagination.limit;
+
+    if((!conf.pagination.allowLargerLimit) && limit>conf.pagination.limit){
+        return res.boom.badRequest("limit must be less then " + conf.pagination.limit);
+    }
+
+    var totalCount = req.query.totalCount  ? req.query.totalCount : conf.pagination.totalCount;
 
 
-    if((skip==-1) || (limit==-1))
-        req.dbPagination = {};
+    if(limit==-1)
+        req.dbPagination = {"skip": skip};
     else
         req.dbPagination = {"skip": skip, "limit": limit};
 
@@ -73,6 +79,30 @@ exports.parseOptions = function (req, res, next) {
 
 };
 
+
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.validateBody = function (mandatoryFields) {
+
+    return(
+        function (req,res,next){
+            if (!req.body || _.isEmpty(req.body)){
+                return res.boom.badRequest('body missing');
+            }else{
+                var noMandatoryFields="";
+                mandatoryFields.forEach(function(value,index){
+                    if(!body[value]) noMandatoryFields+=value+", ";
+                });
+
+                if(noMandatoryFields.length>0){
+                    return res.boom.badRequest("body fields '" + noMandatoryFields.slice(0,-2) + "' missing");
+                }else {
+                    next();
+                }
+            }
+        }
+    );
+};
 
 
 

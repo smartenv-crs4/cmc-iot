@@ -22,6 +22,7 @@
 
 
 var devices=require('../../../models/devices').Device;
+var mongooseError=require('../../utility/mongooseError');
 
 
 /* GET devices listing. */
@@ -29,4 +30,19 @@ module.exports.findAll = function(conditions, fields, options, callback){
     devices.findAll(conditions,fields,options,function(err,results){
         callback(err,results);
     });
+};
+
+
+/* Create Device. */
+module.exports.create = function(device, callback){
+    devices.create(device,function(err,createdDevice){
+        callback(err,createdDevice);
+    });
+};
+
+
+
+/* Create Device. */
+module.exports.errorResponse = function(res,err){
+    mongooseError.handleError(res,err)
 };

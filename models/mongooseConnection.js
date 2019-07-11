@@ -37,12 +37,12 @@ var options = {
 
 
 
-exports.connect = function connect(callback) {
+exports.mongooseConnect = function connect(callback) {
 
     mongoose.connect(dbUrl, {useNewUrlParser: true}, function (err, res) {
 
         if (err) {
-            console.log('Unable to connect to database ' + dbUrl);
+            console.log('Unable to mongooseConnect to database ' + dbUrl);
             callback(err);
         }
         else {
@@ -55,7 +55,7 @@ exports.connect = function connect(callback) {
 
 
 
-exports.disconnect = function disconnect(callback) {
+exports.mongooseDisconnect = function disconnect(callback) {
 
     mongoose.disconnect(callback);
 };

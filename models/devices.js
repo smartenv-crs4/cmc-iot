@@ -23,11 +23,13 @@
 var mongoose = require('mongoose');
 var findAllFn = require('./metadata').findAll;
 var Schema = mongoose.Schema;
+var conf = require('propertiesmanager').conf;
 
-var device={
-    description:String,
-    field1:String,
-    field2:String
+var device= conf.deviceSchema || {
+    name:{type:String,required:true},
+    description:{type:String,required:true},
+    thingId:{type:mongoose.ObjectId, index: true,required:true},
+    typeId:{type:mongoose.ObjectId, index: true,required:true}
 };
 
 

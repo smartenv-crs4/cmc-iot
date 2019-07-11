@@ -23,7 +23,7 @@
 var conf = require('propertiesmanager').conf;
 var request=require('request');
 var async=require("async");
-var db = require("../../models/db");
+var db = require("../../models/mongooseConnection");
 var server;
 var app = require('../../app');
 var roles=require('./testconfig');
@@ -46,8 +46,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                 }else{
                     var env=JSON.parse(body).env;
                     if(env=="dev"){
-                        db.connect(function (err) {
-                            if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
+                        db.mongooseConnect(function (err) {
+                            if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't mongooseConnect to database  " + err);
 
                             app.set('port', process.env.PORT || conf.testConfig.testPort);
 
@@ -259,7 +259,7 @@ exports.resetAuthMsStatus = function(callback) {
             throw (err);
         else{
             server.close();
-            db.disconnect(function (err,res) {
+            db.mongooseDisconnect(function (err, res) {
                 if (err) console.log("!!! ERROR:--> Error in resetAuthMsStatus function due to can't clean test environment" + err);
                 callback(null);
             });

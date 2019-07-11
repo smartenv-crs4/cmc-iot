@@ -22,24 +22,27 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var db = require("../models/db");
+var db = require("../models/mongooseConnection");
 var Device = require('../models/devices').Device;
+var mongoose=require('mongoose');
 
 describe('Devices Model Test', function(){
 
   before(function(done){
 
-    db.connect(function(){
+    db.mongooseConnect(function(){
       done();
     });
   });
 
   after(function(done){
 
-    db.disconnect(function(){
+    db.mongooseDisconnect(function(){
       done();
     });
   });
+
+
 
 
   beforeEach(function(done){
@@ -48,9 +51,10 @@ describe('Devices Model Test', function(){
     async.each(range, function(e,cb){
 
         Device.create({
-            description:"description" + e,
-            field1:"field1" +e,
-            field2:"field2"+e
+            name:"name" + e,
+            description:"description" +e,
+            thingId:mongoose.Types.ObjectId(),
+            typeId:mongoose.Types.ObjectId()
         },function(err,val){
             if (err) throw err;
             cb();
@@ -84,7 +88,7 @@ describe('Devices Model Test', function(){
             results._metadata.skip.should.be.equal(2);
             results._metadata.limit.should.be.equal(30);
             results._metadata.should.have.property('totalCount');
-            results._metadata.totalCount.should.be.equal(100);
+            results._metadata.totalCount.should.be.equal(false);
           }
           done();
       });
@@ -93,11 +97,52 @@ describe('Devices Model Test', function(){
 
   });
 
+    describe('findAll({skip:2, limit:30})', function(){
+
+        it('must include _metadata with correct values', function(done){
+
+            Device.findAll({}, null, {skip:2, limit:30,totalCount:true}, function(err, results){
+
+                if(err) throw err;
+                else{
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(30);
+                    results._metadata.skip.should.be.equal(2);
+                    results._metadata.limit.should.be.equal(30);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(100);
+                }
+                done();
+            });
+
+        });
+
+    });
+
 
   describe('findAll({skip:0, limit:10})', function(){
 
     it('must include _metadata with correct values', function(done){
       Device.findAll({}, null, {skip:0, limit:10}, function(err, results){
+          if(err) throw err;
+          else{
+            results.should.have.property('_metadata');
+            results.devices.length.should.be.equal(10);
+            results._metadata.skip.should.be.equal(0);
+            results._metadata.limit.should.be.equal(10);
+
+          }
+          done();
+      });
+
+    });
+
+  });
+
+  describe('findAll({skip:0, limit:10})', function(){
+
+    it('must include _metadata with correct values', function(done){
+      Device.findAll({}, null, {skip:0, limit:10,totalCount:true}, function(err, results){
           if(err) throw err;
           else{
             results.should.have.property('_metadata');
@@ -124,10 +169,11 @@ describe('Devices Model Test', function(){
           if(err) throw err;
           else{
             results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(50);
+            results.devices.length.should.be.equal(100);
             results._metadata.skip.should.be.equal(0);
-            results._metadata.limit.should.be.equal(50);
-            results._metadata.totalCount.should.be.equal(100);
+            results._metadata.limit.should.be.equal(-1);
+            results._metadata.should.have.property('totalCount');
+            results._metadata.totalCount.should.be.equal(false);
 
           }
           done();
@@ -149,7 +195,8 @@ describe('Devices Model Test', function(){
             results.devices.length.should.be.equal(2);
             results._metadata.skip.should.be.equal(0);
             results._metadata.limit.should.be.equal(2);
-            results._metadata.totalCount.should.be.equal(100);
+            results._metadata.should.have.property('totalCount')
+            results._metadata.totalCount.should.be.equal(false);;
 
           }
           done();
@@ -164,13 +211,14 @@ describe('Devices Model Test', function(){
 
     it('must include all required properties', function(done){
 
-      Device.findOne({}, null, function(err, user){
+      Device.findOne({}, null, function(err, device){
 
           if(err) throw err;
           else{
-            user.should.have.property('description');
-            user.should.have.property('field1');
-            user.should.have.property('field2');
+            device.should.have.property('description');
+            device.should.have.property('name');
+            device.should.have.property('thingId');
+            device.should.have.property('typeId');
           }
           done();
 

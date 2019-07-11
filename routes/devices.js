@@ -26,8 +26,22 @@ var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
 var authorisationManager=require('./middlewares/authorisationMiddleware');
 var devicesHandler=require('./routesHandlers/deviceHandler');
 
+
+
+
+/* GET devices listing. */
+router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
+  devicesHandler.postCreateDevice(req,res,next);
+});
+
+
+
+
+/*Moduli di parsing delle query*/
 router.use(parseRequestMiddleware.parsePagination);
 router.use(parseRequestMiddleware.parseFields);
+router.use(parseRequestMiddleware.parseOptions);
+
 
 /* GET devices listing. */
 router.get('/',[authorisationManager.checkToken], function(req, res, next) {

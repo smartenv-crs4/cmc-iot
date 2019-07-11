@@ -1,8 +1,12 @@
 {
   "production":{
-    "dbHost":"127.0.0.1",
+    "dbHost":"156.148.37.192",
     "dbPort":"27017",
     "dbName":"cmc-IoT",
+    "dbAuth": {
+      "user": null,
+      "psw": null
+    },
     "authUrl":"http://localhost:3005",
     "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDYxNzU0MzIwMn0.sqCOfq8HvQQmxWLCrAtFf1s3GvxAFPQ_ZhCyFuukpBs",
     "microserviceConf": {
@@ -10,14 +14,22 @@
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
     },
     "logfile":"/var/log/progressBar.log",
-    "limit":50,
-    "skip":0,
+    "pagination": {
+      "allowLargerLimit": false,
+      "limit":50,
+      "skip":0,
+      "totalCount": false
+    },
     "fastForwardPsw":"f@5tF0rwardP5w"
   },
   "dev":{
     "dbHost":"127.0.0.1",
     "dbPort":"27017",
     "dbName":"cmc-IoT-DevMode",
+    "dbAuth": {
+      "user": null,
+      "psw": null
+    },
     "authUrl":"http://localhost:3005",
     "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDYxNzU0MzIwMn0.sqCOfq8HvQQmxWLCrAtFf1s3GvxAFPQ_ZhCyFuukpBs",
     "microserviceConf": {
@@ -25,14 +37,22 @@
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
     },
     "logfile":"/var/log/progressBar.log",
-    "limit":50,
-    "skip":0,
+    "pagination": {
+      "allowLargerLimit": false,
+      "limit":50,
+      "skip":0,
+      "totalCount": false
+    },
     "fastForwardPsw":"f@5tF0rwardP5w"
   },
   "test":{
     "dbHost":"127.0.0.1",
     "dbPort":"27017",
     "dbName":"cmc-IoT-TestMode",
+    "dbAuth": {
+      "user": null,
+      "psw": null
+    },
     "authUrl":"http://localhost:3005",
     "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MTg3MDY5MDU2NDE1N30.tJyuf8laVp1Iy6seegiQt9Ig4HemeHq_BkBzs49Ommo",
     "microserviceConf": {
@@ -40,12 +60,16 @@
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
     },
     "logfile":"/var/log/progressBar.log",
-    "limit":50,
-    "skip":0,
+    "pagination": {
+      "allowLargerLimit": false,
+      "limit":50,
+      "skip":0,
+      "totalCount": false
+    },
     "fastForwardPsw":"f@5tF0rwardP5w",
     "testConfig":{
       "usertokens":["UserType1"],
-      "adminokens":["admin"],
+      "adminTokens":["admin"],
       "authApptokens":["webui"],
       "adminLogin": {
         "username": "admin@admin.com",

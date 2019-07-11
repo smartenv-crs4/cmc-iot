@@ -25,9 +25,22 @@ var deviceDriver=require('./handlersDriver/deviceDriver');
 
 
 
+/* Create device. */
+module.exports.postCreateDevice = function(req, res, next) {
+    deviceDriver.create(req.body.device,function (err, results) {
+        if(err){
+            return deviceDriver.errorResponse(res,err);
+        }else{
+            res.status(201).send(results || err);
+        }
+
+    });
+};
+
 /* GET devices listing. */
 module.exports.getDevices = function(req,res,next){
     deviceDriver.findAll(null,null,req.dbPagination,function(err,results){
         res.send(results || err);
-    });
+    })
 };
+

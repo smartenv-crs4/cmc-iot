@@ -29,6 +29,7 @@ var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
 var commonFunctioTest=require("./setTestenv/testEnvironmentCreation");
+var mongoose=require('mongoose');
 
 var webUiToken;
 var deviceId;
@@ -63,9 +64,10 @@ describe('Devices API Test', function () {
         async.each(range, function (e, cb) {
 
             Devices.create({
-                description:"description" + e,
-                field1:"field1" +e,
-                field2:"field2"+e
+                name:"name" + e,
+                description:"description" +e,
+                thingId:mongoose.Types.ObjectId(),
+                typeId:mongoose.Types.ObjectId()
             }, function (err, newDevice) {
                 if (err) console.log("######   ERRORE BEFOREEACH: " + err +"  ######");
                 if(e===1) deviceId=newDevice._id;
@@ -89,6 +91,36 @@ describe('Devices API Test', function () {
 
 
 
+    describe('POST /device', function(){
+
+        it('must test device cretion autentication', function(done){
+            var bodyParam=JSON.stringify({device:{}});
+            var requestParams={
+                url:APIURL+'/actions/search',
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) console.log("######   ERRORE: 401 2 " + error + "  ######");
+                else{
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(response.body);
+                    results.should.have.property('_metadata');
+                    results.should.have.property('users');
+                    results._metadata.totalCount.should.be.equal(100);
+                    //results.users[0].type.should.be.equal(userStandard.type);
+                }
+                done();
+            });
+
+        });
+    });
+
+
+
+
+
+    //TODO Start da riscrivere quando implementiamo la get
     describe('GET /devices', function () {
 
         it('must return ONE device and _metadata, all fields', function (done) {
@@ -107,10 +139,11 @@ describe('Devices API Test', function () {
                     results.should.have.property('devices');
                     results._metadata.skip.should.be.equal(0);
                     results._metadata.limit.should.be.equal(1);
-                    results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.totalCount.should.be.equal(false);
                     should.exist(results.devices[0].description);
-                    should.exist(results.devices[0].field1);
-                    should.exist(results.devices[0].field2);
+                    should.exist(results.devices[0].name);
+                    should.exist(results.devices[0].thingId);
+                    should.exist(results.devices[0].typeId);
                 }
                 done();
             });
@@ -118,6 +151,9 @@ describe('Devices API Test', function () {
         });
 
     });
+
+
+
 
 
     describe('GET /devices', function () {
@@ -138,15 +174,18 @@ describe('Devices API Test', function () {
                     results.should.have.property('devices');
                     results._metadata.skip.should.be.equal(0);
                     results._metadata.limit.should.be.equal(2);
-                    results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.totalCount.should.be.equal(false);
                     should.exist(results.devices[0].description);
-                    should.exist(results.devices[0].field1);
-                    should.exist(results.devices[0].field2);
+                    should.exist(results.devices[0].name);
+                    should.exist(results.devices[0].thingId);
+                    should.exist(results.devices[0].typeId);
 
                 }
                 done();
             });
         });
     });
+
+    //TODO END da riscrivere quando implementiamo la get
 
 });

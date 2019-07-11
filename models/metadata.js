@@ -29,11 +29,15 @@ var _ = require('underscore')._;
 
 exports.findAll = function findAll(schema, entityName, conditions, fields, options, callback) {
 
-    var opt = options ? options : {skip: conf.skip, limit: conf.limit};
+    var opt = options || {};
 
-    if((opt.skip==-1) || (opt.limit==-1)) {
+
+    if(opt.skip==-1){
         delete opt.skip;
-        delete opt.limit;
+    }
+
+    if(opt.limit==-1) {
+        delete opt.skip;
     }
 
 
@@ -41,41 +45,39 @@ exports.findAll = function findAll(schema, entityName, conditions, fields, optio
 
 
         if (!err) {
-            schema.countDocuments(conditions, function (err, count) {
 
-                if (!err) {
-
-                    var entities = entityName ? entityName : 'entities';
+            var entities = entityName ? entityName : 'entities';
 //                           console.log(entities);
 //                           console.log(count);
-                    var results = {
-                        _metadata: {
-                            totalCount: count,
-                            skip: opt.skip,
-                            limit: opt.limit
-                        }
-                    };
-
-                    results[entities] = result;
-
-                    callback(null, results);
-
+            var results = {
+                _metadata: {
+                    totalCount: false,
+                    skip: opt.skip || 0,
+                    limit: opt.limit || -1
                 }
-                else {
-                    callback(err, null);
-                }
+            };
 
+            results[entities] = result;
 
-            });
+            if(options && options.totalCount){
+                schema.countDocuments(conditions, function (err, count) {
+
+                    if (!err) {
+                        results._metadata.totalCount=count;
+                        callback(null, results);
+                    }
+                    else {
+                        callback(err, null);
+                    }
+                });
+            }else{
+                callback(null, results);
+            }
         }
         else {
             callback(err, null);
         }
-
-
     });
-
-
 };
 
 //It wraps the find() + populate() method to include metadata
