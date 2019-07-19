@@ -23,7 +23,7 @@
 var conf = require('propertiesmanager').conf;
 var request=require('request');
 var async=require("async");
-var db = require("../../models/mongooseConnection");
+var db = require("../../DBEngineHandler/models/mongooseConnection");
 var server;
 var app = require('../../app');
 var roles=require('./testconfig');
@@ -46,8 +46,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                 }else{
                     var env=JSON.parse(body).env;
                     if(env=="dev"){
-                        db.mongooseConnect(function (err) {
-                            if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't mongooseConnect to database  " + err);
+                        db.connect(function (err) {
+                            if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
 
                             app.set('port', process.env.PORT || conf.testConfig.testPort);
 
@@ -63,7 +63,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
             });
         },
         function(callback){ // create admins and users type tokens
-            var users=conf.testConfig.adminokens.concat(conf.testConfig.usertokens);
+            var users=conf.testConfig.adminTokens.concat(conf.testConfig.usertokens);
             var usersId=[];
             async.eachSeries(users,function(tokenT,clb){
                 var rqparams={
@@ -131,6 +131,27 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     if(!results.error) {
                         conf.testConfig.myWebUITokenToSignUP = results.apiKey.token;
                         conf.testConfig.webUiID=results.userId;
+                    }
+                    callback(null,"five");
+                }
+            });
+
+        },
+        function(callback){// make admin  login
+
+            request.post({
+                url: authHost + "/authuser/signin",
+                body: JSON.stringify(conf.testConfig.adminLogin),
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
+            }, function (error, response,body) {
+                if(error) {
+                    console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete admin login in cmc-auth  " + err);
+                    throw error;
+                }else{
+                    var results = JSON.parse(response.body);
+                    if(!results.error) {
+                        conf.testConfig.adminToken = results.apiKey.token;
+                        conf.testConfig.adminID=results.userId;
                     }
                     callback(null,"five");
                 }
@@ -259,7 +280,7 @@ exports.resetAuthMsStatus = function(callback) {
             throw (err);
         else{
             server.close();
-            db.mongooseDisconnect(function (err, res) {
+            db.disconnect(function (err, res) {
                 if (err) console.log("!!! ERROR:--> Error in resetAuthMsStatus function due to can't clean test environment" + err);
                 callback(null);
             });

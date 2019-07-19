@@ -29,9 +29,9 @@ function customTestConfig(config){
     var testConfig=config.testConfig;
 
 
-    var adminUserToken=testConfig.adminokens.concat(testConfig.usertokens);
-    var adminAuthAppToken=testConfig.adminokens.concat(testConfig.authApptokens);
-    var adminUserAuthAppToken=testConfig.adminokens.concat(testConfig.authApptokens).concat(testConfig.usertokens);
+    var adminUserToken=testConfig.adminTokens.concat(testConfig.usertokens);
+    var adminAuthAppToken=testConfig.adminTokens.concat(testConfig.authApptokens);
+    var adminUserAuthAppToken=testConfig.adminTokens.concat(testConfig.authApptokens).concat(testConfig.usertokens);
 
 
 
@@ -41,28 +41,27 @@ function customTestConfig(config){
 
 
     testConfig.AuthRoles=[
-                {URI:"/configuration", token:testConfig.adminokens, method:"GET"},
+                {URI:"/configuration", token:testConfig.adminTokens, method:"GET"},
                 {URI:"/devices", token:testConfig.authApptokens, method:"GET"},
-                {URI:"/devices",token:testConfig.adminokens, method:"POST"},
-                {URI:"/devices/:id",token:adminUserToken, method:"GET"},
-                {URI:"/devices/:id",token:adminUserToken, method:"PUT"},
-                {URI:"/devices/:id",token:testConfig.adminokens, method:"DELETE"},
-                {URI:"/devices/signup",token:testConfig.authApptokens, method:"POST"},
-                {URI:"/devices/signin",token:testConfig.authApptokens, method:"POST"},
-                {URI:"/devices/:id/actions/resetpassword",token:adminAuthAppToken, method:"POST"},
-                {URI:"/devices/:id/actions/setpassword",token:adminUserAuthAppToken, method:"POST"},
-                {URI:"/devices/:id/actions/changeuserid",token:testConfig.adminokens, method:"POST"},
-                {URI:"/devices/:id/actions/enable",token:testConfig.adminokens, method:"POST"},
-                {URI:"/devices/:id/actions/disable",token:testConfig.adminokens, method:"POST"},
-                {URI:"/devices/actions/email/find/:term",token:testConfig.adminokens, method:"GET"},
-                {URI:"/devices/actions/search",token:testConfig.adminokens, method:"post"},
-                {URI:"/devices/:id/actions/changeusername",token:testConfig.adminokens, method:"post"}
+                {URI:"/devices",token:testConfig.adminTokens, method:"POST"},
     ];
     testConfig.webUiID="";
 
 }
 
-
+// {URI:"/devices/:id",token:adminUserToken, method:"GET"},
+// {URI:"/devices/:id",token:adminUserToken, method:"PUT"},
+// {URI:"/devices/:id",token:testConfig.adminTokens, method:"DELETE"},
+// {URI:"/devices/signup",token:testConfig.authApptokens, method:"POST"},
+// {URI:"/devices/signin",token:testConfig.authApptokens, method:"POST"},
+// {URI:"/devices/:id/actions/resetpassword",token:adminAuthAppToken, method:"POST"},
+// {URI:"/devices/:id/actions/setpassword",token:adminUserAuthAppToken, method:"POST"},
+// {URI:"/devices/:id/actions/changeuserid",token:testConfig.adminTokens, method:"POST"},
+// {URI:"/devices/:id/actions/enable",token:testConfig.adminTokens, method:"POST"},
+// {URI:"/devices/:id/actions/disable",token:testConfig.adminTokens, method:"POST"},
+// {URI:"/devices/actions/email/find/:term",token:testConfig.adminTokens, method:"GET"},
+// {URI:"/devices/actions/search",token:testConfig.adminTokens, method:"post"},
+// {URI:"/devices/:id/actions/changeusername",token:testConfig.adminTokens, method:"post"}
 
 module.exports.customTestConfig = customTestConfig;
 

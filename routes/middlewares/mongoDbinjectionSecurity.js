@@ -21,28 +21,13 @@
  */
 
 
-exports.printErrorLog= function(message){
-    console.log("");
-    console.log("### ************************************************************************************* ###");
-    console.log("### --------------------------------- ERROR LOG ----------------------------------------- ###");
-    console.log("### ************************************************************************************* ###");
-    console.log("###                                                                                       ###");
-    var index=0;
-    var outputMessage;
-    var diff;
-    var space=" ";
-    do{
-        outputMessage=message.substr(index,74);
-        if(outputMessage.length < 74){
-            diff=74-outputMessage.length;
-            outputMessage=space.repeat(diff/2)+outputMessage+space.repeat(diff-(diff/2));
-        }
-        console.log("###       " + outputMessage + "      ###");
-        index+=75;
-    }while(index<message.length);
-    console.log("###                                                                                       ###");
-    console.log("### ************************************************************************************* ###");
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.parseForOperators = function (req, res, next) {
+    if(JSON.stringify(req.query).match(/\$\w+"?\\?"?:/igm))
+        return res.boom.badRequest('mongoDb operator "$..." are not allowed in query filter');
+
+    next();
+
 };
-
-
 

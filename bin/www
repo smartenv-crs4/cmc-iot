@@ -30,13 +30,13 @@ var app = require('../app');
 var debug = require('debug')('cmc-iot:server');
 var http = require('http');
 var conf = require('propertiesmanager').conf;
-var db = require("../models/mongooseConnection");
+var db = require("../DBEngineHandler/models/mongooseConnection");
 
 
 // Connect to db: Open and initialise connection
-db.mongooseConnect(function(err){
+db.connect(function(err){
   if(err){
-    console.log("Unable to mongooseConnect to DB, err:" +err);
+    console.log("Unable to connect to DB, err:" +err);
   }
   else{
     console.log("Connected to DB");
@@ -45,10 +45,10 @@ db.mongooseConnect(function(err){
 });
 
 function disconnect(){
-  db.mongooseDisconnect(function (err, result) {
+  db.disconnect(function (err, result) {
     console.log("Exiting App...");
     if (err) {
-      console.log('Unable to mongooseDisconnect from database');
+      console.log('Unable to disconnect from database');
     }
     else {
       console.log('Disconnected from database');

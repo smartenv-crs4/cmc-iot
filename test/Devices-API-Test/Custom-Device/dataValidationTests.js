@@ -21,15 +21,15 @@
  */
 
 
-var should = require('should');
+var should = require('should/should');
 var _ = require('underscore')._;
 var async = require('async');
-var Devices = require('../models/devices').Device;
+var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
-var commonFunctioTest=require("./setTestenv/testEnvironmentCreation");
-var mongoose=require('mongoose');
+var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
+var consoleLogError=require('../../Utility/errorLogs');
 
 var webUiToken;
 var deviceId;
@@ -66,8 +66,8 @@ describe('Devices API Test', function () {
             Devices.create({
                 name:"name" + e,
                 description:"description" +e,
-                thingId:mongoose.Types.ObjectId(),
-                typeId:mongoose.Types.ObjectId()
+                thingId:Devices.ObjectId(),
+                typeId:Devices.ObjectId()
             }, function (err, newDevice) {
                 if (err) console.log("######   ERRORE BEFOREEACH: " + err +"  ######");
                 if(e===1) deviceId=newDevice._id;
@@ -88,104 +88,82 @@ describe('Devices API Test', function () {
     });
 
 
+    describe('POST /device', function(){
+
+        it('must test device creation [no valid device field - field is not in the schema]', function(done){
+            var bodyParam=JSON.stringify({device:{noschemaField:"invalid"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [no valid device field - field is not in the schema] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("Field `noschemaField` is not in schema and strict mode is set to throw.");
+                }
+                done();
+            });
+
+        });
+    });
 
 
 
     describe('POST /device', function(){
 
-        it('must test device cretion autentication', function(done){
-            var bodyParam=JSON.stringify({device:{}});
+        it('must test device creation [data validation error due to required fields missing]', function(done){
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description"}});
             var requestParams={
-                url:APIURL+'/actions/search',
-                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ adminToken},
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) console.log("######   ERRORE: 401 2 " + error + "  ######");
+                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to required fields missing] -->" + error.message);
                 else{
-                    response.statusCode.should.be.equal(200);
-                    var results = JSON.parse(response.body);
-                    results.should.have.property('_metadata');
-                    results.should.have.property('users');
-                    results._metadata.totalCount.should.be.equal(100);
-                    //results.users[0].type.should.be.equal(userStandard.type);
-                }
-                done();
-            });
-
-        });
-    });
-
-
-
-
-
-    //TODO Start da riscrivere quando implementiamo la get
-    describe('GET /devices', function () {
-
-        it('must return ONE device and _metadata, all fields', function (done) {
-
-            request.get({
-                url: APIURL + '?skip=0&limit=1',
-                headers: {'Authorization': "Bearer " + webUiToken}
-            }, function (error, response, body) {
-
-                if (error) console.log("######   ERRORE: " + error +"  ######");
-                else {
-                    response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
-
-                    results.should.have.property('_metadata');
-                    results.should.have.property('devices');
-                    results._metadata.skip.should.be.equal(0);
-                    results._metadata.limit.should.be.equal(1);
-                    results._metadata.totalCount.should.be.equal(false);
-                    should.exist(results.devices[0].description);
-                    should.exist(results.devices[0].name);
-                    should.exist(results.devices[0].thingId);
-                    should.exist(results.devices[0].typeId);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("device validation failed: typeId: Path `typeId` is required., thingId: Path `thingId` is required.");
                 }
                 done();
             });
 
         });
-
     });
 
+    describe('POST /device', function(){
 
-
-
-
-    describe('GET /devices', function () {
-
-        it('must return 2 devices and _metadata, all fields', function (done) {
-
-            request.get({
-                url: APIURL + '?skip=0&limit=2&fields=-type',
-                headers: {'Authorization': "Bearer " + webUiToken}
-            }, function (error, response, body) {
-
-                if (error) console.log("######   ERRORE: " + error +"  ######");
-                else {
-                    response.statusCode.should.be.equal(200);
+        it('must test device creation [data validation error due to invalid field type]', function(done){
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to invalid field type] -->" + error.message);
+                else{
                     var results = JSON.parse(body);
-
-                    results.should.have.property('_metadata');
-                    results.should.have.property('devices');
-                    results._metadata.skip.should.be.equal(0);
-                    results._metadata.limit.should.be.equal(2);
-                    results._metadata.totalCount.should.be.equal(false);
-                    should.exist(results.devices[0].description);
-                    should.exist(results.devices[0].name);
-                    should.exist(results.devices[0].thingId);
-                    should.exist(results.devices[0].typeId);
-
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("device validation failed: typeId: Cast to ObjectID failed for value \"typeId\" at path \"typeId\"");
                 }
                 done();
             });
+
         });
     });
 
-    //TODO END da riscrivere quando implementiamo la get
 
 });

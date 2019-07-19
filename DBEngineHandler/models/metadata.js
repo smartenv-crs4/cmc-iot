@@ -27,21 +27,34 @@ var _ = require('underscore')._;
 
 //It wraps the find() method to include metadata
 
-exports.findAll = function findAll(schema, entityName, conditions, fields, options, callback) {
+exports.findAll = function findAll(model, entityName, conditions, fields, options, callback) {
 
     var opt = options || {};
-
-
-    if(opt.skip==-1){
-        delete opt.skip;
-    }
 
     if(opt.limit==-1) {
         delete opt.skip;
     }
 
 
-    schema.find(conditions, fields, opt, function (err, result) {
+    var query={};
+
+    _.each(conditions,function(value,key){
+
+        if (model.schema.path(key) || (key==="_id")) {
+
+            if (_.isArray(value)) { //is an array
+                query[key]={ "$in": value };
+            } else {
+                if (_.isString(value) && (value.indexOf(",")>=0)) { //is a string of values comma separated
+                    query[key]={ "$in": value.split(",") };
+                }else
+                    query[key] = value;
+            }
+        }
+    });
+
+
+    model.find(query, fields, opt, function (err, result) {
 
 
         if (!err) {
@@ -60,7 +73,7 @@ exports.findAll = function findAll(schema, entityName, conditions, fields, optio
             results[entities] = result;
 
             if(options && options.totalCount){
-                schema.countDocuments(conditions, function (err, count) {
+                model.countDocuments(query, function (err, count) {
 
                     if (!err) {
                         results._metadata.totalCount=count;

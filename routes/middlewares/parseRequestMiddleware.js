@@ -22,6 +22,59 @@
 
 
 var conf = require('propertiesmanager').conf;
+var _=require('underscore')
+
+
+function pagination(query){
+    var paginateConf={error:null,paginateInfo:{}};
+
+    var skip = query.skip && !isNaN(parseInt(query.skip)) ? parseInt(query.skip) : conf.pagination.skip;
+    var limit = query.limit && !isNaN(parseInt(query.limit)) ? parseInt(query.limit): conf.pagination.limit;
+
+
+    if((!conf.pagination.allowLargerLimit) && limit>conf.pagination.limit){
+        paginateConf.error="limit must be less then " + conf.pagination.limit;
+
+    }else{
+        var totalCount = query.totalCount  ? query.totalCount : conf.pagination.totalCount;
+
+
+        if(limit==-1)
+            paginateConf.paginateInfo = {"skip": skip, totalCount:totalCount};
+        else
+            paginateConf.paginateInfo = {"skip": skip, "limit": limit, totalCount:totalCount};
+
+    }
+
+    return (paginateConf);
+}
+
+
+
+
+function order(query){
+    var orderParameters=null;
+    var sortDescRaw = query.sortDesc ? query.sortDesc.split(",") : null;
+    var sortAscRaw = query.sortAsc ? query.sortAsc.split(",") : null;
+
+
+    if (sortAscRaw) {
+        orderParameters={sort:{}};
+        _.each(sortAscRaw,function(value,index){
+            orderParameters.sort[value]="asc"
+        });
+    }
+
+    if (sortDescRaw) {
+        orderParameters={sort:{}};
+        _.each(sortDescRaw,function(value,index){
+            orderParameters.sort[value]="desc"
+        });
+    }
+    return(orderParameters);
+
+}
+
 
 //Middleware to parse DB query fields selection from request URI
 //Adds dbQueryFields to request
@@ -38,26 +91,28 @@ exports.parseFields = function (req, res, next) {
 
 };
 
-
 //Middleware to parse pagination params from request URI
 //Adds dbPagination to request
 exports.parsePagination = function (req, res, next) {
 
-    var skip = req.query.skip && !isNaN(parseInt(req.query.skip)) ? parseInt(req.query.skip) : conf.pagination.skip;
-    var limit = req.query.limit && !isNaN(parseInt(req.query.limit)) ? parseInt(req.query.limit): conf.pagination.limit;
 
-    if((!conf.pagination.allowLargerLimit) && limit>conf.pagination.limit){
-        return res.boom.badRequest("limit must be less then " + conf.pagination.limit);
+
+    var paginateInfo=pagination(req.query);
+
+    if(paginateInfo.error){
+        return res.boom.badRequest(paginateInfo.error);
+    }else{
+        req.dbPagination=paginateInfo.paginateInfo;
+        next();
     }
 
-    var totalCount = req.query.totalCount  ? req.query.totalCount : conf.pagination.totalCount;
+};
 
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.parseOrder = function (req, res, next) {
 
-    if(limit==-1)
-        req.dbPagination = {"skip": skip};
-    else
-        req.dbPagination = {"skip": skip, "limit": limit};
-
+    req.sort = order(req.query);
     next();
 
 };
@@ -67,16 +122,16 @@ exports.parsePagination = function (req, res, next) {
 //Adds sort to request
 exports.parseOptions = function (req, res, next) {
 
-    var sortDescRaw = req.query.sortDesc ? req.query.sortDesc.split(",") : null;
-    var sortAscRaw = req.query.sortAsc ? req.query.sortAsc.split(",") : null;
 
-    if (sortAscRaw || sortDescRaw)
-        req.sort = {asc: sortAscRaw, desc: sortDescRaw};
-    else
-        req.sort = null;
 
-    next();
+    var options=pagination(req.query);
 
+    if(options.error){
+        return res.boom.badRequest(options.error);
+    }else{
+        req.options=_.extend(options.paginateInfo,order(req.query));
+        next();
+    }
 };
 
 
@@ -91,7 +146,7 @@ exports.validateBody = function (mandatoryFields) {
             }else{
                 var noMandatoryFields="";
                 mandatoryFields.forEach(function(value,index){
-                    if(!body[value]) noMandatoryFields+=value+", ";
+                    if(!req.body[value]) noMandatoryFields+=value+", ";
                 });
 
                 if(noMandatoryFields.length>0){
@@ -106,5 +161,16 @@ exports.validateBody = function (mandatoryFields) {
 
 
 
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.parseIds = function(field){
+    return(function (req, res, next) {
 
+        if (req.query[field]) {
+            req.query._id =  req.query[field];
+            delete req.query[field];
+        }
+        next();
+    });
+};
 

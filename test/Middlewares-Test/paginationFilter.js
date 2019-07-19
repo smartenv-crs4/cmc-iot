@@ -22,22 +22,21 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var db = require("../models/mongooseConnection");
-var Device = require('../models/devices').Device;
-var mongoose=require('mongoose');
+var db = require("../../DBEngineHandler/models/mongooseConnection");
+var Device = require('../../DBEngineHandler/drivers/deviceDriver');
 
-describe('Devices Model Test', function(){
+describe('Pagination Filter Test', function(){
 
   before(function(done){
 
-    db.mongooseConnect(function(){
+    db.connect(function(){
       done();
     });
   });
 
   after(function(done){
 
-    db.mongooseDisconnect(function(){
+    db.disconnect(function(){
       done();
     });
   });
@@ -53,8 +52,8 @@ describe('Devices Model Test', function(){
         Device.create({
             name:"name" + e,
             description:"description" +e,
-            thingId:mongoose.Types.ObjectId(),
-            typeId:mongoose.Types.ObjectId()
+            thingId:Device.ObjectId(),
+            typeId:Device.ObjectId()
         },function(err,val){
             if (err) throw err;
             cb();
@@ -75,9 +74,9 @@ describe('Devices Model Test', function(){
 
 
 
-  describe('findAll({skip:2, limit:30})', function(){
+  describe('findAll({skip:2, limit:30, totalCount:false})', function(){
 
-    it('must include _metadata with correct values', function(done){
+    it('must include _metadata with correct values -->[ skip:2, limit:30, totalCount:false]', function(done){
 
       Device.findAll({}, null, {skip:2, limit:30}, function(err, results){
 
@@ -97,9 +96,9 @@ describe('Devices Model Test', function(){
 
   });
 
-    describe('findAll({skip:2, limit:30})', function(){
+    describe('findAll({skip:2, limit:30, totalCount:true})', function(){
 
-        it('must include _metadata with correct values', function(done){
+        it('must include _metadata with correct values -->[ skip:2, limit:30, totalCount:100]', function(done){
 
             Device.findAll({}, null, {skip:2, limit:30,totalCount:true}, function(err, results){
 
@@ -120,9 +119,9 @@ describe('Devices Model Test', function(){
     });
 
 
-  describe('findAll({skip:0, limit:10})', function(){
+  describe('findAll({skip:0, limit:10, totalCount:false})', function(){
 
-    it('must include _metadata with correct values', function(done){
+    it('must include _metadata with correct values -->[ skip:2, limit:30, totalCount:false]', function(done){
       Device.findAll({}, null, {skip:0, limit:10}, function(err, results){
           if(err) throw err;
           else{
@@ -130,6 +129,7 @@ describe('Devices Model Test', function(){
             results.devices.length.should.be.equal(10);
             results._metadata.skip.should.be.equal(0);
             results._metadata.limit.should.be.equal(10);
+              results._metadata.should.have.property('totalCount');
 
           }
           done();
@@ -139,9 +139,9 @@ describe('Devices Model Test', function(){
 
   });
 
-  describe('findAll({skip:0, limit:10})', function(){
+  describe('findAll({skip:0, limit:10, totalCount:true})', function(){
 
-    it('must include _metadata with correct values', function(done){
+    it('must include _metadata with correct values -->[ skip:0, limit:10, totalCount:100]', function(done){
       Device.findAll({}, null, {skip:0, limit:10,totalCount:true}, function(err, results){
           if(err) throw err;
           else{
@@ -162,7 +162,7 @@ describe('Devices Model Test', function(){
 
   describe('findAll() no pagination', function(){
 
-    it('must include _metadata with default values', function(done){
+    it('must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false]', function(done){
 
       Device.findAll({}, null, null, function(err, results){
 
@@ -198,27 +198,6 @@ describe('Devices Model Test', function(){
             results._metadata.should.have.property('totalCount')
             results._metadata.totalCount.should.be.equal(false);;
 
-          }
-          done();
-
-      });
-
-    });
-
-  });
-
-  describe('findOne()', function(){
-
-    it('must include all required properties', function(done){
-
-      Device.findOne({}, null, function(err, device){
-
-          if(err) throw err;
-          else{
-            device.should.have.property('description');
-            device.should.have.property('name');
-            device.should.have.property('thingId');
-            device.should.have.property('typeId');
           }
           done();
 

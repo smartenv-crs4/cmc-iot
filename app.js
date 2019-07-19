@@ -57,7 +57,7 @@ app.use(function(req, res, next) {
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   // render the error page
-  errorLog.printErrorLog("An error was occurred due to " + err.message);
+  errorLog.printErrorLog("App.js An error was occurred due to " + err.message);
   res.boom.badImplementation(err.message);
 });
 

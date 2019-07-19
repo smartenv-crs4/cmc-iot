@@ -21,28 +21,47 @@
  */
 
 
-var devices=require('../../../models/devices').Device;
-var mongooseError=require('../../utility/mongooseError');
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
 
 
-/* GET devices listing. */
-module.exports.findAll = function(conditions, fields, options, callback){
-    devices.findAll(conditions,fields,options,function(err,results){
-        callback(err,results);
+require('../../API_Compliant-Templates/requestParserValidation').requestParserValidation(APIURL,"devices");
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Devices API Tests', function () {
+
+    before(function (done) {
+       done();
     });
-};
 
-
-/* Create Device. */
-module.exports.create = function(device, callback){
-    devices.create(device,function(err,createdDevice){
-        callback(err,createdDevice);
+    after(function (done) {
+        done();
     });
-};
 
 
 
-/* Create Device. */
-module.exports.errorResponse = function(res,err){
-    mongooseError.handleError(res,err)
-};
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Devices', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

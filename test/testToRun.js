@@ -21,28 +21,14 @@
  */
 
 
-exports.printErrorLog= function(message){
-    console.log("");
-    console.log("### ************************************************************************************* ###");
-    console.log("### --------------------------------- ERROR LOG ----------------------------------------- ###");
-    console.log("### ************************************************************************************* ###");
-    console.log("###                                                                                       ###");
-    var index=0;
-    var outputMessage;
-    var diff;
-    var space=" ";
-    do{
-        outputMessage=message.substr(index,74);
-        if(outputMessage.length < 74){
-            diff=74-outputMessage.length;
-            outputMessage=space.repeat(diff/2)+outputMessage+space.repeat(diff-(diff/2));
-        }
-        console.log("###       " + outputMessage + "      ###");
-        index+=75;
-    }while(index<message.length);
-    console.log("###                                                                                       ###");
-    console.log("### ************************************************************************************* ###");
-};
+//API
+require('./Devices-API-Test/devices-api');
 
 
+//Model
+require('./Models-Test/deviceModel');
 
+//Middlewares
+require('./Middlewares-Test/decodeTokenMiddleware');
+require('./Middlewares-Test/paginationFilter');
+require('./Middlewares-Test/searchFilter');

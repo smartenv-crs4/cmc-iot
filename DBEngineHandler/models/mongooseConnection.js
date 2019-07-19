@@ -21,28 +21,41 @@
  */
 
 
-exports.printErrorLog= function(message){
-    console.log("");
-    console.log("### ************************************************************************************* ###");
-    console.log("### --------------------------------- ERROR LOG ----------------------------------------- ###");
-    console.log("### ************************************************************************************* ###");
-    console.log("###                                                                                       ###");
-    var index=0;
-    var outputMessage;
-    var diff;
-    var space=" ";
-    do{
-        outputMessage=message.substr(index,74);
-        if(outputMessage.length < 74){
-            diff=74-outputMessage.length;
-            outputMessage=space.repeat(diff/2)+outputMessage+space.repeat(diff-(diff/2));
-        }
-        console.log("###       " + outputMessage + "      ###");
-        index+=75;
-    }while(index<message.length);
-    console.log("###                                                                                       ###");
-    console.log("### ************************************************************************************* ###");
+var mongoose = require('mongoose');
+var conf = require('propertiesmanager').conf;
+
+
+
+
+var dbUrl =  'mongodb://'+conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName;
+
+var options = {
+    server: {socketOptions: {keepAlive: 1, connectTimeoutMS: 30000}},
+    useNewUrlParser: true
 };
 
 
 
+
+exports.connect = function connect(callback) {
+
+    mongoose.connect(dbUrl, {useNewUrlParser: true}, function (err, res) {
+
+        if (err) {
+            console.log('Unable to connect to database ' + dbUrl);
+            callback(err);
+        }
+        else {
+            console.log('Connected to database ' + dbUrl);
+            callback();
+        }
+    });
+};
+
+
+
+
+exports.disconnect = function disconnect(callback) {
+
+    mongoose.disconnect(callback);
+};

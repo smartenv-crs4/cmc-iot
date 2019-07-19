@@ -21,41 +21,53 @@
  */
 
 
-var mongoose = require('mongoose');
-var conf = require('propertiesmanager').conf;
+var devices=require('../models/devices').Device;
+var mongooseError=require('../../routes/utility/mongooseError');
+var mongoose=require('mongoose');
 
 
-
-
-var dbUrl =  'mongodb://'+conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName;
-
-var options = {
-    server: {socketOptions: {keepAlive: 1, connectTimeoutMS: 30000}},
-    useNewUrlParser: true
+/* GET devices listing. */
+module.exports.findAll = function(conditions, fields, options, callback){
+    devices.findAll(conditions,fields,options,function(err,results){
+        callback(err,results);
+    });
 };
 
 
+/* Create Device. */
+module.exports.create = function(device, callback){
+    devices.create(device,function(err,createdDevice){
+        callback(err,createdDevice);
+    });
+};
 
 
-exports.mongooseConnect = function connect(callback) {
+/* delete Devices. */
+module.exports.deleteMany = function(conditions,options,callback){
+    devices.deleteMany(conditions,options,function(err){
+        callback(err);
+    });
+};
 
-    mongoose.connect(dbUrl, {useNewUrlParser: true}, function (err, res) {
 
-        if (err) {
-            console.log('Unable to mongooseConnect to database ' + dbUrl);
-            callback(err);
-        }
-        else {
-            console.log('Connected to database ' + dbUrl);
-            callback();
-        }
+/* findOne Device. */
+module.exports.findOne = function(conditions,projection,options,callback){
+    devices.findOne(conditions,projection,options,function(err,results){
+        callback(err,results);
     });
 };
 
 
 
 
-exports.mongooseDisconnect = function disconnect(callback) {
+/* GET/SET Device ObjectId. */
+module.exports.ObjectId = function(ObjectId){
+    return(mongoose.Types.ObjectId(ObjectId));
+};
 
-    mongoose.disconnect(callback);
+
+
+/* Create Device. */
+module.exports.errorResponse = function(res,err){
+    mongooseError.handleError(res,err)
 };

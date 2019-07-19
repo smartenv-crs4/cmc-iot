@@ -20,29 +20,47 @@
  ############################################################################
  */
 
-
-exports.printErrorLog= function(message){
-    console.log("");
-    console.log("### ************************************************************************************* ###");
-    console.log("### --------------------------------- ERROR LOG ----------------------------------------- ###");
-    console.log("### ************************************************************************************* ###");
-    console.log("###                                                                                       ###");
-    var index=0;
-    var outputMessage;
-    var diff;
-    var space=" ";
-    do{
-        outputMessage=message.substr(index,74);
-        if(outputMessage.length < 74){
-            diff=74-outputMessage.length;
-            outputMessage=space.repeat(diff/2)+outputMessage+space.repeat(diff-(diff/2));
-        }
-        console.log("###       " + outputMessage + "      ###");
-        index+=75;
-    }while(index<message.length);
-    console.log("###                                                                                       ###");
-    console.log("### ************************************************************************************* ###");
-};
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
 
 
 
+require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL);
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Devices API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Devices', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

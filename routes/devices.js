@@ -25,6 +25,7 @@ var router = express.Router();
 var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
 var authorisationManager=require('./middlewares/authorisationMiddleware');
 var devicesHandler=require('./routesHandlers/deviceHandler');
+var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
 
@@ -38,13 +39,12 @@ router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validat
 
 
 /*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parsePagination);
 router.use(parseRequestMiddleware.parseFields);
 router.use(parseRequestMiddleware.parseOptions);
-
+router.use(mongosecurity.parseForOperators);
 
 /* GET devices listing. */
-router.get('/',[authorisationManager.checkToken], function(req, res, next) {
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
   devicesHandler.getDevices(req,res,next);
 });
 

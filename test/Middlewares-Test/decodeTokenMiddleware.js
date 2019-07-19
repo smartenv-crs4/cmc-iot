@@ -24,7 +24,7 @@
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/configuration" ;
-var commonFunctioTest=require("./setTestenv/testEnvironmentCreation");
+var commonFunctioTest=require("../SetTestenv/testEnvironmentCreation");
 
 
 describe('Decode Token Midleware API', function () {
@@ -127,4 +127,8 @@ describe('Decode Token Midleware API', function () {
            console.log("Catch " + err);
         }
     });
+
+
+    //TODO test access_token as body parameter and as url parameter
+
 });
