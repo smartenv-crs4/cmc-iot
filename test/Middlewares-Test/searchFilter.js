@@ -24,6 +24,7 @@ var _ = require('underscore')._;
 var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
+var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
 
 describe('Search Filter Test', function(){
 
@@ -45,24 +46,11 @@ describe('Search Filter Test', function(){
 
 
   beforeEach(function(done){
-
-    var range = _.range(100);
-    async.each(range, function(e,cb){
-
-        Device.create({
-            name:"name" + e,
-            description:"description" +e,
-            thingId:Device.ObjectId(),
-            typeId:Device.ObjectId()
-        },function(err,val){
-            if (err) throw err;
-            cb();
-        });
-
-    }, function(err){
-        done();
+      deviceDocuments.createDocuments(100,function(err,newDeviceId){
+          if (err) consoleLogError.printErrorLog("Device searchFilterTests middleware" + err);
+          done();
       });
-    });
+  });
 
 
   afterEach(function(done){

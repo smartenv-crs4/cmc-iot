@@ -60,6 +60,17 @@ module.exports.findOne = function(conditions,projection,options,callback){
 
 
 
+// /* findOne Device. */
+// module.exports.findByIdAndUpdate = function(id,fields,callback){
+//     devices.findByIdAndUpdate(conditions,projection,options,function(err,results){
+//         callback(err,results);
+//     });
+// };
+
+
+
+
+
 /* GET/SET Device ObjectId. */
 module.exports.ObjectId = function(ObjectId){
     return(mongoose.Types.ObjectId(ObjectId));

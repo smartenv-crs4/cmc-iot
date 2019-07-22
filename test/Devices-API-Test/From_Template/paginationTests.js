@@ -26,6 +26,7 @@ var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
+var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var deviceId;
@@ -55,22 +56,9 @@ describe('Devices API Test - [PAGINATION TESTS]', function () {
 
     beforeEach(function (done) {
 
-        var range = _.range(100);
-
-        async.each(range, function (e, cb) {
-
-            Devices.create({
-                name:"name" + e,
-                description:"description" +e,
-                thingId:Devices.ObjectId(),
-                typeId:Devices.ObjectId()
-            }, function (err, newDevice) {
-                if (err) consoleLogError.printErrorLog("Device paginationTests.js - beforeEach - Devices.create ---> " + err);
-                if(e===1) deviceId=newDevice._id;
-                cb();
-            });
-
-        }, function (err) {
+        deviceDocuments.createDocuments(100,function(err,newDeviceId){
+            if (err) consoleLogError.printErrorLog("Device paginationTests.js - beforeEach - Devices.create ---> " + err);
+            deviceId=newDeviceId;
             done();
         });
     });

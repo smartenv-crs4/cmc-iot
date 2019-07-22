@@ -129,6 +129,4 @@ describe('Decode Token Midleware API', function () {
     });
 
 
-    //TODO test access_token as body parameter and as url parameter
-
 });

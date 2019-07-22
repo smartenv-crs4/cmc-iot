@@ -32,7 +32,7 @@ var webUiToken;
 
 exports.accessTokenCompliant = function (APIURL,resourceName) {
 
-    describe("API Authentication" + resourceName + " [FROM TEMPLATE]", function () {
+    describe("API Authentication /" + resourceName + " [FROM TEMPLATE]", function () {
 
         before(function (done) {
             commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -61,9 +61,9 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
         });
 
 
-        describe("POST " + resourceName , function(){
+        describe("POST /" + resourceName , function(){
 
-            it('must test device creation autentication(no access Token)', function(done){
+            it("must test "+ resourceName + " compliant to (no access Token)", function(done){
                 var bodyParam=JSON.stringify({device:{}});
                 var requestParams={
                     url:APIURL,
@@ -72,7 +72,7 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
                 };
                 request.post(requestParams,function(error, response, body){
                     if(error){
-                        consoleLogError.printErrorLog("POST /device: 'must test device creation autentication(no access Token) -->" + error.message);
+                        consoleLogError.printErrorLog("POST /device: 'must test "+ resourceName + " compliant to (no access Token)' -->" + error.message);
                         error.should.be.null();
                     }
                     else{
@@ -81,7 +81,7 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.equal("Unauthorized: Access token required, you are not allowed to use the resourceName");
+                        results.message.should.be.equal("Unauthorized: Access token required, you are not allowed to use the resource");
                     }
                     done();
                 });
@@ -91,9 +91,9 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
 
 
 
-        describe("POST " + resourceName, function(){
+        describe("POST /" + resourceName, function(){
 
-            it('must test device creation autentication(Unauthorised access Token)', function(done){
+            it("must test " + resourceName + " compliant to (Unauthorised access Token)", function(done){
                 var bodyParam=JSON.stringify({device:{}});
                 var requestParams={
                     url:APIURL,
@@ -102,7 +102,7 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
                 };
                 request.post(requestParams,function(error, response, body){
                     if(error) {
-                        consoleLogError.printErrorLog("POST /device: 'must test device creation autentication(Unauthorised access Token -->" + error.message);
+                        consoleLogError.printErrorLog("POST /device: 'must test " + resourceName + " compliant to (Unauthorised access Token)' -->" + error.message);
                         error.should.be.null();
                     }
                     else{
@@ -111,7 +111,7 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.equal("Only admin token types can access this resourceName : 'POST /devices/'");
+                        results.message.should.be.equal("Only admin token types can access this resource : 'POST /" + resourceName + "/'");
                     }
                     done();
                 });
@@ -119,7 +119,35 @@ exports.accessTokenCompliant = function (APIURL,resourceName) {
             });
         });
 
-    });
+        describe("POST /" + resourceName, function(){
+
+                it("must test " +resourceName + " compliant to (Invalid access Token)", function(done){
+                    var bodyParam=JSON.stringify({device:{}});
+                    var requestParams={
+                        url:APIURL,
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.myWebUITokenToSignUP+"a"},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) {
+                            consoleLogError.printErrorLog("POST /device: 'must test " +resourceName + " compliant to (Invalid access Token)' -->" + error.message);
+                            error.should.be.null();
+                        }
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(401);
+                            results.should.have.property('statusCode');
+                            results.should.have.property('error');
+                            results.should.have.property('message');
+                            results.message.should.be.equal("The decode_token is invalid or malformed");
+                        }
+                        done();
+                    });
+
+                });
+            });
+
+        });
 };
 
 

@@ -22,6 +22,7 @@
 
 
 var deviceDriver=require('../../DBEngineHandler/drivers/deviceDriver');
+var bservationsDriver=require('../../DBEngineHandler/drivers/observationDriver');
 
 
 
@@ -39,6 +40,15 @@ module.exports.postCreateDevice = function(req, res, next) {
 
 /* GET devices listing. */
 module.exports.getDevices = function(req,res,next){
+    deviceDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
+        res.send(results || err);
+    })
+};
+
+/* Delete devices. */
+module.exports.deleteDevice = function(req,res,next){
+
+
     deviceDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
         res.send(results || err);
     })

@@ -20,35 +20,25 @@
  ############################################################################
  */
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+var mongoose = require('mongoose');
+var findAllFn = require('./metadata').findAll;
+var Schema = mongoose.Schema;
+var conf = require('propertiesmanager').conf;
+
+var observation= conf.customSchema.observationSchema || {
+    deviceId:{type:ObjectId,required:true,index:truw}
+
+};
 
 
+var observationSchema = new Schema(observation, {strict: "throw"});
 
+// Static method to retrieve resource WITH metadata
+observationSchema.statics.findAll = function (conditions, fields, options, callback) {
+    return findAllFn(this, 'observations', conditions, fields, options, callback);
+};
 
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
-});
+var Observation= mongoose.model('observation', observationSchema);
 
-
-// /* Delete devices. */
-// router.delete('/:id',[authorisationManager.checkToken]), function(req, res, next) {
-//   devicesHandler.deleteDevice(req,res,next);
-// });
-
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
-
-/* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
-});
-
-module.exports = router;
+module.exports.ObservationSchema = observationSchema;
+module.exports.Observation = Observation;

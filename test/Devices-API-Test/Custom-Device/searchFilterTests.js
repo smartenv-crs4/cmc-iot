@@ -22,8 +22,6 @@
 
 
 var should = require('should/should');
-var _ = require('underscore')._;
-var async = require('async');
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
@@ -31,6 +29,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var Device = require('../../../DBEngineHandler/models/devices').Device;
+var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var deviceId;
@@ -60,22 +59,9 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
 
     beforeEach(function (done) {
 
-        var range = _.range(100);
-
-        async.each(range, function (e, cb) {
-
-            Devices.create({
-                name:"name" + e,
-                description:"description" +e,
-                thingId:Devices.ObjectId(),
-                typeId:Devices.ObjectId()
-            }, function (err, newDevice) {
-                if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - beforreEach - Devices.create ---> " + err);
-                if(e===1) deviceId=newDevice._id;
-                cb();
-            });
-
-        }, function (err) {
+        deviceDocuments.createDocuments(100,function(err,newDeviceId){
+            if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - beforreEach - Devices.create ---> " + err);
+            deviceId=newDeviceId;
             done();
         });
     });

@@ -20,35 +20,53 @@
  ############################################################################
  */
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+
+var Observationss=require('../models/Observationss').Observations;
+var mongooseError=require('../../routes/utility/mongooseError');
+var mongoose=require('mongoose');
 
 
+/* GET Observationss listing. */
+module.exports.find = function(conditions, fields, options, callback){
+    Observationss.findAll(conditions,fields,options,function(err,results){
+        callback(err,results);
+    });
+};
 
-
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
-});
-
-
-// /* Delete devices. */
-// router.delete('/:id',[authorisationManager.checkToken]), function(req, res, next) {
-//   devicesHandler.deleteDevice(req,res,next);
-// });
-
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
-
-/* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
-});
-
-module.exports = router;
+//
+// /* Create Observations. */
+// module.exports.create = function(Observations, callback){
+//     Observationss.create(Observations,function(err,createdObservations){
+//         callback(err,createdObservations);
+//     });
+// };
+//
+//
+// /* delete Observationss. */
+// module.exports.deleteMany = function(conditions,options,callback){
+//     Observationss.deleteMany(conditions,options,function(err){
+//         callback(err);
+//     });
+// };
+//
+//
+// /* findOne Observations. */
+// module.exports.findOne = function(conditions,projection,options,callback){
+//     Observationss.findOne(conditions,projection,options,function(err,results){
+//         callback(err,results);
+//     });
+// };
+//
+//
+//
+// /* GET/SET Observations ObjectId. */
+// module.exports.ObjectId = function(ObjectId){
+//     return(mongoose.Types.ObjectId(ObjectId));
+// };
+//
+//
+//
+// /* Create Observations. */
+// module.exports.errorResponse = function(res,err){
+//     mongooseError.handleError(res,err)
+// };

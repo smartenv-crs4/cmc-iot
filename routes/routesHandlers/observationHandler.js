@@ -20,35 +20,36 @@
  ############################################################################
  */
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+
+var observationDriver=require('../../DBEngineHandler/drivers/observationDriver');
 
 
 
-
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
-});
-
-
-// /* Delete devices. */
-// router.delete('/:id',[authorisationManager.checkToken]), function(req, res, next) {
-//   devicesHandler.deleteDevice(req,res,next);
-// });
-
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
+// /* Create device. */
+// module.exports.postCreateDevice = function(req, res, next) {
+//     observationDriver.create(req.body.device,function (err, results) {
+//         if(err){
+//             return observationDriver.errorResponse(res,err);
+//         }else{
+//             res.status(201).send(results || err);
+//         }
+//
+//     });
+// };
 
 /* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
-});
+module.exports.getObservations = function(req,res,next){
+    observationDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
+        res.send(results || err);
+    })
+};
 
-module.exports = router;
+// /* Delete devices. */
+// module.exports.deleteDevice = function(req,res,next){
+//
+//
+//     observationDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
+//         res.send(results || err);
+//     })
+// };
+

@@ -24,6 +24,8 @@ var _ = require('underscore')._;
 var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
+var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
+
 
 describe('Devices Model Test', function(){
 
@@ -45,24 +47,11 @@ describe('Devices Model Test', function(){
 
 
   beforeEach(function(done){
-
-    var range = _.range(100);
-    async.each(range, function(e,cb){
-
-        Device.create({
-            name:"name" + e,
-            description:"description" +e,
-            thingId:Device.ObjectId(),
-            typeId:Device.ObjectId()
-        },function(err,val){
-            if (err) throw err;
-            cb();
-        });
-
-    }, function(err){
-        done();
-      });
-    });
+          deviceDocuments.createDocuments(100,function(err){
+              if (err) throw err;
+              else done();
+          });
+   });
 
 
   afterEach(function(done){
@@ -218,6 +207,10 @@ describe('Devices Model Test', function(){
             device.should.have.property('name');
             device.should.have.property('thingId');
             device.should.have.property('typeId');
+            device.should.have.property('dismissed');
+            device.should.have.property('disabled');
+            device.dismissed.should.be.false();
+            device.disabled.should.be.false();
           }
           done();
 

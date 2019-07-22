@@ -29,7 +29,9 @@ var device= conf.deviceSchema || {
     name:{type:String,required:true},
     description:{type:String,required:true},
     thingId:{type:mongoose.ObjectId, index: true,required:true},
-    typeId:{type:mongoose.ObjectId, index: true,required:true}
+    typeId:{type:mongoose.ObjectId, index: true,required:true},
+    dismissed:{type:Boolean,required:true, default:false},
+    disabled:{type:Boolean,required:true, default:false},
 };
 
 

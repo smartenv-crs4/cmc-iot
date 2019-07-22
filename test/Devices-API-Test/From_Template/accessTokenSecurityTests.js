@@ -25,7 +25,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices
 
 
 
-require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL,"/devices");
+require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL,"devices");
 
 /*
 
