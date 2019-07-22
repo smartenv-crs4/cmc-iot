@@ -33,7 +33,7 @@ var webUiToken;
 exports.sqlInjectionSecurity = function (APIURL,route,fields) {
 
 
-    describe('Sql Injection Test', function () {
+    describe("Sql Injection Test '/" + route + "' [FROM TEMPLATE]", function () {
 
         before(function (done) {
             commonFunctioTest.setAuthMsMicroservice(function (err) {
@@ -45,7 +45,7 @@ exports.sqlInjectionSecurity = function (APIURL,route,fields) {
 
         after(function (done) {
             commonFunctioTest.resetAuthMsStatus(function (err) {
-                if (err) console.log("######   ERRORE After 1: " + err + "  ######");
+                if (err) consoleLogError.printErrorLog("Device sqlInjectionSecurity.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });

@@ -36,7 +36,7 @@ var webUiToken;
 var deviceId;
 
 
-describe('Devices API Test', function () {
+describe('Devices API Test - [SEARCH FILTERS]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -48,9 +48,9 @@ describe('Devices API Test', function () {
 
     after(function (done) {
         Devices.deleteMany({}, function (err,elm) {
-            if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+            if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });
@@ -70,7 +70,7 @@ describe('Devices API Test', function () {
                 thingId:Devices.ObjectId(),
                 typeId:Devices.ObjectId()
             }, function (err, newDevice) {
-                if (err) console.log("######   ERRORE BEFOREEACH: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - beforreEach - Devices.create ---> " + err);
                 if(e===1) deviceId=newDevice._id;
                 cb();
             });
@@ -83,7 +83,7 @@ describe('Devices API Test', function () {
 
     afterEach(function (done) {
         Devices.deleteMany({}, function (err, elm) {
-            if (err) console.log("######   ERRORE AfterEach: " + err +"  ######");
+            if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - afterEach - deleteMany ---> " + err);
             done();
         });
     });

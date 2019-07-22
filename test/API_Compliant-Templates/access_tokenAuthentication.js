@@ -30,9 +30,9 @@ var webUiToken;
 
 
 
-exports.accessTokenCompliant = function (APIURL) {
+exports.accessTokenCompliant = function (APIURL,resourceName) {
 
-    describe('Devices API Authentication Test', function () {
+    describe("API Authentication" + resourceName + " [FROM TEMPLATE]", function () {
 
         before(function (done) {
             commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -44,7 +44,7 @@ exports.accessTokenCompliant = function (APIURL) {
 
         after(function (done) {
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("Device access_tokenAuthentication.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });
@@ -61,7 +61,7 @@ exports.accessTokenCompliant = function (APIURL) {
         });
 
 
-        describe('POST /device', function(){
+        describe("POST " + resourceName , function(){
 
             it('must test device creation autentication(no access Token)', function(done){
                 var bodyParam=JSON.stringify({device:{}});
@@ -81,7 +81,7 @@ exports.accessTokenCompliant = function (APIURL) {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.equal("Unauthorized: Access token required, you are not allowed to use the resource");
+                        results.message.should.be.equal("Unauthorized: Access token required, you are not allowed to use the resourceName");
                     }
                     done();
                 });
@@ -91,7 +91,7 @@ exports.accessTokenCompliant = function (APIURL) {
 
 
 
-        describe('POST /device', function(){
+        describe("POST " + resourceName, function(){
 
             it('must test device creation autentication(Unauthorised access Token)', function(done){
                 var bodyParam=JSON.stringify({device:{}});
@@ -111,7 +111,7 @@ exports.accessTokenCompliant = function (APIURL) {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.equal("Only admin token types can access this resource : 'POST /devices/'");
+                        results.message.should.be.equal("Only admin token types can access this resourceName : 'POST /devices/'");
                     }
                     done();
                 });

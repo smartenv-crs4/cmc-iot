@@ -33,7 +33,7 @@ var webUiToken;
 exports.requestParserValidation = function (APIURL,route) {
 
 
-    describe('Test request Parser', function () {
+    describe("Test request Parser '/" + route + "' [FROM TEMPLATE]", function () {
 
 
         before(function (done) {
@@ -47,7 +47,7 @@ exports.requestParserValidation = function (APIURL,route) {
 
         after(function (done) {
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("Device requestParserValidation.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
     });

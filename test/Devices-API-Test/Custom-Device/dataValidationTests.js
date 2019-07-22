@@ -35,7 +35,7 @@ var webUiToken;
 var deviceId;
 
 
-describe('Devices API Test', function () {
+describe('Devices API Test - [DATA VALIDATION]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -47,9 +47,9 @@ describe('Devices API Test', function () {
 
     after(function (done) {
         Devices.deleteMany({}, function (err,elm) {
-            if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) console.log("######   ERRORE After 1: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });
@@ -69,7 +69,7 @@ describe('Devices API Test', function () {
                 thingId:Devices.ObjectId(),
                 typeId:Devices.ObjectId()
             }, function (err, newDevice) {
-                if (err) console.log("######   ERRORE BEFOREEACH: " + err +"  ######");
+                if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Devices.create ---> " + err);
                 if(e===1) deviceId=newDevice._id;
                 cb();
             });
@@ -82,7 +82,7 @@ describe('Devices API Test', function () {
 
     afterEach(function (done) {
         Devices.deleteMany({}, function (err, elm) {
-            if (err) console.log("######   ERRORE AfterEach: " + err +"  ######");
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });
     });
@@ -142,7 +142,7 @@ describe('Devices API Test', function () {
 
     describe('POST /device', function(){
 
-        it('must test device creation [data validation error due to invalid field type]', function(done){
+        it('must test device creation [data validation error due to invalid field typeId]', function(done){
             var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
             var requestParams={
                 url:APIURL,
@@ -150,7 +150,7 @@ describe('Devices API Test', function () {
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to invalid field type] -->" + error.message);
+                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to invalid field typeId] -->" + error.message);
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);

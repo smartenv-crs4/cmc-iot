@@ -33,13 +33,12 @@ exports.paginationTests = function (APIURL,route,fields) {
 
 
 
-    describe('Test pagination', function () {
+    describe("Test pagination resource " + route + " [FROM TEMPLATE]"  , function () {
 
 
 
         before(function (done) {
             webUiToken=conf.testConfig.myWebUITokenToSignUP;
-            console.log("pagination --->" +  webUiToken);
             done();
         });
 
