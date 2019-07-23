@@ -24,6 +24,7 @@ var _ = require('underscore')._;
 var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
+var Observations = require('../../DBEngineHandler/drivers/observationDriver');
 var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
 
 
@@ -219,5 +220,83 @@ describe('Devices Model Test', function(){
     });
 
   });
+
+
+
+    describe('removeDevice()', function(){
+
+        it('must remove a device with no observations', function(done){
+
+            Device.findOne({}, null, function(err, device){
+
+                if(err) throw err;
+                else{
+                    device.should.have.property('description');
+                    device.should.have.property('name');
+                    device.should.have.property('thingId');
+                    device.should.have.property('typeId');
+                    device.should.have.property('dismissed');
+                    device.should.have.property('disabled');
+                    device.dismissed.should.be.false();
+                    device.disabled.should.be.false();
+
+                    Device.findByIdAndRemove(device._id,function(err,removedDevice){
+                        should(err).be.null();
+                        removedDevice._id.should.be.eql(device._id);
+                        Device.findById(device._id,function(err,notFoundDevice){
+                            should(err).be.null();
+                            should(notFoundDevice).be.null();
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+
+
+    // describe('removeDevice()', function(){
+    //
+    //     it('must remove a device with observations (set dismissed:true)', function(done){
+    //
+    //         Device.findOne({}, null, function(err, device){
+    //
+    //             if(err) throw err;
+    //             else{
+    //                 device.should.have.property('description');
+    //                 device.should.have.property('name');
+    //                 device.should.have.property('thingId');
+    //                 device.should.have.property('typeId');
+    //                 device.should.have.property('dismissed');
+    //                 device.should.have.property('disabled');
+    //                 device.dismissed.should.be.false();
+    //                 device.disabled.should.be.false();
+    //
+    //                 Observations.create({deviceId:device._id},function(err,observation){
+    //                     should(err).be.null();
+    //                     should(observation).be.not.null();
+    //                     Device.findByIdAndRemove(device._id,function(err,removedDevice){
+    //                         should(err).be.null();
+    //                         removedDevice._id.should.be.eql(device._id);
+    //                         removedDevice.dismissed.should.be.true();
+    //                         Device.findById(device._id,function(err,dismissedDevice){
+    //                             should(err).be.null();
+    //                             should(dismissedDevice).be.not.null();
+    //                             dismissedDevice.dismissed.should.be.true();
+    //                             Observations.findOneAndRemove(observation._id,null,function(err,removedObs){
+    //                                 should(err).be.null();
+    //                                 done();
+    //                             });
+    //                         });
+    //                     });
+    //                 });
+    //             }
+    //         });
+    //     });
+    // });
+
+
+
 
 });

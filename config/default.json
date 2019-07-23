@@ -20,7 +20,12 @@
       "skip":0,
       "totalCount": false
     },
-    "fastForwardPsw":"f@5tF0rwardP5w"
+    "fastForwardPsw":"f@5tF0rwardP5w",
+    "customSchema": {
+        "deviceSchema": null,
+        "vendorSchema": null,
+        "observationSchema": null
+    }
   },
   "dev":{
     "dbHost":"127.0.0.1",
@@ -43,7 +48,12 @@
       "skip":0,
       "totalCount": false
     },
-    "fastForwardPsw":"f@5tF0rwardP5w"
+    "fastForwardPsw":"f@5tF0rwardP5w",
+    "customSchema": {
+      "deviceSchema": null,
+      "vendorSchema": null,
+      "observationSchema": null
+    }
   },
   "test":{
     "dbHost":"127.0.0.1",
@@ -67,6 +77,11 @@
       "totalCount": false
     },
     "fastForwardPsw":"f@5tF0rwardP5w",
+    "customSchema": {
+      "deviceSchema": null,
+      "vendorSchema": null,
+      "observationSchema": null
+    },
     "testConfig":{
       "usertokens":["UserType1"],
       "adminTokens":["admin"],

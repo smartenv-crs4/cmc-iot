@@ -22,7 +22,8 @@
 
 
 var deviceDriver=require('../../DBEngineHandler/drivers/deviceDriver');
-var bservationsDriver=require('../../DBEngineHandler/drivers/observationDriver');
+var observations=require('../../DBEngineHandler/drivers/observationDriver');
+
 
 
 
@@ -41,16 +42,46 @@ module.exports.postCreateDevice = function(req, res, next) {
 /* GET devices listing. */
 module.exports.getDevices = function(req,res,next){
     deviceDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
-        res.send(results || err);
+        if(err){
+            return deviceDriver.errorResponse(res,err);
+        }else{
+            res.send(results || err);
+        }
+
     })
 };
 
 /* Delete devices. */
+//TODO descrivere che quando si elimina un device, se non ha misurazioni vene eliminato atrimenti rimane nel sistema ma viene messo in stato dismesso
+
 module.exports.deleteDevice = function(req,res,next){
 
 
-    deviceDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
-        res.send(results || err);
-    })
+    var id=req.params.id;
+    observations.findAll({deviceId:id},null,{totalCount:true},function(err,results){
+        if(err){
+            return deviceDriver.errorResponse(res,err);
+        } else{
+            if((results._metadata.totalCount)>0){ // there are observations then set dismissed:true
+                devices.findByIdAndUpdate(id,{dismissed:true},function(err,dismissedDevice){
+                    if(err){
+                        return deviceDriver.errorResponse(res,err);
+                    } else{
+                        res.status(200).send(dismissedDevice);
+                    }
+                });
+            }else{  // there aren't observations then delete
+                devices.findByIdAndRemove(id,function(err,deletedDevice){
+                    if(err){
+                        return deviceDriver.errorResponse(res,err);
+                    } else{
+                        res.status(200).send(deletedDevice);
+                    }
+                });
+            }
+        }
+
+    });
+
 };
 

@@ -36,10 +36,10 @@ router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validat
 });
 
 
-// /* Delete devices. */
-// router.delete('/:id',[authorisationManager.checkToken]), function(req, res, next) {
-//   devicesHandler.deleteDevice(req,res,next);
-// });
+/* Delete devices. */
+router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
+  devicesHandler.deleteDevice(req,res,next);
+});
 
 /*Moduli di parsing delle query*/
 router.use(parseRequestMiddleware.parseFields);

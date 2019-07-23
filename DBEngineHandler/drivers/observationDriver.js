@@ -21,30 +21,36 @@
  */
 
 
-var Observationss=require('../models/Observationss').Observations;
+var observations=require('../models/observations').Observation;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 
 
-/* GET Observationss listing. */
+/* GET Observations listing. */
 module.exports.find = function(conditions, fields, options, callback){
-    Observationss.findAll(conditions,fields,options,function(err,results){
+    observations.findAll(conditions,fields,options,function(err,results){
         callback(err,results);
     });
 };
 
+
+/* Create Observations. */
+module.exports.create = function(observation, callback){
+    observations.create(observation,callback);
+};
+
+
+/* findById Observations. */
+module.exports.findOneAndRemove = function(id,options,callback){
+    observations.findOneAndRemove(id,options,callback);
+};
+
+
 //
-// /* Create Observations. */
-// module.exports.create = function(Observations, callback){
-//     Observationss.create(Observations,function(err,createdObservations){
-//         callback(err,createdObservations);
-//     });
-// };
 //
-//
-// /* delete Observationss. */
+// /* delete Observations. */
 // module.exports.deleteMany = function(conditions,options,callback){
-//     Observationss.deleteMany(conditions,options,function(err){
+//     Observations.deleteMany(conditions,options,function(err){
 //         callback(err);
 //     });
 // };
@@ -52,7 +58,7 @@ module.exports.find = function(conditions, fields, options, callback){
 //
 // /* findOne Observations. */
 // module.exports.findOne = function(conditions,projection,options,callback){
-//     Observationss.findOne(conditions,projection,options,function(err,results){
+//     Observations.findOne(conditions,projection,options,function(err,results){
 //         callback(err,results);
 //     });
 // };

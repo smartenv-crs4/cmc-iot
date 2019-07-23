@@ -26,8 +26,7 @@ var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
 var observation= conf.customSchema.observationSchema || {
-    deviceId:{type:ObjectId,required:true,index:truw}
-
+    deviceId:{type:mongoose.Types.ObjectId,required:true,index:true}
 };
 
 

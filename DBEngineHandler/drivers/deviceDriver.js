@@ -22,6 +22,7 @@
 
 
 var devices=require('../models/devices').Device;
+var observations=require('../models/observations').Observation;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 
@@ -58,14 +59,25 @@ module.exports.findOne = function(conditions,projection,options,callback){
 };
 
 
+/* findOne Device. */
+module.exports.findById = function(id,projection,options,callback){
+    devices.findById(id,projection,options,callback);
+};
 
 
-// /* findOne Device. */
-// module.exports.findByIdAndUpdate = function(id,fields,callback){
-//     devices.findByIdAndUpdate(conditions,projection,options,function(err,results){
-//         callback(err,results);
-//     });
-// };
+
+
+/* findOne Device. */
+module.exports.findByIdAndUpdate = function(id,newFields,callback){
+    devices.findByIdAndUpdate(id,newFields,{new:true},callback);
+};
+
+
+
+/* findOne Device. */
+module.exports.findByIdAndRemove = function(id,callback){
+    devices.findByIdAndRemove(id,callback);
+};
 
 
 
