@@ -44,6 +44,8 @@ function customTestConfig(config){
                 {URI:"/configuration", token:testConfig.adminTokens, method:"GET"},
                 {URI:"/devices", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/devices",token:testConfig.adminTokens, method:"POST"},
+                {URI:"/vendors", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/vendors",token:testConfig.adminTokens, method:"POST"},
     ];
     testConfig.webUiID="";
 

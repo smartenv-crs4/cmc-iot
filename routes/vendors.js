@@ -20,50 +20,31 @@
  ############################################################################
  */
 
-var createError = require('http-errors');
+
 var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var boom=require('express-boom');
-var errorLog=require('./routes/utility/error');
-
-var indexRouter = require('./routes/index');
-var devicesRouter = require('./routes/devices');
-var vendorsRouter = require('./routes/vendors');
-
-var app = express();
+var router = express.Router();
+var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
+var authorisationManager=require('./middlewares/authorisationMiddleware');
+var vendorsHandler=require('./routesHandlers/vendorHandler');
+var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(boom());
-
-app.use('/', indexRouter);
-app.use('/devices', devicesRouter);
-app.use('/vendors', vendorsRouter);
-
-
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  res.boom.notFound("The resource was not found");
+/* Create Vendor */
+router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
+    vendorsHandler.postCreateVendor(req, res, next);
 });
 
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  // render the error page
-  errorLog.printErrorLog("App.js An error was occurred due to " + err.message);
-  res.boom.badImplementation(err.message);
+/* Query parsing modules */
+router.use(parseRequestMiddleware.parseFields);
+router.use(parseRequestMiddleware.parseOptions);
+router.use(mongosecurity.parseForOperators);
+
+
+/* GET vendors list */
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("vendors"), function(req, res, next) {
+    vendorsHandler.getVendors(req, res, next);
 });
 
 
-module.exports = app;
+module.exports = router;

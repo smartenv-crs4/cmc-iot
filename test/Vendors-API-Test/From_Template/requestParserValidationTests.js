@@ -20,50 +20,48 @@
  ############################################################################
  */
 
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var boom=require('express-boom');
-var errorLog=require('./routes/utility/error');
 
-var indexRouter = require('./routes/index');
-var devicesRouter = require('./routes/devices');
-var vendorsRouter = require('./routes/vendors');
-
-var app = express();
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/vendors" ;
 
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(boom());
-
-app.use('/', indexRouter);
-app.use('/devices', devicesRouter);
-app.use('/vendors', vendorsRouter);
+require('../../API_Compliant-Templates/requestParserValidation').requestParserValidation(APIURL,"vendors");
 
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  res.boom.notFound("The resource was not found");
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Vendors API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Vendors', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
 });
-
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  // render the error page
-  errorLog.printErrorLog("App.js An error was occurred due to " + err.message);
-  res.boom.badImplementation(err.message);
-});
-
-
-module.exports = app;
+ */
