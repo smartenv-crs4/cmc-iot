@@ -63,6 +63,10 @@ exports.requestParserValidation = function (APIURL,route) {
         });
 
 
+        /******************************************************************************************************************
+         ****************************************************** POST ******************************************************
+         ***************************************************************************************************************** */
+
         describe('POST /'+route, function(){
 
             it('must test '+route+' creation [no body]', function(done){
@@ -114,6 +118,59 @@ exports.requestParserValidation = function (APIURL,route) {
         });
 
 
+        /******************************************************************************************************************
+         ****************************************************** PUT ******************************************************
+         ******************************************************************************************************************/
+
+        describe('PUT /'+route +"/:id", function(){
+
+            it('must test '+route+'/:id update [no body]', function(done){
+                var requestParams={
+                    url:APIURL+"/OBJID",
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /"+route+"/:id :'must test "+route+"/:id update [no body] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.equal("body missing");
+                    }
+                    done();
+                });
+
+            });
+        });
+
+
+
+        describe('PUT /'+route+"/:id", function(){
+
+            it('must test '+route+'/:id update [no '+route+' body field]', function(done){
+                var bodyParam=JSON.stringify({nofield:{}});
+                var requestParams={
+                    url:APIURL+"/OBJID",
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /"+route+"/:id : 'must test "+route+"/:id update [no "+route+" body field] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.equal("body fields '"+(route.slice(0,-1))+"' missing");
+                    }
+                    done();
+                });
+
+            });
+        });
 
     });
 };

@@ -21,10 +21,8 @@
  */
 
 var _ = require('underscore')._;
-var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
-var Observations = require('../../DBEngineHandler/drivers/observationDriver');
 var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
 
 
@@ -222,6 +220,45 @@ describe('Devices Model Test', function(){
   });
 
 
+    describe('findById()', function(){
+
+        it('must set findById', function(done){
+
+            Device.findOne({}, null, function(err, device){
+
+                if(err) throw err;
+                else{
+                    device.should.have.property('description');
+                    device.should.have.property('name');
+                    device.should.have.property('thingId');
+                    device.should.have.property('typeId');
+                    device.should.have.property('dismissed');
+                    device.should.have.property('disabled');
+                    device.dismissed.should.be.false();
+                    device.disabled.should.be.false();
+                    Device.findById(device._id, "description name disabled", function(err, deviceById){
+
+                        if(err) throw err;
+                        else{
+                            deviceById.should.have.property('description');
+                            deviceById.should.have.property('name');
+                            should(deviceById.thingId).be.undefined();
+                            should(deviceById.typeId).be.undefined();
+                            should(deviceById.dismissed).be.undefined();
+                            deviceById.should.have.property('disabled');
+                            deviceById.disabled.should.be.false();
+                            deviceById._id.should.be.eql(device._id);
+                        }
+                        done();
+                    });
+                }
+            });
+
+        });
+
+    });
+
+
 
     describe('removeDevice()', function(){
 
@@ -256,45 +293,58 @@ describe('Devices Model Test', function(){
 
 
 
-    // describe('removeDevice()', function(){
-    //
-    //     it('must remove a device with observations (set dismissed:true)', function(done){
-    //
-    //         Device.findOne({}, null, function(err, device){
-    //
-    //             if(err) throw err;
-    //             else{
-    //                 device.should.have.property('description');
-    //                 device.should.have.property('name');
-    //                 device.should.have.property('thingId');
-    //                 device.should.have.property('typeId');
-    //                 device.should.have.property('dismissed');
-    //                 device.should.have.property('disabled');
-    //                 device.dismissed.should.be.false();
-    //                 device.disabled.should.be.false();
-    //
-    //                 Observations.create({deviceId:device._id},function(err,observation){
-    //                     should(err).be.null();
-    //                     should(observation).be.not.null();
-    //                     Device.findByIdAndRemove(device._id,function(err,removedDevice){
-    //                         should(err).be.null();
-    //                         removedDevice._id.should.be.eql(device._id);
-    //                         removedDevice.dismissed.should.be.true();
-    //                         Device.findById(device._id,function(err,dismissedDevice){
-    //                             should(err).be.null();
-    //                             should(dismissedDevice).be.not.null();
-    //                             dismissedDevice.dismissed.should.be.true();
-    //                             Observations.findOneAndRemove(observation._id,null,function(err,removedObs){
-    //                                 should(err).be.null();
-    //                                 done();
-    //                             });
-    //                         });
-    //                     });
-    //                 });
-    //             }
-    //         });
-    //     });
-    // });
+
+    describe('updateDevice()', function(){
+
+        it('must update a device', function(done){
+
+            Device.findOne({}, null, function(err, device){
+
+                if(err) throw err;
+                else{
+                    device.should.have.property('description');
+                    device.should.have.property('name');
+                    device.should.have.property('thingId');
+                    device.should.have.property('typeId');
+                    device.should.have.property('dismissed');
+                    device.should.have.property('disabled');
+                    device.dismissed.should.be.false();
+                    device.disabled.should.be.false();
+                    var updateName="updateName";
+                    Device.findByIdAndUpdate(device._id,{name:updateName},function(err,updatedDevice){
+                        should(err).be.null();
+                        updatedDevice._id.should.be.eql(device._id);
+                        updatedDevice.name.should.be.eql(updateName);
+
+                        Device.findById(device._id,function(err,findDevice){
+                            should(err).be.null();
+                            should(findDevice).be.not.null();
+                            findDevice.name.should.be.eql(updateName);
+                            findDevice.name.should.be.not.eql(device.name);
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+
+
+    describe('updateDevice()', function(){
+
+        it('must update a device', function(done){
+
+            Device.findByIdAndUpdate(Device.ObjectId(),{name:"aa"},function(err,updatedDevice){
+                should(err).be.null();
+                should(updatedDevice).be.null();
+                done();
+            });
+        });
+    });
+
+
+
 
 
 

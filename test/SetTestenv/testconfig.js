@@ -43,6 +43,9 @@ function customTestConfig(config){
     testConfig.AuthRoles=[
                 {URI:"/configuration", token:testConfig.adminTokens, method:"GET"},
                 {URI:"/devices", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/devices/:id", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/devices/:id", token:testConfig.authApptokens, method:"DELETE"},
+                {URI:"/devices/:id", token:testConfig.authApptokens, method:"PUT"},
                 {URI:"/devices",token:testConfig.adminTokens, method:"POST"},
     ];
     testConfig.webUiID="";

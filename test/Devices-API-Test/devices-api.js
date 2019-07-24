@@ -21,7 +21,7 @@
  */
 
 
-require('./Custom-Device/generalTests');
+require('./Custom-Device/CRUD-Tests');
 require('./From_Template/accessTokenSecurityTests');
 require('./Custom-Device/dataValidationTests');
 require('./From_Template/requestParserValidationTests');

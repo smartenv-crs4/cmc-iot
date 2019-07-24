@@ -297,7 +297,7 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
 
                 if(err) throw err;
                 else{
-                    var name=results.devices[0].name + "," + results.devices[1].name;;
+                    var name=results.devices[0].name + "," + results.devices[1].name;
 
 
                     request.get({
@@ -445,7 +445,7 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /devices', function () {
 
-        it('must test API compliant to field selection  ---> fields="field1, field"', function (done) {
+        it('must test API compliant to field selection & projection  ---> fields="field1, field"', function (done) {
 
 
             Device.findAll({}, null, null, function(err, results){
@@ -474,8 +474,6 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
                             devices.indexOf(results.devices[1]._id).should.be.greaterThanOrEqual(0);
                             results.devices[0].should.have.properties(["name","thingId"]);
                             results.devices[0].should.not.have.properties(["description","typeId"]);
-
-
                         }
                         done();
                     });

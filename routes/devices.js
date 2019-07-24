@@ -35,11 +35,23 @@ router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validat
   devicesHandler.postCreateDevice(req,res,next);
 });
 
+/* Read devices. */
+router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
+  devicesHandler.getDeviceById(req,res,next);
+});
 
 /* Delete devices. */
 router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
   devicesHandler.deleteDevice(req,res,next);
 });
+
+
+/* Update devices. */
+router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
+  devicesHandler.updateDevice(req,res,next);
+});
+
+
 
 /*Moduli di parsing delle query*/
 router.use(parseRequestMiddleware.parseFields);

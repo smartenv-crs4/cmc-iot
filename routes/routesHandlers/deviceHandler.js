@@ -21,66 +21,97 @@
  */
 
 
-var deviceDriver=require('../../DBEngineHandler/drivers/deviceDriver');
-var observations=require('../../DBEngineHandler/drivers/observationDriver');
-
-
+var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
+var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
 
 
 /* Create device. */
-module.exports.postCreateDevice = function(req, res, next) {
-    deviceDriver.create(req.body.device,function (err, results) {
-        if(err){
-            return deviceDriver.errorResponse(res,err);
-        }else{
+module.exports.postCreateDevice = function (req, res, next) {
+    deviceDriver.create(req.body.device, function (err, results) {
+        if (err) {
+            return deviceDriver.errorResponse(res, err);
+        } else {
             res.status(201).send(results || err);
         }
 
     });
 };
 
+
+/* Update device. */
+module.exports.updateDevice = function (req, res, next) {
+    deviceDriver.findByIdAndUpdate(req.params.id, req.body.device, function (err, results) {
+        if (err) {
+            return deviceDriver.errorResponse(res, err);
+        } else {
+            if (results)
+                res.send(results);
+            else
+                res.status(204).send();
+        }
+    });
+};
+
+
+/* GET device By Id. */
+module.exports.getDeviceById = function (req, res, next) {
+
+    var id = req.params.id;
+
+    deviceDriver.findById(id, req.dbQueryFields, function (err, results) {
+        if (err) {
+            return deviceDriver.errorResponse(res, err);
+        } else {
+            if (results)
+                res.send(results);
+            else
+                res.status(204).send();
+        }
+    })
+};
+
+
 /* GET devices listing. */
-module.exports.getDevices = function(req,res,next){
-    deviceDriver.findAll(req.query,req.dbQueryFields,req.options,function(err,results){
-        if(err){
-            return deviceDriver.errorResponse(res,err);
-        }else{
+module.exports.getDevices = function (req, res, next) {
+    deviceDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
+        if (err) {
+            return deviceDriver.errorResponse(res, err);
+        } else {
             res.send(results || err);
         }
 
-    })
+    });
 };
 
 /* Delete devices. */
 //TODO descrivere che quando si elimina un device, se non ha misurazioni vene eliminato atrimenti rimane nel sistema ma viene messo in stato dismesso
 
-module.exports.deleteDevice = function(req,res,next){
+module.exports.deleteDevice = function (req, res, next) {
 
 
-    var id=req.params.id;
-    observations.findAll({deviceId:id},null,{totalCount:true},function(err,results){
-        if(err){
-            return deviceDriver.errorResponse(res,err);
-        } else{
-            if((results._metadata.totalCount)>0){ // there are observations then set dismissed:true
-                devices.findByIdAndUpdate(id,{dismissed:true},function(err,dismissedDevice){
-                    if(err){
-                        return deviceDriver.errorResponse(res,err);
-                    } else{
+    var id = req.params.id;
+    observationsDriver.find({deviceId: id}, null, {totalCount: true}, function (err, results) {
+        if (err) {
+            return deviceDriver.errorResponse(res, err);
+        } else {
+            if ((results._metadata.totalCount) > 0) { // there are observations then set dismissed:true
+                deviceDriver.findByIdAndUpdate(id, {dismissed: true}, function (err, dismissedDevice) {
+                    if (err) {
+                        return deviceDriver.errorResponse(res, err);
+                    } else {
                         res.status(200).send(dismissedDevice);
                     }
                 });
-            }else{  // there aren't observations then delete
-                devices.findByIdAndRemove(id,function(err,deletedDevice){
-                    if(err){
-                        return deviceDriver.errorResponse(res,err);
-                    } else{
+            } else {  // there aren't observations then delete
+                deviceDriver.findByIdAndRemove(id, function (err, deletedDevice) {
+                    if (err) {
+                        return deviceDriver.errorResponse(res, err);
+                    } else {
                         res.status(200).send(deletedDevice);
                     }
                 });
             }
         }
-
     });
 
 };

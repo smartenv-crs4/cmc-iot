@@ -69,6 +69,10 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     });
 
 
+    /******************************************************************************************************************
+     ****************************************************** POST ******************************************************
+     ***************************************************************************************************************** */
+
     describe('POST /device', function(){
 
         it('must test device creation [no valid device field - field is not in the schema]', function(done){
@@ -145,6 +149,69 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
         });
     });
+
+
+    /******************************************************************************************************************
+     ****************************************************** PUT ******************************************************
+     ***************************************************************************************************************** */
+
+    describe('PUT /device', function(){
+
+        it('must test device update [no valid device field - field is not in the schema]', function(done){
+
+            Devices.findOne({}, null, function(err, device){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({device:{noschemaField:"invalid"}});
+                var requestParams={
+                    url:APIURL+"/" + device._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [no valid device field - field is not in the schema] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.equal("Field `noschemaField` is not in schema and strict mode is set to throw.");
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+
+    describe('PUT /device', function(){
+
+        it('must test device update [data validation error due to invalid field typeId]', function(done){
+            Devices.findOne({}, null, function(err, device){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
+                var requestParams={
+                    url:APIURL+"/" + device._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to invalid field typeId] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.eql("Cast to ObjectId failed for value \"typeId\" at path \"typeId\"");
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
 
 
 });

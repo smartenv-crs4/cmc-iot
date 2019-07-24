@@ -37,9 +37,7 @@ module.exports.findAll = function(conditions, fields, options, callback){
 
 /* Create Device. */
 module.exports.create = function(device, callback){
-    devices.create(device,function(err,createdDevice){
-        callback(err,createdDevice);
-    });
+    devices.create(device,callback);
 };
 
 
