@@ -20,50 +20,51 @@
  ############################################################################
  */
 
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var boom=require('express-boom');
-var errorLog=require('./routes/utility/error');
 
-var indexRouter = require('./routes/index');
-var devicesRouter = require('./routes/devices');
-var vendorsRouter = require('./routes/vendors');
-
-var app = express();
+var vendors=require('../models/vendors').Vendor;
+var mongooseError=require('../../routes/utility/mongooseError');
+var mongoose=require('mongoose');
 
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(boom());
-
-app.use('/', indexRouter);
-app.use('/devices', devicesRouter);
-app.use('/vendors', vendorsRouter);
+/* GET vendors list */
+module.exports.findAll = function(conditions, fields, options, callback) {
+    vendors.findAll(conditions, fields, options, function(err, results) {
+        callback(err, results);
+    });
+};
 
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  res.boom.notFound("The resource was not found");
-});
+/* Create Vendor */
+module.exports.create = function(vendor, callback) {
+    vendors.create(vendor, function(err, createdVendor) {
+        callback(err, createdVendor);
+    });
+};
 
 
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  // render the error page
-  errorLog.printErrorLog("App.js An error was occurred due to " + err.message);
-  res.boom.badImplementation(err.message);
-});
+/* Delete Vendors */
+module.exports.deleteMany = function(conditions, options, callback) {
+    vendors.deleteMany(conditions,options, function(err) {
+        callback(err);
+    });
+};
 
 
-module.exports = app;
+/* findOne Vendor */
+module.exports.findOne = function(conditions, projection, options, callback) {
+    vendors.findOne(conditions, projection, options, function(err, results) {
+        callback(err, results);
+    });
+};
+
+
+/* GET/SET Vendr ObjectId */
+module.exports.ObjectId = function(ObjectId) {
+    return(mongoose.Types.ObjectId(ObjectId));
+};
+
+
+/* Error Handler */
+module.exports.errorResponse = function(res, err) {
+    mongooseError.handleError(res, err)
+};

@@ -20,50 +20,26 @@
  ############################################################################
  */
 
-var createError = require('http-errors');
-var express = require('express');
-var path = require('path');
-var cookieParser = require('cookie-parser');
-var logger = require('morgan');
-var boom=require('express-boom');
-var errorLog=require('./routes/utility/error');
 
-var indexRouter = require('./routes/index');
-var devicesRouter = require('./routes/devices');
-var vendorsRouter = require('./routes/vendors');
-
-var app = express();
+var vendorDriver=require('../../DBEngineHandler/drivers/vendorDriver');
 
 
-// view engine setup
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(logger('dev'));
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(boom());
-
-app.use('/', indexRouter);
-app.use('/devices', devicesRouter);
-app.use('/vendors', vendorsRouter);
+/* Create vendor */
+module.exports.postCreateVendor = function(req, res, next) {
+    vendorDriver.create(req.body.vendor, function (err, results) {
+        if(err) {
+            return vendorDriver.errorResponse(res, err);
+        } else {
+            res.status(201).send(results || err);
+        }
+    });
+};
 
 
-// catch 404 and forward to error handler
-app.use(function(req, res, next) {
-  res.boom.notFound("The resource was not found");
-});
+/* GET vendors list */
+module.exports.getVendors = function(req, res, next){
+    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results){
+        res.send(results || err);
+    })
+};
 
-
-// error handler
-app.use(function(err, req, res, next) {
-  // set locals, only providing error in development
-  // render the error page
-  errorLog.printErrorLog("App.js An error was occurred due to " + err.message);
-  res.boom.badImplementation(err.message);
-});
-
-
-module.exports = app;

@@ -47,6 +47,8 @@ function customTestConfig(config){
                 {URI:"/devices/:id", token:testConfig.authApptokens, method:"DELETE"},
                 {URI:"/devices/:id", token:testConfig.authApptokens, method:"PUT"},
                 {URI:"/devices",token:testConfig.adminTokens, method:"POST"},
+                {URI:"/vendors", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/vendors",token:testConfig.adminTokens, method:"POST"},
     ];
     testConfig.webUiID="";
 

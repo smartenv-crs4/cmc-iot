@@ -104,5 +104,9 @@
       "testUrl": "http://localhost",
       "testPort": 3010
     }
+  },
+  "customSchema": {
+    "deviceSchema": null,
+    "vendorSchema": null
   }
 }

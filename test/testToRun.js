@@ -23,10 +23,11 @@
 
 //API
 require('./Devices-API-Test/devices-api');
-
+require('./Vendors-API-Test/vendors-api');
 
 //Model
 require('./Models-Test/deviceModel');
+require('./Models-Test/vendorModel');
 
 //Middlewares
 require('./Middlewares-Test/decodeTokenMiddleware');
