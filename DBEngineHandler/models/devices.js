@@ -25,7 +25,7 @@ var findAllFn = require('./metadata').findAll;
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
-var device= conf.deviceSchema || {
+var device= conf.customSchema.deviceSchema || {
     name:{type:String,required:true},
     description:{type:String,required:true},
     thingId:{type:mongoose.ObjectId, index: true,required:true},
