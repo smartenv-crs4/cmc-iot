@@ -23,6 +23,7 @@
 
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
+var deviceUtility=require('./handlerUtility/deviceUtility');
 
 
 /* Create device. */
@@ -39,6 +40,8 @@ module.exports.postCreateDevice = function (req, res, next) {
 
 
 /* Update device. */
+// TODO notificare tramite redis???
+// todo la put non puo modificare il campo dismissed
 module.exports.updateDevice = function (req, res, next) {
     deviceDriver.findByIdAndUpdate(req.params.id, req.body.device, function (err, results) {
         if (err) {
@@ -88,31 +91,18 @@ module.exports.getDevices = function (req, res, next) {
 
 module.exports.deleteDevice = function (req, res, next) {
 
-
     var id = req.params.id;
-    observationsDriver.find({deviceId: id}, null, {totalCount: true}, function (err, results) {
+
+    deviceUtility.deleteDevice(id,function(err,deletedDevice){
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            if ((results._metadata.totalCount) > 0) { // there are observations then set dismissed:true
-                deviceDriver.findByIdAndUpdate(id, {dismissed: true}, function (err, dismissedDevice) {
-                    if (err) {
-                        return deviceDriver.errorResponse(res, err);
-                    } else {
-                        res.status(200).send(dismissedDevice);
-                    }
-                });
-            } else {  // there aren't observations then delete
-                deviceDriver.findByIdAndRemove(id, function (err, deletedDevice) {
-                    if (err) {
-                        return deviceDriver.errorResponse(res, err);
-                    } else {
-                        res.status(200).send(deletedDevice);
-                    }
-                });
+            if(deletedDevice){
+                res.status(200).send(deletedDevice);
+            }else{ // NO CONTENT due to no device found
+                res.status(204).send();
             }
         }
     });
-
 };
 

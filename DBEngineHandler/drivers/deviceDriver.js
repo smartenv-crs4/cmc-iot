@@ -27,6 +27,7 @@ var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 
 
+//TODO update findall to find
 /* GET devices listing. */
 module.exports.findAll = function(conditions, fields, options, callback){
     devices.findAll(conditions,fields,options,function(err,results){
