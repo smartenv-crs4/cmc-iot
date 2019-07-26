@@ -24,7 +24,8 @@
     "customSchema": {
         "deviceSchema": null,
         "vendorSchema": null,
-        "observationSchema": null
+        "observationSchema": null,
+        "thingSchema": null
     }
   },
   "dev":{
@@ -52,7 +53,8 @@
     "customSchema": {
       "deviceSchema": null,
       "vendorSchema": null,
-      "observationSchema": null
+      "observationSchema": null,
+      "thingSchema": null
     }
   },
   "test":{
@@ -80,7 +82,8 @@
     "customSchema": {
       "deviceSchema": null,
       "vendorSchema": null,
-      "observationSchema": null
+      "observationSchema": null,
+      "thingSchema": null
     },
     "testConfig":{
       "usertokens":["UserType1"],

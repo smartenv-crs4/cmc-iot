@@ -32,7 +32,8 @@ module.exports.postCreateDevice = function (req, res, next) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            res.status(201).send(results || err);
+            // res.status(201).send(results || err);
+            res.httpResponse(null,results || err);
         }
 
     });
@@ -46,10 +47,11 @@ module.exports.updateDevice = function (req, res, next) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            if (results)
-                res.send(results);
-            else
-                res.status(204).send();
+            res.httpResponse(null,results);
+            // if (results)
+            //     res.send(results);
+            // else
+            //     res.status(204).send();
         }
     });
 };
@@ -64,10 +66,12 @@ module.exports.getDeviceById = function (req, res, next) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            if (results)
-                res.send(results);
-            else
-                res.status(204).send();
+            res.httpResponse(null,results);
+
+            // if (results)
+            //     res.send(results);
+            // else
+            //     res.status(204).send();
         }
     })
 };
@@ -79,7 +83,8 @@ module.exports.getDevices = function (req, res, next) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            res.send(results || err);
+            // res.send(results || err);
+            res.httpResponse(null,results || err);
         }
 
     });
@@ -96,11 +101,12 @@ module.exports.deleteDevice = function (req, res, next) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {
-            if(deletedDevice){
-                res.status(200).send(deletedDevice);
-            }else{ // NO CONTENT due to no device found
-                res.status(204).send();
-            }
+            res.httpResponse(null,deletedDevice);
+            // if(deletedDevice){
+            //     res.status(200).send(deletedDevice);
+            // }else{ // NO CONTENT due to no device found
+            //     res.status(204).send();
+            // }
         }
     });
 };
