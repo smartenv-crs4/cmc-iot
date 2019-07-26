@@ -41,9 +41,8 @@ module.exports.postCreateDevice = function (req, res, next) {
 
 /* Update device. */
 // TODO notificare tramite redis???
-// todo la put non puo modificare il campo dismissed
 module.exports.updateDevice = function (req, res, next) {
-    deviceDriver.findByIdAndUpdate(req.params.id, req.body.device, function (err, results) {
+    deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["dismissed"] ,function (err, results) {
         if (err) {
             return deviceDriver.errorResponse(res, err);
         } else {

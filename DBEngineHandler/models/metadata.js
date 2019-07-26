@@ -93,6 +93,29 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
     });
 };
 
+
+
+exports.findByIdAndUpdateStrictMode = function findByIdAndUpdateStrictMode(model, id, newFields, unUpdatableFields, options,callback) {
+
+    try {
+        for(const field in unUpdatableFields) {
+
+            if(newFields[unUpdatableFields[field]]) {
+                var error= new Error("The field '" + unUpdatableFields[field] + "' is in Schema but cannot be changed anymore");
+                error.name="ValidatorError";
+                throw(error);
+            }
+        }
+        model.findByIdAndUpdate(id,newFields,options,callback);
+    }catch (e) {
+        callback(e);
+    }
+
+};
+
+
+
+
 //It wraps the find() + populate() method to include metadata
 
 exports.findAllPopulated = function findAllPopulated(schema, entityName, conditions, fields, options, populate, callback) {

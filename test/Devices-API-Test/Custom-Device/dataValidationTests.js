@@ -213,5 +213,35 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     });
 
 
+    describe('PUT /device', function(){
+
+        it('must test device update [data validation error due to no modificable field dismissed]', function(done){
+            Devices.findOne({}, null, function(err, device){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), dismissed:true}});
+                var requestParams={
+                    url:APIURL+"/" + device._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to no modificable field dismissed] -->" + error.message);
+                    else{
+                        console.log(body);
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore");
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+
 
 });

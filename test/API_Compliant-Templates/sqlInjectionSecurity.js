@@ -45,7 +45,7 @@ exports.sqlInjectionSecurity = function (APIURL,route,fields) {
 
         after(function (done) {
             commonFunctioTest.resetAuthMsStatus(function (err) {
-                if (err) consoleLogError.printErrorLog("Device sqlInjectionSecurity.js - after - resetAuthMsStatus ---> " + err);
+                if (err) consoleLogError.printErrorLog(route + " sqlInjectionSecurity.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });

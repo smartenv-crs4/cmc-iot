@@ -149,49 +149,6 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
     });
 
 
-
-    describe('GET /device/:id', function(){
-
-        it('must test get device by Id (no Results)', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
-            var requestParams={
-                url:APIURL,
-                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
-                body:bodyParam
-            };
-
-            // Crete Device
-            request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("GET /device/:id :must test get device by Id (no Results)-->" + error.message);
-                else{
-                    var results = JSON.parse(body);
-                    response.statusCode.should.be.equal(201);
-                    results.should.have.property('name');
-                    results.should.have.property('description');
-                    results.should.have.property('thingId');
-                    results.should.have.property('typeId');
-                }
-
-                Devices.findByIdAndRemove(results._id,function(err,deletedDevice){
-                    should(err).be.null();
-                    var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
-                    request.get(geByIdRequestUrl,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog("GET /device/:id :must test get device by Id (no Results)-->" + error.message);
-                        else{
-                            response.statusCode.should.be.equal(204);
-                        }
-                        done();
-                    });
-                });
-
-
-            });
-
-        });
-    });
-
-
-
     /******************************************************************************************************************
      ********************************************* UPDATE TESTS (PUT))**********************************************
      ***************************************************************************************************************** */
@@ -244,53 +201,6 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
 
         });
     });
-
-
-
-    describe('PUT /device/:id', function(){
-
-        it('must test update device by Id (no content)', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
-            var requestParams={
-                url:APIURL,
-                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
-                body:bodyParam
-            };
-
-            // Crete Device
-            request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("PUT /device/:id :'must test update device by Id (no content) -->" + error.message);
-                else{
-                    var results = JSON.parse(body);
-                    response.statusCode.should.be.equal(201);
-                    results.should.have.property('name');
-                    results.should.have.property('description');
-                    results.should.have.property('thingId');
-                    results.should.have.property('typeId');
-                }
-
-
-                var nameUpdated="nameUpdated";
-                bodyParam=JSON.stringify({device:{name:nameUpdated}, access_token:webUiToken});
-                requestParams={
-                    url:APIURL+"/" + results._id,
-                    headers:{'content-type': 'application/json'},
-                    body:bodyParam
-                };
-                Devices.findByIdAndRemove(results._id,function(err,deletedDevice){
-                    should(err).be.null();
-                    request.put(requestParams,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog("PUT /device/:id :'must test update device by Id (no content) -->" + error.message);
-                        else{
-                            response.statusCode.should.be.equal(204);
-                        }
-                        done();
-                    });
-                });
-            });
-        });
-    });
-
 
 
 
@@ -422,47 +332,5 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
             });
         });
     });
-
-
-    // describe('removeDevice()', function(){
-    //
-    //     it('must remove a device with observations (set dismissed:true)', function(done){
-    //
-    //         Device.findOne({}, null, function(err, device){
-    //
-    //             if(err) throw err;
-    //             else{
-    //                 device.should.have.property('description');
-    //                 device.should.have.property('name');
-    //                 device.should.have.property('thingId');
-    //                 device.should.have.property('typeId');
-    //                 device.should.have.property('dismissed');
-    //                 device.should.have.property('disabled');
-    //                 device.dismissed.should.be.false();
-    //                 device.disabled.should.be.false();
-    //
-    //                 Observations.create({deviceId:device._id},function(err,observation){
-    //                     should(err).be.null();
-    //                     should(observation).be.not.null();
-    //                     Device.findByIdAndRemove(device._id,function(err,removedDevice){
-    //                         should(err).be.null();
-    //                         removedDevice._id.should.be.eql(device._id);
-    //                         removedDevice.dismissed.should.be.true();
-    //                         Device.findById(device._id,function(err,dismissedDevice){
-    //                             should(err).be.null();
-    //                             should(dismissedDevice).be.not.null();
-    //                             dismissedDevice.dismissed.should.be.true();
-    //                             Observations.findOneAndRemove(observation._id,null,function(err,removedObs){
-    //                                 should(err).be.null();
-    //                                 done();
-    //                             });
-    //                         });
-    //                     });
-    //                 });
-    //             }
-    //         });
-    //     });
-    // });
-
 
 });

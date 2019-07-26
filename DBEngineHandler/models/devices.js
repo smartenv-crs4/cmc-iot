@@ -21,7 +21,7 @@
  */
 
 var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
+var extendedFunction = require('./metadata');
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
@@ -39,7 +39,14 @@ var deviceSchema = new Schema(device, {strict: "throw"});
 
 // Static method to retrieve resource WITH metadata
 deviceSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'devices', conditions, fields, options, callback);
+    return extendedFunction.findAll(this, 'devices', conditions, fields, options, callback);
+};
+
+
+// Static method to retrieve resource WITH metadata
+deviceSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
+    return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
+
 };
 
 var Device = mongoose.model('device', deviceSchema);

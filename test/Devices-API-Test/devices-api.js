@@ -27,4 +27,5 @@ require('./Custom-Device/dataValidationTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');
 require('./From_Template/paginationTests');
+require('./From_Template/httpStatusCodeTests');
 require('./Custom-Device/searchFilterTests');
