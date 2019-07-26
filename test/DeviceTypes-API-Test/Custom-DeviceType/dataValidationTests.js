@@ -21,23 +21,20 @@
  */
 
 
-var should = require('should/should')
-var _ = require('underscore')._
-var async = require('async')
-var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/vendors"
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/deviceTypes"
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
+var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments')
 
 var webUiToken
-var vendorId
 
-
-describe('Vendors API Test - [DATA VALIDATION]', function() {
+describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
     before(function(done) {
+        this.timeout(0)
         commonFunctioTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
@@ -45,8 +42,10 @@ describe('Vendors API Test - [DATA VALIDATION]', function() {
         })
     })
 
+
     after(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        this.timeout(0)
+        DeviceTypes.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err)
@@ -57,40 +56,31 @@ describe('Vendors API Test - [DATA VALIDATION]', function() {
 
 
     beforeEach(function(done) {
-        var range = _.range(100)
-        async.each(range, function(e, cb) {
-            Vendors.create({
-                name: "name" + e,
-                description: "description" + e
-            }, function(err, newVendor) {
-                if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Vendors.create ---> " + err)
-                if (e === 1) vendorId = newVendor._id
-                cb()
-            })
-        }, function(err) {
+        deviceTypeDocuments.createDocuments(100, function(err) {
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - DeviceTypes.create ---> " + err)
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        DeviceTypes.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err)
             done()
         })
     })
 
 
-    describe('POST /vendor', function() {
-        it('must test vendor creation [no valid vendor field - field is not in the schema]', function(done) {
-            var bodyParam = JSON.stringify({vendor: {noschemaField: "invalid"}})
+    describe('POST /deviceType', function() {
+        it('must test deviceType creation [no valid deviceType field - field is not in the schema]', function(done) {
+            var bodyParam = JSON.stringify({deviceType: {noschemaField: "invalid"}})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /vendor: 'must test vendor creation [no valid vendor field - field is not in the schema] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [no valid device field - field is not in the schema] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
@@ -105,52 +95,58 @@ describe('Vendors API Test - [DATA VALIDATION]', function() {
     })
 
 
-    describe('POST /vendor', function() {
-        it('must test vendor creation [data validation error due to required fields missing]', function(done) {
-            var bodyParam = JSON.stringify({vendor: {description: "description"}})
+    describe('POST /deviceType', function() {
+        it('must test deviceType creation [data validation error due to required fields missing]', function(done) {
+            var bodyParam = JSON.stringify({deviceType: {name: "name", description: "description"}})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /vendor: 'must test vendor creation [data validation error due to required fields missing] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [data validation error due to required fields missing] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
                     results.should.have.property('statusCode')
                     results.should.have.property('error')
                     results.should.have.property('message')
-                    results.message.should.be.equal("vendor validation failed: name: Path `name` is required.")
+                    results.message.should.be.equal("deviceType validation failed: observedPropertyId: Path `observedPropertyId` is required.")
                 }
                 done()
             })
         })
     })
 
-//Vendor has only string fields
-    // describe('POST /vendor', function() {
-    //     it('must test vendor creation [data validation error due to invalid field name]', function(done) {
-    //         var bodyParam=JSON.stringify({vendor: {name:Vendors.ObjectId(), description: "description"}});
-    //         var requestParams={
-    //             url:APIURL,
-    //             headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
-    //             body:bodyParam
-    //         }
-    //         request.post(requestParams,function(error, response, body) {
-    //             if(error) consoleLogError.printErrorLog("POST /vendor: 'must test vendor creation [data validation error due to invalid field name] -->" + error.message);
-    //             else{
-    //                 var results = JSON.parse(body);
-    //                 response.statusCode.should.be.equal(400);
-    //                 results.should.have.property('statusCode');
-    //                 results.should.have.property('error');
-    //                 results.should.have.property('message');
-    //                 results.message.should.be.equal("vendor validation failed: name: Cast to ObjectID failed for value \"name\" at path \"name\"");
-    //             }
-    //             done()
-    //         })
-    //     })
-    // })
 
+    describe('POST /deviceType', function() {
+
+        it('must test deviceType creation [data validation error due to invalid field observedPropertyId]', function(done) {
+            var bodyParam = JSON.stringify({
+                deviceType: {
+                    name: "name",
+                    description: "description",
+                    observedPropertyId: "observedPropertyId"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [data validation error due to invalid field observedPropertyId] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("deviceType validation failed: observedPropertyId: Cast to ObjectID failed for value \"observedPropertyId\" at path \"observedPropertyId\"")
+                }
+                done()
+            })
+        })
+    })
 
 })

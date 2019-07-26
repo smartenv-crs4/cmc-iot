@@ -23,6 +23,7 @@
     "fastForwardPsw":"f@5tF0rwardP5w",
     "customSchema": {
         "deviceSchema": null,
+        "deviceTypeSchema": null,
         "vendorSchema": null,
         "observationSchema": null,
         "thingSchema": null
@@ -53,6 +54,7 @@
     "customSchema": {
       "deviceSchema": null,
       "vendorSchema": null,
+      "deviceTypeSchema": null,
       "observationSchema": null,
       "thingSchema": null
     }
@@ -81,6 +83,7 @@
     "fastForwardPsw":"f@5tF0rwardP5w",
     "customSchema": {
       "deviceSchema": null,
+      "deviceTypeSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
       "thingSchema": null
@@ -106,10 +109,13 @@
       "msName":"cmc-IoT",
       "testUrl": "http://localhost",
       "testPort": 3010
+    },
+    "customSchema": {
+      "deviceSchema": null,
+      "deviceTypeSchema": null,
+      "vendorSchema": null,
+      "observationSchema": null,
+      "thingSchema": null
     }
-  },
-  "customSchema": {
-    "deviceSchema": null,
-    "vendorSchema": null
   }
 }

@@ -21,62 +21,68 @@
  */
 
 
-var vendors=require('../models/vendors').Vendor;
-var mongooseError=require('../../routes/utility/mongooseError');
-var mongoose=require('mongoose');
+var deviceTypes = require('../models/deviceTypes').DeviceType
+var mongooseError = require('../../routes/utility/mongooseError')
+var mongoose = require('mongoose')
 
 
-/* GET vendors list */
+/* GET deviceTypes listing */
 module.exports.findAll = function(conditions, fields, options, callback) {
-    vendors.findAll(conditions, fields, options, function(err, results) {
+    deviceTypes.findAll(conditions, fields, options, function(err, results) {
         callback(err, results)
     })
 }
 
 
-/* Create Vendor */
-module.exports.create = function(vendor, callback) {
-    vendors.create(vendor, function(err, createdVendor) {
-        callback(err, createdVendor)
+/* Create DeviceType */
+module.exports.create = function(deviceType, callback) {
+    deviceTypes.create(deviceType, function(err, createdDeviceType) {
+        callback(err, createdDeviceType)
     })
 }
 
 
-/* Delete Vendors */
+/* delete DeviceTypes */
 module.exports.deleteMany = function(conditions, options, callback) {
-    vendors.deleteMany(conditions,options, function(err) {
+    deviceTypes.deleteMany(conditions, options, function(err) {
         callback(err)
     })
 }
 
 
-/* findOne Vendor */
+/* findOne DeviceType */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    vendors.findOne(conditions, projection, options, function(err, results) {
+    deviceTypes.findOne(conditions, projection, options, function(err, results) {
         callback(err, results)
     })
 }
 
 
-/* findOne Vendor by ID */
-module.exports.findById = function (id, projection, options, callback) {
-    vendors.findById(id, projection, options, callback)
+/* findOne DeviceType by ID */
+module.exports.findById = function(id, projection, options, callback) {
+    deviceTypes.findById(id, projection, options, callback)
 }
 
 
-/* findOne Vendor by ID and remove it */
+/* findOne DeviceType and update it */
+module.exports.findByIdAndUpdate = function(id, newFields, callback) {
+    deviceTypes.findByIdAndUpdate(id, newFields, {new: true}, callback)
+}
+
+
+/* findOne DeviceType by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    vendors.findByIdAndRemove(id, callback)
+    deviceTypes.findByIdAndRemove(id, callback)
 }
 
 
-/* GET/SET Vendor ObjectId */
+/* GET/SET DeviceType ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return(mongoose.Types.ObjectId(ObjectId))
+    return (mongoose.Types.ObjectId(ObjectId))
 }
 
 
-/* Error Handler */
+/* Error handling */
 module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
 }

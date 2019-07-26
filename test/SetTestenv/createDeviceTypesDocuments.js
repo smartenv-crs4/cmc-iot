@@ -21,28 +21,30 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
-
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
-};
+var _ = require('underscore')._
+var async = require('async')
+var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver')
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
+module.exports.createDocuments = function(numbers, callback) {
+
+    var range = _.range(numbers)
+    var deviceTypeId
+
+    async.each(range, function(e, cb) {
+        DeviceType.create({
+            name: "name" + e,
+            description: "description" + e,
+            observedPropertyId: DeviceType.ObjectId()
+        }, function(err, newDeviceType) {
+            if (err) throw err
+            if (e === 1) deviceTypeId = newDeviceType._id
+            cb()
+        })
+    }, function(err) {
+        callback(err, deviceTypeId)
+    })
+
+}
 
 
-// Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
-};
-
-
-var Vendor = mongoose.model('vendor', vendorSchema);
-
-
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;

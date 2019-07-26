@@ -21,10 +21,11 @@
  */
 
 
-require('./Custom-Vendor/generalTests');
-require('./From_Template/accessTokenSecurityTests');
-require('./Custom-Vendor/dataValidationTests');
-require('./From_Template/requestParserValidationTests');
-require('./From_Template/sqlInjectionSecurityTests');
-require('./From_Template/paginationTests');
-require('./Custom-Vendor/searchFilterTests');
+require('./Custom-Vendor/CRUD-Tests')
+require('./From_Template/accessTokenSecurityTests')
+require('./Custom-Vendor/dataValidationTests')
+require('./From_Template/requestParserValidationTests')
+require('./From_Template/sqlInjectionSecurityTests')
+require('./From_Template/paginationTests')
+//require('./From_Template/httpStatusCodeTests')
+require('./Custom-Vendor/searchFilterTests')
