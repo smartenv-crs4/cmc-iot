@@ -35,6 +35,7 @@ var vendorsRouter = require('./routes/vendors');
 
 var app = express();
 
+// TODO add plugins mode compliabce
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));

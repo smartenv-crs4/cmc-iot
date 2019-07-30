@@ -27,7 +27,7 @@ var async = require('async');
 var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/vendors" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/vendors" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 

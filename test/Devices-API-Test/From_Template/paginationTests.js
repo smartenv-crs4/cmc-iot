@@ -24,7 +24,7 @@ var _ = require('underscore')._;
 var async = require('async');
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
 

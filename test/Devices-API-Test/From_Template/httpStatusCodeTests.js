@@ -22,7 +22,7 @@
 
 
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
 var Devices=require('../../../DBEngineHandler/drivers/deviceDriver');
 
 require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"devices",Devices.ObjectId());

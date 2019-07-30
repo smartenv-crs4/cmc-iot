@@ -27,6 +27,8 @@ var db = require("../../DBEngineHandler/models/mongooseConnection");
 var server;
 var app = require('../../app');
 var roles=require('./testconfig');
+var setupEnvironmentDefaults=require('../../bin/environmentDefaults/setupDefault');
+// var errorHandler=require('../../routes/utility/error');
 
 
 var authHost = conf.authUrl;
@@ -46,15 +48,25 @@ exports.setAuthMsMicroservice=function(doneCallback){
                 }else{
                     var env=JSON.parse(body).env;
                     if(env=="dev"){
-                        db.connect(function (err) {
-                            if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
 
-                            app.set('port', process.env.PORT || conf.testConfig.testPort);
+                        setupEnvironmentDefaults.setupDefaults(function(err,cmc_IotDismissedID) {
+                            if (!err) {
+                                console.log("cmc-IoT_ThingsOwneId " + cmc_IotDismissedID);
+                                conf.cmcIoTThingsOwner._id = cmc_IotDismissedID;
+                                db.connect(function (err) {
+                                    if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
 
-                            server = app.listen(app.get('port'), function () {
-                                console.log('TEST Express server listening on port ' + server.address().port);
-                                callback(null,"one");
-                            });
+                                    app.set('port', process.env.PORT || conf.microserviceConf.port);
+
+                                    server = app.listen(app.get('port'), function () {
+                                        console.log('TEST Express server listening on port ' + server.address().port);
+                                        callback(null,"one");
+                                    });
+                                });
+                            }else{
+                                errorHandler.printErrorLog("Test can not start due to " + err );
+                                throw (err);
+                            }
                         });
                     }else{
                         throw (new Error("authms isn't in dev mode"));
@@ -114,10 +126,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
             });
         },
         function(callback){// make external application login
-
             var appBody = JSON.stringify({app:conf.testConfig.webUiAppTest});
-
-
             request.post({
                 url: authHost + "/authapp/signup",
                 body: appBody,
@@ -138,7 +147,6 @@ exports.setAuthMsMicroservice=function(doneCallback){
 
         },
         function(callback){// make admin  login
-
             request.post({
                 url: authHost + "/authuser/signin",
                 body: JSON.stringify(conf.testConfig.adminLogin),

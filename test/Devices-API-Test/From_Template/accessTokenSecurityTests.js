@@ -21,7 +21,7 @@
  */
 
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
 
 
 

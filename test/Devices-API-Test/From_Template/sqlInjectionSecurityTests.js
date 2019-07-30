@@ -22,7 +22,7 @@
 
 
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
 
 require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"devices","name");
 

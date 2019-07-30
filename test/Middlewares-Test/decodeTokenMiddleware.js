@@ -23,7 +23,7 @@
 
 var conf = require('propertiesmanager').conf;
 var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort +"/configuration" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/configuration" ;
 var commonFunctioTest=require("../SetTestenv/testEnvironmentCreation");
 
 
