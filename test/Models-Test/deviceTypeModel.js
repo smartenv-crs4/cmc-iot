@@ -20,13 +20,14 @@
  ############################################################################
  */
 
+
 var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
-var Vendor = require('../../DBEngineHandler/drivers/vendorDriver')
-var vendorDocuments = require('../SetTestenv/createVendorsDocuments')
+var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver')
+var deviceTypeDocuments = require('../SetTestenv/createDeviceTypesDocuments')
 
 
-describe('Vendors Model Test', function() {
+describe('DeviceTypes Model Test', function() {
 
     before(function(done) {
         db.connect(function() {
@@ -41,8 +42,9 @@ describe('Vendors Model Test', function() {
         })
     })
 
+
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err) {
+        deviceTypeDocuments.createDocuments(100, function(err) {
             if (err) throw err
             else done()
         })
@@ -50,7 +52,7 @@ describe('Vendors Model Test', function() {
 
 
     afterEach(function(done) {
-        Vendor.deleteMany(function(err, p) {
+        DeviceType.deleteMany(function(err, p) {
             if (err) throw err
             done()
         })
@@ -59,11 +61,11 @@ describe('Vendors Model Test', function() {
 
     describe('findAll({skip:2, limit:30})', function() {
         it('must include _metadata with correct values', function(done) {
-            Vendor.findAll({}, null, {skip: 2, limit: 30}, function(err, results) {
+            DeviceType.findAll({}, null, {skip: 2, limit: 30}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(30)
+                    results.deviceTypes.length.should.be.equal(30)
                     results._metadata.skip.should.be.equal(2)
                     results._metadata.limit.should.be.equal(30)
                     results._metadata.should.have.property('totalCount')
@@ -74,13 +76,14 @@ describe('Vendors Model Test', function() {
         })
     })
 
+
     describe('findAll({skip:2, limit:30})', function() {
         it('must include _metadata with correct values', function(done) {
-            Vendor.findAll({}, null, {skip: 2, limit: 30, totalCount: true}, function(err, results) {
+            DeviceType.findAll({}, null, {skip: 2, limit: 30, totalCount: true}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(30)
+                    results.deviceTypes.length.should.be.equal(30)
                     results._metadata.skip.should.be.equal(2)
                     results._metadata.limit.should.be.equal(30)
                     results._metadata.should.have.property('totalCount')
@@ -94,11 +97,11 @@ describe('Vendors Model Test', function() {
 
     describe('findAll({skip:0, limit:10})', function() {
         it('must include _metadata with correct values', function(done) {
-            Vendor.findAll({}, null, {skip: 0, limit: 10}, function(err, results) {
+            DeviceType.findAll({}, null, {skip: 0, limit: 10}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(10)
+                    results.deviceTypes.length.should.be.equal(10)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(10)
                 }
@@ -107,13 +110,14 @@ describe('Vendors Model Test', function() {
         })
     })
 
+
     describe('findAll({skip:0, limit:10})', function() {
         it('must include _metadata with correct values', function(done) {
-            Vendor.findAll({}, null, {skip: 0, limit: 10, totalCount: true}, function(err, results) {
+            DeviceType.findAll({}, null, {skip: 0, limit: 10, totalCount: true}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(10)
+                    results.deviceTypes.length.should.be.equal(10)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(10)
                     results._metadata.totalCount.should.be.equal(100)
@@ -126,11 +130,11 @@ describe('Vendors Model Test', function() {
 
     describe('findAll() no pagination', function() {
         it('must include _metadata with default values', function(done) {
-            Vendor.findAll({}, null, null, function(err, results) {
+            DeviceType.findAll({}, null, null, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(100)
+                    results.deviceTypes.length.should.be.equal(100)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(-1)
                     results._metadata.should.have.property('totalCount')
@@ -141,13 +145,14 @@ describe('Vendors Model Test', function() {
         })
     })
 
+
     describe('findAll({skip:0, limit:2})', function() {
         it('must include _metadata with correct values and only 2 entries', function(done) {
-            Vendor.findAll({}, null, {skip: 0, limit: 2}, function(err, results) {
+            DeviceType.findAll({}, null, {skip: 0, limit: 2}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.vendors.length.should.be.equal(2)
+                    results.deviceTypes.length.should.be.equal(2)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(2)
                     results._metadata.should.have.property('totalCount')
@@ -158,13 +163,15 @@ describe('Vendors Model Test', function() {
         })
     })
 
+
     describe('findOne()', function() {
         it('must include all required properties', function(done) {
-            Vendor.findOne({}, null, function(err, vendor) {
+            DeviceType.findOne({}, null, function(err, deviceType) {
                 if (err) throw err
                 else {
-                    vendor.should.have.property('description')
-                    vendor.should.have.property('name')
+                    deviceType.should.have.property('description')
+                    deviceType.should.have.property('name')
+                    deviceType.should.have.property('observedPropertyId')
                 }
                 done()
             })
@@ -172,27 +179,88 @@ describe('Vendors Model Test', function() {
     })
 
 
-    // describe('removeVendor()', function() {
-    //
-    //     it('must remove a vendor with no observations', function(done) {
-    //         Vendor.findOne({}, null, function(err, vendor){
-    //             if(err) throw err;
-    //             else{
-    //                 vendor.should.have.property('description');
-    //                 vendor.should.have.property('name');
-    //                 Vendor.findByIdAndRemove(vendor._id, function(err, removedVendor) {
-    //                     should(err).be.null();
-    //                     removedVendor._id.should.be.eql(device._id);
-    //                     Vendor.findById(device._id, function(err, notFoundDevice) {
-    //                         should(err).be.null();
-    //                         should(notFoundDevice).be.null();
-    //                         done();
-    //                     })
-    //                 })
-    //             }
-    //         })
-    //     })
-    // })
+    describe('findById()', function() {
+        it('must set findById', function(done) {
+            DeviceType.findOne({}, null, function(err, deviceType) {
+                if (err) throw err
+                else {
+                    deviceType.should.have.property('description')
+                    deviceType.should.have.property('name')
+                    deviceType.should.have.property('observedPropertyId')
+                    DeviceType.findById(deviceType._id, "description name disabled", function(err, deviceTypeById) {
+                        if (err) throw err
+                        else {
+                            deviceTypeById.should.have.property('name')
+                            deviceTypeById.should.have.property('description')
+                            should(deviceTypeById.observedPropertyId).be.undefined()
+                            deviceTypeById._id.should.be.eql(deviceType._id)
+                        }
+                        done()
+                    })
+                }
+            })
+        })
+    })
 
+
+    describe('removeDeviceType()', function() {
+        it('must remove a deviceType', function(done) {
+            DeviceType.findOne({}, null, function(err, deviceType) {
+                if (err) throw err
+                else {
+                    deviceType.should.have.property('name')
+                    deviceType.should.have.property('description')
+                    deviceType.should.have.property('observedPropertyId')
+                    DeviceType.findByIdAndRemove(deviceType._id, function(err, removedDeviceType) {
+                        should(err).be.null()
+                        removedDeviceType._id.should.be.eql(deviceType._id)
+                        DeviceType.findById(deviceType._id, function(err, notFoundDeviceType) {
+                            should(err).be.null()
+                            should(notFoundDeviceType).be.null()
+                            done()
+                        })
+                    })
+                }
+            })
+        })
+    })
+
+
+    describe('updateDeviceType()', function() {
+        it('must update a deviceType', function(done) {
+            DeviceType.findOne({}, null, function(err, deviceType) {
+                if (err) throw err
+                else {
+                    deviceType.should.have.property('description')
+                    deviceType.should.have.property('name')
+                    deviceType.should.have.property('observedPropertyId')
+                    var updateName = "updateName"
+                    DeviceType.findByIdAndUpdate(deviceType._id, {name: updateName}, function(err, updatedDeviceType) {
+                        should(err).be.null()
+                        updatedDeviceType._id.should.be.eql(deviceType._id)
+                        updatedDeviceType.name.should.be.eql(updateName)
+                        DeviceType.findById(deviceType._id, function(err, findDeviceType) {
+                            should(err).be.null()
+                            should(findDeviceType).be.not.null()
+                            findDeviceType.name.should.be.eql(updateName)
+                            findDeviceType.name.should.be.not.eql(deviceType.name)
+                            done()
+                        })
+                    })
+                }
+            })
+        })
+    })
+
+
+    describe('updateDeviceType()', function() {
+        it('must update a deviceType', function(done) {
+            DeviceType.findByIdAndUpdate(DeviceType.ObjectId(), {name: "aa"}, function(err, updatedDeviceType) {
+                should(err).be.null()
+                should(updatedDeviceType).be.null()
+                done()
+            })
+        })
+    })
 
 })

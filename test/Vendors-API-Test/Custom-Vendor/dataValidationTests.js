@@ -127,7 +127,7 @@ describe('Vendors API Test - [DATA VALIDATION]', function () {
                 done()
             })
         })
-    })
+    });
 
 //Vendor has only string fields
     // describe('POST /vendor', function() {
@@ -154,4 +154,4 @@ describe('Vendors API Test - [DATA VALIDATION]', function () {
     // })
 
 
-})
+});

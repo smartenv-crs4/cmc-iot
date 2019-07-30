@@ -21,28 +21,47 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
-
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
-};
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/deviceTypes"
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
+require('../../API_Compliant-Templates/requestParserValidation').requestParserValidation(APIURL, "deviceTypes")
 
 
-// Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
-};
+/*
+
+UNCOMMENT to define other CUSTOM tests
 
 
-var Vendor = mongoose.model('vendor', vendorSchema);
+describe('Test Title eg. DeviceTypes API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
 
 
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /DeviceTypes', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

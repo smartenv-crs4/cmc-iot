@@ -21,28 +21,29 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
 
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
-};
+var deviceType = conf.customSchema.deviceTypeSchema || {
+    name: {type: String, required: true},
+    description: {type: String, required: true},
+    observedPropertyId: {type: mongoose.ObjectId, index: true, required: true}
+}
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
+var deviceTypeSchema = new Schema(deviceType, {strict: "throw"})
 
 
 // Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
-};
+deviceTypeSchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'deviceTypes', conditions, fields, options, callback)
+}
 
 
-var Vendor = mongoose.model('vendor', vendorSchema);
+var DeviceType = mongoose.model('deviceType', deviceTypeSchema)
 
 
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+module.exports.DeviceTypeSchema = deviceTypeSchema
+module.exports.DeviceType = DeviceType

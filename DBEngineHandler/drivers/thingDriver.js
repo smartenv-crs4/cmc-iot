@@ -21,28 +21,67 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
+var things=require('../models/things').Thing;
+var mongooseError=require('../../routes/utility/mongooseError');
+var mongoose=require('mongoose');
 
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
+
+/* Thing listing. */
+//TODO findall to find
+module.exports.findAll = function(conditions, fields, options, callback){
+    things.findAll(conditions,fields,options,function(err,results){
+        callback(err,results);
+    });
 };
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
-
-
-// Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
+/* Create Thing. */
+module.exports.create = function(device, callback){
+    things.create(device,callback);
 };
 
 
-var Vendor = mongoose.model('vendor', vendorSchema);
+/* delete Thing by query. */
+module.exports.deleteMany = function(conditions,options,callback){
+    things.deleteMany(conditions,options,callback);
+};
 
 
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+/* findOne One Thing. */
+module.exports.findOne = function(conditions,projection,options,callback){
+    things.findOne(conditions,projection,options,callback);
+};
+
+
+/* findOne one Thing by Id. */
+module.exports.findById = function(id,projection,options,callback){
+    things.findById(id,projection,options,callback);
+};
+
+
+
+
+/* Update Thing by Id. */
+module.exports.findByIdAndUpdate = function(id,newFields,callback){
+    things.findByIdAndUpdate(id,newFields,{new:true},callback);
+};
+
+
+
+/* Remove Thing by Id */
+module.exports.findByIdAndRemove = function(id,callback){
+    things.findByIdAndRemove(id,callback);
+};
+
+
+/* GET/SET Thing ObjectId. */
+module.exports.ObjectId = function(ObjectId){
+    return(mongoose.Types.ObjectId(ObjectId));
+};
+
+
+
+/* Thing Error Handler */
+module.exports.errorResponse = function(res,err){
+    mongooseError.handleError(res,err)
+};

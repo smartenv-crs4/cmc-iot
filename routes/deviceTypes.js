@@ -25,43 +25,43 @@ var express = require('express')
 var router = express.Router()
 var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
 var authorisationManager = require('./middlewares/authorisationMiddleware')
-var vendorsHandler = require('./routesHandlers/vendorHandler')
+var deviceTypesHandler = require('./routesHandlers/deviceTypeHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 
-/* Create vendor */
-router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
-    vendorsHandler.postCreateVendor(req, res, next)
+/* Create deviceType */
+router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType"]), function(req, res, next) {
+    deviceTypesHandler.postCreateDeviceType(req, res, next)
 })
 
 
-/* Read vendor */
+/* Read deviceType */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
-    vendorsHandler.getVendorById(req, res, next)
+    deviceTypesHandler.getDeviceTypeById(req, res, next)
 })
 
 
-/* Update vendor */
-router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
-    vendorsHandler.updateVendor(req, res, next)
+/* Update deviceType */
+router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType"]), function(req, res, next) {
+    deviceTypesHandler.updateDeviceType(req, res, next)
 })
 
 
-/* Delete vendor */
+/* Delete deviceType */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
-    vendorsHandler.deleteVendor(req, res, next)
+    deviceTypesHandler.deleteDeviceType(req, res, next)
 })
 
 
-/* Query parsing modules */
+/*Query parsing modules */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET vendors list */
-router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("vendors"), function(req, res, next) {
-    vendorsHandler.getVendors(req, res, next)
+/* GET deviceTypes list */
+router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("deviceTypes"), function(req, res, next) {
+    deviceTypesHandler.getDeviceTypes(req, res, next)
 })
 
 

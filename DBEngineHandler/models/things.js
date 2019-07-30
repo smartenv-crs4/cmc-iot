@@ -20,29 +20,41 @@
  ############################################################################
  */
 
-
 var mongoose = require('mongoose');
 var findAllFn = require('./metadata').findAll;
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
+var thing= conf.customSchema.thingSchema || {
+    name:{type:String,required:true},
+    description:{type:String,required:true},
+    dismissed:{type:Boolean,required:true, default:false},
+    disabled:{type:Boolean,required:true, default:false},
+    mobile:{type:Boolean,required:true, default:false},
+    ownerId:{type:mongoose.ObjectId, index: true,required:true},
+    api:{
+        url:String,
+        access_token:String
+    },
+    direct:{
+        url:String,
+        access_token:String,
+        username:String,
+        password:String
+    },
+    vendorId:{type:mongoose.ObjectId, required:true},
+    siteId:{type:mongoose.ObjectId, required:true}
 };
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
-
+var thingSchema = new Schema(thing, {strict: "throw"});
 
 // Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
+thingSchema.statics.findAll = function (conditions, fields, options, callback) {
+    return findAllFn(this, 'things', conditions, fields, options, callback);
 };
 
+var Thing = mongoose.model('thing', thingSchema);
 
-var Vendor = mongoose.model('vendor', vendorSchema);
-
-
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+module.exports.ThingSchema = thingSchema;
+module.exports.Thing = Thing;

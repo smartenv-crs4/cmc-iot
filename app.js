@@ -31,6 +31,7 @@ var httpResponse=require('./routes/middlewares/httpResponse').httpResponse;
 
 var indexRouter = require('./routes/index');
 var devicesRouter = require('./routes/devices');
+var deviceTypesRouter = require('./routes/deviceTypes');
 var vendorsRouter = require('./routes/vendors');
 
 var app = express();
@@ -51,6 +52,7 @@ app.use(httpResponse);
 
 app.use('/', indexRouter);
 app.use('/devices', devicesRouter);
+app.use('/deviceTypes', deviceTypesRouter);
 app.use('/vendors', vendorsRouter);
 
 

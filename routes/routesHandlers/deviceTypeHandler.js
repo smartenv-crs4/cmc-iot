@@ -21,14 +21,14 @@
  */
 
 
-var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver')
 
 
-/* Create vendor */
-module.exports.postCreateVendor = function(req, res, next) {
-    vendorDriver.create(req.body.vendor, function(err, results) {
+/* Create deviceType */
+module.exports.postCreateDeviceType = function(req, res, next) {
+    deviceTypeDriver.create(req.body.deviceType, function(err, results) {
         if (err) {
-            return vendorDriver.errorResponse(res, err)
+            return deviceTypeDriver.errorResponse(res, err)
         } else {
             res.httpResponse(null, results || err)
         }
@@ -36,47 +36,49 @@ module.exports.postCreateVendor = function(req, res, next) {
 }
 
 
-/* GET vendors list */
-module.exports.getVendors = function(req, res, next) {
-    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(null, results || err)
+/* GET deviceTypes list */
+module.exports.getDeviceTypes = function(req, res, next) {
+    deviceTypeDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
+        if (err) {
+            return deviceTypeDriver.errorResponse(res, err)
+        } else
+            res.httpResponse(null, results || err)
     })
 }
 
 
-/* GET vendor By Id */
-module.exports.getVendorById = function(req, res, next) {
+/* GET deviceType By Id */
+module.exports.getDeviceTypeById = function(req, res, next) {
     var id = req.params.id
-    vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
+    deviceTypeDriver.findById(id, req.dbQueryFields, function(err, results) {
         if (err) {
-            return vendorDriver.errorResponse(res, err)
+            return deviceTypeDriver.errorResponse(res, err)
         } else
             res.httpResponse(null, results)
     })
 }
 
 
-/* Update vendor */
-module.exports.updateVendor = function(req, res, next) {
-    vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
+/* Update deviceType */
+module.exports.updateDeviceType = function(req, res, next) {
+    deviceTypeDriver.findByIdAndUpdate(req.params.id, req.body.deviceType, function(err, results) {
         if (err) {
-            return vendorDriver.errorResponse(res, err)
+            return deviceTypeDriver.errorResponse(res, err)
         } else
             res.httpResponse(null, results)
     })
 }
 
 
-//TODO Gestire la cancellazione in presenza di Things collegati
-/* Delete vendors */
-module.exports.deleteVendor = function(req, res, next) {
+//TODO Gestire la cancellazione in presenza di Api Actions collegate
+/* Delete deviceTypes */
+module.exports.deleteDeviceType = function(req, res, next) {
     var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
+    deviceTypeDriver.findByIdAndRemove(id, function(err, deletedDeviceType) {
         if (err) {
-            return vendorDriver.errorResponse(res, err)
+            return deviceTypeDriver.errorResponse(res, err)
         } else {
-            res.httpResponse(null, deletedVendor)
+            res.httpResponse(null,deletedDeviceType)
         }
     })
 }
-

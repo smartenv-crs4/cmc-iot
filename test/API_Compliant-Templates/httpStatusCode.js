@@ -83,11 +83,17 @@ exports.httpStatusCode = function (APIURL,route,id) {
 
             it('must test API compliant to http status code 204 (No content) in update by Id ' + route, function (done) {
 
-                var bodyParam=JSON.stringify({device:{name:"name"}, access_token:webUiToken});
+                var entityName = route.slice(0,-1);
+                //cannot stringify because must resolve entityName value
+                //JSON.stringify({entityName:{name:"name"}, access_token:webUiToken});
+                var bodyParam = {};
+                bodyParam[entityName] = {name:"name"};
+                bodyParam["access_token"] = webUiToken;
+
                 requestParams={
                     url:APIURL+"/" + id,
                     headers:{'content-type': 'application/json'},
-                    body:bodyParam
+                    body:JSON.stringify(bodyParam)
                 };
 
                 request.put(requestParams, function (error, response, body) {

@@ -21,28 +21,11 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
-
-var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
-};
-
-
-var vendorSchema = new Schema(vendor, {strict: "throw"});
-
-
-// Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
-};
-
-
-var Vendor = mongoose.model('vendor', vendorSchema);
-
-
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+require('./Custom-DeviceType/CRUD-Tests')
+require('./From_Template/accessTokenSecurityTests')
+require('./Custom-DeviceType/dataValidationTests')
+require('./From_Template/requestParserValidationTests')
+require('./From_Template/sqlInjectionSecurityTests')
+require('./From_Template/paginationTests')
+require('./From_Template/httpStatusCodeTests')
+require('./Custom-DeviceType/searchFilterTests')
