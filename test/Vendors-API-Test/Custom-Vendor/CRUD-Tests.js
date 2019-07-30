@@ -73,6 +73,10 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
     })
 
 
+    /******************************************************************************************************************
+     ************************************************** CREATE TESTS **************************************************
+     ***************************************************************************************************************** */
+
     describe('POST /vendor', function() {
         it('must test vendor creation [create Vendor]', function(done) {
             var bodyParam = JSON.stringify({vendor: {name: "name", description: "description"}})
@@ -90,6 +94,151 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
                     results.should.have.property('description')
                 }
                 done()
+            })
+        })
+    })
+
+
+    /******************************************************************************************************************
+     ********************************************* READ TESTS (Get By ID)**********************************************
+     ***************************************************************************************************************** */
+
+    describe('GET /vendor/:id', function() {
+        it('must test get vendor by Id', function(done) {
+            var bodyParam = JSON.stringify({
+                vendor: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create vendor
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("GET /vendor/:id :'must test get vendor by Id -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                request.get(geByIdRequestUrl, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("GET /vendor/:id :'must test get vendor by Id -->" + error.message)
+                    else {
+                        var resultsById = JSON.parse(body)
+                        response.statusCode.should.be.equal(200)
+                        resultsById.should.have.property('name')
+                        resultsById.should.have.property('description')
+                        resultsById._id.should.be.eql(results._id)
+                    }
+                    done()
+                })
+            })
+        })
+    })
+
+
+    /******************************************************************************************************************
+     ********************************************* UPDATE TESTS (PUT))**********************************************
+     ***************************************************************************************************************** */
+
+    describe('PUT /vendor/:id', function() {
+        it('must test update vendor by Id', function(done) {
+            var bodyParam = JSON.stringify({
+                vendor: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create vendor
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("PUT /vendor/:id :'must test update vendor by Id -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                var nameUpdated = "nameUpdated"
+                bodyParam = JSON.stringify({vendor: {name: nameUpdated}, access_token: webUiToken})
+                requestParams = {
+                    url: APIURL + "/" + results._id,
+                    headers: {'content-type': 'application/json'},
+                    body: bodyParam
+                }
+                request.put(requestParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("PUT /vendor/:id :'must test update vendor by Id -->" + error.message)
+                    else {
+                        var resultsById = JSON.parse(body)
+                        response.statusCode.should.be.equal(200)
+                        resultsById.should.have.property('name')
+                        resultsById.should.have.property('description')
+                        resultsById._id.should.be.eql(results._id)
+                        resultsById.name.should.be.eql(nameUpdated)
+                    }
+                    done()
+                })
+            })
+        })
+    })
+
+
+    /******************************************************************************************************************
+     ************************************************** DELETE TESTS **************************************************
+     ***************************************************************************************************************** */
+
+    describe('DELETE /vendor', function() {
+        it('must test vendor Delete', function(done) {
+            var bodyParam = JSON.stringify({
+                vendor: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create vendor
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                // DELETE vendor
+                var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                request.del(getByIdRequestUrl, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                    else {
+                        var resultsDeleteById = JSON.parse(body)
+                        response.statusCode.should.be.equal(200)
+                        resultsDeleteById.should.have.property('name')
+                        resultsDeleteById.should.have.property('description')
+                        resultsDeleteById._id.should.be.eql(results._id)
+                    }
+                    //Search vendor to confirm delete
+                    var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                    request.get(geByIdRequestUrl, function(error, response, body) {
+                        if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor vendor -->" + error.message)
+                        else {
+                            response.statusCode.should.be.equal(204)
+                        }
+                        done()
+                    })
+                })
             })
         })
     })

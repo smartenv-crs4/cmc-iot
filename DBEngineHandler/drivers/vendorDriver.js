@@ -64,6 +64,12 @@ module.exports.findById = function (id, projection, options, callback) {
 }
 
 
+/* findOne Vendor and update it */
+module.exports.findByIdAndUpdate = function(id, newFields, callback) {
+    vendors.findByIdAndUpdate(id, newFields, {new: true}, callback)
+}
+
+
 /* findOne Vendor by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
     vendors.findByIdAndRemove(id, callback)

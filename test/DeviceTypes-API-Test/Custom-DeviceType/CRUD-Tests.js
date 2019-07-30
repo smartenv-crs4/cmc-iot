@@ -252,7 +252,7 @@ describe('DeviceTypes API Test - [GENERAL TESTS]', function() {
      ***************************************************************************************************************** */
 
     describe('DELETE /deviceType', function() {
-        it('must test device DeleteType', function(done) {
+        it('must test deviceType Delete', function(done) {
             var bodyParam = JSON.stringify({
                 deviceType: {
                     name: "name",
@@ -290,7 +290,7 @@ describe('DeviceTypes API Test - [GENERAL TESTS]', function() {
                     //Search DeviceType to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test device DeleteType -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }

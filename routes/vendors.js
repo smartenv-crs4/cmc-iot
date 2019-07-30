@@ -21,30 +21,48 @@
  */
 
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var vendorsHandler=require('./routesHandlers/vendorHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+var express = require('express')
+var router = express.Router()
+var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
+var authorisationManager = require('./middlewares/authorisationMiddleware')
+var vendorsHandler = require('./routesHandlers/vendorHandler')
+var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 
-/* Create Vendor */
+/* Create vendor */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
-    vendorsHandler.postCreateVendor(req, res, next);
-});
+    vendorsHandler.postCreateVendor(req, res, next)
+})
+
+
+/* Read vendor */
+router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    vendorsHandler.getVendorById(req, res, next)
+})
+
+
+/* Update vendor */
+router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
+    vendorsHandler.updateVendor(req, res, next)
+})
+
+
+/* Delete vendor */
+router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    vendorsHandler.deleteVendor(req, res, next)
+})
 
 
 /* Query parsing modules */
-router.use(parseRequestMiddleware.parseFields);
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
+router.use(parseRequestMiddleware.parseFields)
+router.use(parseRequestMiddleware.parseOptions)
+router.use(mongosecurity.parseForOperators)
 
 
 /* GET vendors list */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("vendors"), function(req, res, next) {
-    vendorsHandler.getVendors(req, res, next);
-});
+router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("vendors"), function(req, res, next) {
+    vendorsHandler.getVendors(req, res, next)
+})
 
 
-module.exports = router;
+module.exports = router
