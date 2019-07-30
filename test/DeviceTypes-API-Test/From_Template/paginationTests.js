@@ -23,7 +23,7 @@
 var _ = require('underscore')._
 var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
 var conf = require('propertiesmanager').conf
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/deviceTypes"
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments')
 

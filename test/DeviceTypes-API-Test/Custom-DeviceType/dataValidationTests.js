@@ -24,7 +24,7 @@
 var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/deviceTypes"
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments')
