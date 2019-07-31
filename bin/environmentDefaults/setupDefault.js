@@ -54,7 +54,7 @@ module.exports.setupDefaults = function (callbackResponse) {
 
                     if (index == responseBody._metadata.totalCount) { // if not exist create it
                         //create tokentype
-                        rqparams.body = JSON.stringify({apptype: {name: config.cmcIoTThingsOwner.tokenType, super: true}});
+                        rqparams.body = JSON.stringify({apptype: {name: config.cmcIoTThingsOwner.tokenType}});
 
                         request.post(rqparams, function (err, response, body) {
                             if (err) callback("Default cmc-IoT External APP type creation(dismissed thing App token type creation[REQ Error]) :" + err, null);
