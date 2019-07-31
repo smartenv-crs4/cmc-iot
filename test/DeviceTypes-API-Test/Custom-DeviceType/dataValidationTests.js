@@ -80,7 +80,7 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [no valid device field - field is not in the schema] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [no valid deviceType field - field is not in the schema] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
@@ -120,7 +120,6 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
 
     describe('POST /deviceType', function() {
-
         it('must test deviceType creation [data validation error due to invalid field observedPropertyId]', function(done) {
             var bodyParam = JSON.stringify({
                 deviceType: {
