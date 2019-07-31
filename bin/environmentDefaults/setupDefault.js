@@ -48,8 +48,6 @@ module.exports.setupDefaults = function (callbackResponse) {
                         for (var index = 0; index < responseBody._metadata.totalCount; ++index) {
                             if (config.cmcIoTThingsOwner.tokenType.indexOf(responseBody.userandapptypes[index].name) >= 0)
                                 index = responseBody._metadata.totalCount + 1;
-
-
                         }
 
                     if (index == responseBody._metadata.totalCount) { // if not exist create it
