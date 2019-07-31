@@ -21,11 +21,48 @@
  */
 
 
-require('./Custom-Vendor/CRUD-Tests')
-require('./From_Template/accessTokenSecurityTests')
-require('./Custom-Vendor/dataValidationTests')
-require('./From_Template/requestParserValidationTests')
-require('./From_Template/sqlInjectionSecurityTests')
-require('./From_Template/paginationTests')
-require('./From_Template/httpStatusCodeTests')
-require('./Custom-Vendor/searchFilterTests')
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/vendors"
+var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+
+require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL, "vendors", Vendors.ObjectId())
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Vendors API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Vendors', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */
+
