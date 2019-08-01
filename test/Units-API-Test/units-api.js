@@ -21,19 +21,11 @@
  */
 
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Units-API-Test/units-api');
-require('./Vendors-API-Test/vendors-api');
-
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/vendorModel');
-
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+require('./Custom-Unit/CRUD-Tests')
+require('./From_Template/accessTokenSecurityTests')
+require('./Custom-Unit/dataValidationTests')
+require('./From_Template/requestParserValidationTests')
+require('./From_Template/sqlInjectionSecurityTests')
+require('./From_Template/paginationTests')
+require('./From_Template/httpStatusCodeTests')
+require('./Custom-Unit/searchFilterTests')

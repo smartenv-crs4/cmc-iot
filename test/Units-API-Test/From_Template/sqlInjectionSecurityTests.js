@@ -21,19 +21,47 @@
  */
 
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Units-API-Test/units-api');
-require('./Vendors-API-Test/vendors-api');
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" +  conf.microserviceConf.port + "/units"
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/vendorModel');
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL, "units", "name")
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Units API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Units', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

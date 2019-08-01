@@ -21,19 +21,42 @@
  */
 
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Units-API-Test/units-api');
-require('./Vendors-API-Test/vendors-api');
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/vendorModel');
+var unit = conf.customSchema.unitSchema || {
+    name: {type: String, required: true},
+    symbol: {type: String, required: true},
+    minValue: {type: Number, index: true, required: true},
+    maxValue: {type: Number, index: true, required: true},
+    observedPropertyId: {type: mongoose.ObjectId, index: true, required: true}
+}
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+
+var unitSchema = new Schema(unit, {strict: "throw"})
+
+
+unitSchema.pre('validate', function(next) {
+
+    if (this.minValue > this.maxValue) {
+        var err = new Error('unit validation failed: range (minValue-maxValue) not allowed')
+        err.name = "ValidatorError"
+        next(err)
+    }
+    else next()
+})
+
+
+// Static method to retrieve resource WITH metadata
+unitSchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'units', conditions, fields, options, callback)
+}
+
+
+var Unit = mongoose.model('unit', unitSchema)
+
+
+module.exports.UnitSchema = unitSchema
+module.exports.Unit = Unit

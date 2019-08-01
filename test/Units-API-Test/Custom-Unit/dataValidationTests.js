@@ -21,21 +21,21 @@
  */
 
 
-var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
+var Units = require('../../../DBEngineHandler/drivers/unitDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
-var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
+var APIURL = conf.testConfig.testUrl + ":" +  conf.microserviceConf.port  + "/units"
+var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
-var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments')
+var unitDocuments = require('../../SetTestenv/createUnitsDocuments')
 
 var webUiToken
 
-describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
+describe('Units API Test - [DATA VALIDATION]', function () {
 
     before(function(done) {
-        this.timeout(5000)
-        commonFunctioTest.setAuthMsMicroservice(function(err) {
+        this.timeout(10000)
+        commonFunctionTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
             done()
@@ -44,10 +44,10 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
 
     after(function(done) {
-        this.timeout(5000)
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        this.timeout(10000)
+        Units.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err)
-            commonFunctioTest.resetAuthMsStatus(function(err) {
+            commonFunctionTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err)
                 done()
             })
@@ -56,31 +56,31 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
 
     beforeEach(function(done) {
-        deviceTypeDocuments.createDocuments(100, function(err) {
-            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - DeviceTypes.create ---> " + err)
+        unitDocuments.createDocuments(100, function(err) {
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Units.create ---> " + err)
             done()
         })
     })
 
 
     afterEach(function(done) {
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        Units.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err)
             done()
         })
     })
 
 
-    describe('POST /deviceType', function() {
-        it('must test deviceType creation [no valid deviceType field - field is not in the schema]', function(done) {
-            var bodyParam = JSON.stringify({deviceType: {noschemaField: "invalid"}})
+    describe('POST /unit', function() {
+        it('must test unit creation [no valid unit field - field is not in the schema]', function(done) {
+            var bodyParam = JSON.stringify({unit: {noschemaField: "invalid"}})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [no valid deviceType field - field is not in the schema] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /unit: 'must test unit creation [no valid unit field - field is not in the schema] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
@@ -95,23 +95,23 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
     })
 
 
-    describe('POST /deviceType', function() {
-        it('must test deviceType creation [data validation error due to required fields missing]', function(done) {
-            var bodyParam = JSON.stringify({deviceType: {name: "name", description: "description"}})
+    describe('POST /unit', function() {
+        it('must test unit creation [data validation error due to required fields missing]', function(done) {
+            var bodyParam = JSON.stringify({unit: {name: "name", symbol: "symbol", minValue: 1, maxValue: 100}})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [data validation error due to required fields missing] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /unit: 'must test unit creation [data validation error due to required fields missing] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
                     results.should.have.property('statusCode')
                     results.should.have.property('error')
                     results.should.have.property('message')
-                    results.message.should.be.equal("deviceType validation failed: observedPropertyId: Path `observedPropertyId` is required.")
+                    results.message.should.be.equal("unit validation failed: observedPropertyId: Path `observedPropertyId` is required.")
                 }
                 done()
             })
@@ -119,12 +119,14 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
     })
 
 
-    describe('POST /deviceType', function() {
-        it('must test deviceType creation [data validation error due to invalid field observedPropertyId]', function(done) {
+    describe('POST /unit', function() {
+        it('must test unit creation [data validation error due to invalid field observedPropertyId]', function(done) {
             var bodyParam = JSON.stringify({
-                deviceType: {
+                unit: {
                     name: "name",
-                    description: "description",
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
                     observedPropertyId: "observedPropertyId"
                 }
             })
@@ -134,14 +136,46 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [data validation error due to invalid field observedPropertyId] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /unit: 'must test unit creation [data validation error due to invalid field observedPropertyId] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(400)
                     results.should.have.property('statusCode')
                     results.should.have.property('error')
                     results.should.have.property('message')
-                    results.message.should.be.equal("deviceType validation failed: observedPropertyId: Cast to ObjectID failed for value \"observedPropertyId\" at path \"observedPropertyId\"")
+                    results.message.should.be.equal("unit validation failed: observedPropertyId: Cast to ObjectID failed for value \"observedPropertyId\" at path \"observedPropertyId\"")
+                }
+                done()
+            })
+        })
+    })
+
+
+    describe('POST /unit', function() {
+        it('must test unit creation [data validation error due to not allowed numeric values for range (minValue-maxValue) fields]', function(done) {
+            var bodyParam = JSON.stringify({
+                unit: {
+                    name: "name",
+                    symbol: "symbol",
+                    minValue: 100,
+                    maxValue: 0,
+                    observedPropertyId: Units.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /unit: 'must test unit creation [data validation error due to not allowed numeric values for range (minValue-maxValue) fields] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("unit validation failed: range (minValue-maxValue) not allowed")
                 }
                 done()
             })

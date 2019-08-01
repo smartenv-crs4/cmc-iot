@@ -21,35 +21,36 @@
  */
 
 
-var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+var Units = require('../../../DBEngineHandler/drivers/unitDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vendors"
-var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/units"
+var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
-var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
+var unitDocuments = require('../../SetTestenv/createUnitsDocuments')
 
 var webUiToken
-var vendorId
+var unitId
 
 
-describe('Vendors API Test - [GENERAL TESTS]', function() {
+describe('Units API Test - [GENERAL TESTS]', function() {
 
     before(function(done) {
         this.timeout(5000)
-        commonFunctioTest.setAuthMsMicroservice(function(err) {
+        commonFunctionTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
             done()
         })
     })
 
+
     after(function(done) {
         this.timeout(5000)
-        Vendors.deleteMany({}, function(err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor generalTesta.js - after - deleteMany ---> " + err)
-            commonFunctioTest.resetAuthMsStatus(function(err) {
-                if (err) consoleLogError.printErrorLog("Vendor generalTests.js - after - resetAuthMsStatus ---> " + err)
+        Units.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Unit CRUD-Tests.js - after - deleteMany ---> " + err)
+            commonFunctionTest.resetAuthMsStatus(function(err) {
+                if (err) consoleLogError.printErrorLog("Unit generalTest.js - after - resetAuthMsStatus ---> " + err)
                 done()
             })
         })
@@ -57,17 +58,17 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newVendorId) {
-            if (err) consoleLogError.printErrorLog("Vendor generalTests.js - beforeEach - Vendors.create ---> " + err)
-            vendorId = newVendorId
+        unitDocuments.createDocuments(100, function(err, newUnitId) {
+            if (err) consoleLogError.printErrorLog("Unit generalTest.js - beforeEach - Units.create ---> " + err)
+            unitId = newUnitId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor generalTests.js - afterEach - deleteMany ---> " + err)
+        Units.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Unit generalTest.js - afterEach - deleteMany ---> " + err)
             done()
         })
     })
@@ -77,21 +78,32 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
      ************************************************** CREATE TESTS **************************************************
      ***************************************************************************************************************** */
 
-    describe('POST /vendor', function() {
-        it('must test vendor creation [create Vendor]', function(done) {
-            var bodyParam = JSON.stringify({vendor: {name: "name", description: "description"}})
+    describe('POST /units', function() {
+        it('must test unit creation [create Unit]', function(done) {
+            var bodyParam = JSON.stringify({
+                unit: {
+                    name: "name",
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
+                }
+            })
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("POST /vendor: 'must test vendor creation [create Vendor] -->" + error.message)
+                if (error) consoleLogError.printErrorLog("POST /unit: 'must test unit creation [create Unit] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
                     results.should.have.property('name')
-                    results.should.have.property('description')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
                 }
                 done()
             })
@@ -103,12 +115,15 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
      ********************************************* READ TESTS (Get By ID)**********************************************
      ***************************************************************************************************************** */
 
-    describe('GET /vendor/:id', function() {
-        it('must test get vendor by Id', function(done) {
+    describe('GET /units/:id', function() {
+        it('must test get unit by Id', function(done) {
             var bodyParam = JSON.stringify({
-                vendor: {
+                unit: {
                     name: "name",
-                    description: "description"
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
                 }
             })
             var requestParams = {
@@ -116,26 +131,77 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
-            // Create vendor
+            // Create Unit
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("GET /vendor/:id :'must test get vendor by Id -->" + error.message)
+                if (error) consoleLogError.printErrorLog("GET /unit/:id :'must test get unit by Id -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
                     results.should.have.property('name')
-                    results.should.have.property('description')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
                 }
                 var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                 request.get(geByIdRequestUrl, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("GET /vendor/:id :'must test get vendor by Id -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("GET /unit/:id :'must test get unit by Id -->" + error.message)
                     else {
                         var resultsById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
                         resultsById.should.have.property('name')
-                        resultsById.should.have.property('description')
+                        resultsById.should.have.property('symbol')
+                        resultsById.should.have.property('minValue')
+                        resultsById.should.have.property('maxValue')
+                        resultsById.should.have.property('observedPropertyId')
                         resultsById._id.should.be.eql(results._id)
                     }
                     done()
+                })
+            })
+        })
+    })
+
+
+    describe('GET /units/:id', function() {
+        it('must test get unit by Id (no Results)', function(done) {
+            var bodyParam = JSON.stringify({
+                unit: {
+                    name: "name",
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create Unit
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("GET /unit/:id :must test get unit by Id (no Results)-->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
+                }
+
+                Units.findByIdAndRemove(results._id, function(err, deletedUnit) {
+                    should(err).be.null()
+                    var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                    request.get(geByIdRequestUrl, function(error, response, body) {
+                        if (error) consoleLogError.printErrorLog("GET /unit/:id :must test get unit by Id (no Results)-->" + error.message)
+                        else {
+                            response.statusCode.should.be.equal(204)
+                        }
+                        done()
+                    })
                 })
             })
         })
@@ -146,12 +212,15 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
      ********************************************* UPDATE TESTS (PUT))**********************************************
      ***************************************************************************************************************** */
 
-    describe('PUT /vendor/:id', function() {
-        it('must test update vendor by Id', function(done) {
+    describe('PUT /units/:id', function() {
+        it('must test update unit by Id', function(done) {
             var bodyParam = JSON.stringify({
-                vendor: {
+                unit: {
                     name: "name",
-                    description: "description"
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
                 }
             })
             var requestParams = {
@@ -159,29 +228,35 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
-            // Create vendor
+            // Create Unit
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("PUT /vendor/:id :'must test update vendor by Id -->" + error.message)
+                if (error) consoleLogError.printErrorLog("PUT /unit/:id :'must test update unit by Id -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
                     results.should.have.property('name')
-                    results.should.have.property('description')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
                 }
                 var nameUpdated = "nameUpdated"
-                bodyParam = JSON.stringify({vendor: {name: nameUpdated}, access_token: webUiToken})
+                bodyParam = JSON.stringify({unit: {name: nameUpdated}, access_token: webUiToken})
                 requestParams = {
                     url: APIURL + "/" + results._id,
                     headers: {'content-type': 'application/json'},
                     body: bodyParam
                 }
                 request.put(requestParams, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("PUT /vendor/:id :'must test update vendor by Id -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("PUT /unit/:id :'must test update unit by Id -->" + error.message)
                     else {
                         var resultsById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
                         resultsById.should.have.property('name')
-                        resultsById.should.have.property('description')
+                        resultsById.should.have.property('symbol')
+                        resultsById.should.have.property('minValue')
+                        resultsById.should.have.property('maxValue')
+                        resultsById.should.have.property('observedPropertyId')
                         resultsById._id.should.be.eql(results._id)
                         resultsById.name.should.be.eql(nameUpdated)
                     }
@@ -196,12 +271,15 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
      ************************************************** DELETE TESTS **************************************************
      ***************************************************************************************************************** */
 
-    describe('DELETE /vendor', function() {
-        it('must test vendor Delete', function(done) {
+    describe('DELETE /units', function() {
+        it('must test unit Delete', function(done) {
             var bodyParam = JSON.stringify({
-                vendor: {
+                unit: {
                     name: "name",
-                    description: "description"
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
                 }
             })
             var requestParams = {
@@ -209,30 +287,36 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
             }
-            // Create vendor
+            // create Unit
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
                     results.should.have.property('name')
-                    results.should.have.property('description')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
                 }
-                // DELETE vendor
+                // DELETE Unit
                 var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                 request.del(getByIdRequestUrl, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
                     else {
                         var resultsDeleteById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
                         resultsDeleteById.should.have.property('name')
-                        resultsDeleteById.should.have.property('description')
+                        resultsDeleteById.should.have.property('symbol')
+                        resultsDeleteById.should.have.property('minValue')
+                        resultsDeleteById.should.have.property('maxValue')
+                        resultsDeleteById.should.have.property('observedPropertyId')
                         resultsDeleteById._id.should.be.eql(results._id)
                     }
-                    //Search vendor to confirm delete
+                    //Search Unit to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor vendor -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }
@@ -242,6 +326,5 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
             })
         })
     })
-
 
 })

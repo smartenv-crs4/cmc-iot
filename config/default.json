@@ -25,6 +25,7 @@
     "customSchema": {
         "deviceSchema": null,
         "deviceTypeSchema": null,
+        "unitSchema": null,
         "vendorSchema": null,
         "observationSchema": null,
         "thingSchema": null
@@ -61,8 +62,9 @@
     "fastForwardPsw":"f@5tF0rwardP5w",
     "customSchema": {
       "deviceSchema": null,
-      "vendorSchema": null,
       "deviceTypeSchema": null,
+      "unitSchema": null,
+      "vendorSchema": null,
       "observationSchema": null,
       "thingSchema": null
     },
@@ -99,6 +101,7 @@
     "customSchema": {
       "deviceSchema": null,
       "deviceTypeSchema": null,
+      "unitSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
       "thingSchema": null
