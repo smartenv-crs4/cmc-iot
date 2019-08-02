@@ -34,7 +34,7 @@ var webUiToken;
 var deviceId;
 
 
-describe('Devices API Test - [GENERAL TESTS]', function () {
+describe('Devices API Test - [CRUD-TESTS]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -46,9 +46,9 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
 
     after(function (done) {
         Devices.deleteMany({}, function (err,elm) {
-            if (err) consoleLogError.printErrorLog("Device generalTesta.js - after - deleteMany ---> " + err);
+            if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) consoleLogError.printErrorLog("Device generalTesta.js - after - resetAuthMsStatus ---> " + err);
+                if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });
@@ -58,7 +58,7 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
 
     beforeEach(function (done) {
         deviceDocuments.createDocuments(100,function(err,newDeviceId){
-            if (err) consoleLogError.printErrorLog("Device generalTesta.js - beforeEach - Devices.create ---> " + err);
+            if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - beforeEach - Devices.create ---> " + err);
             deviceId=newDeviceId;
             done();
         });
@@ -67,7 +67,7 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
 
     afterEach(function (done) {
         Devices.deleteMany({}, function (err, elm) {
-            if (err) consoleLogError.printErrorLog("Device generalTesta.js - afterEach - deleteMany ---> " + err);
+            if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - afterEach - deleteMany ---> " + err);
             done();
         });
     });
@@ -245,7 +245,7 @@ describe('Devices API Test - [GENERAL TESTS]', function () {
                         resultsDeleteById.should.have.property('thingId');
                         resultsDeleteById.should.have.property('typeId');
                         resultsDeleteById._id.should.be.eql(results._id);
-                        results.dismissed.should.be.false();
+                        resultsDeleteById.dismissed.should.be.false();
                     }
 
                     //Search Device to confirm delete

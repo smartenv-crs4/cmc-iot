@@ -20,17 +20,17 @@
  ############################################################################
  */
 
-var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
+var Things = require('../../../DBEngineHandler/drivers/thingDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/things" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
-var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
+var thingDocuments=require('../../SetTestenv/createThingsDocuments');
 
 var webUiToken;
 
-describe('Devices API Test - [DATA VALIDATION]', function () {
+describe('Things API Test - [DATA VALIDATION]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -41,7 +41,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     });
 
     after(function (done) {
-        Devices.deleteMany({}, function (err,elm) {
+        Things.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -54,15 +54,15 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100,function(err){
-            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Devices.create ---> " + err);
+        thingDocuments.createDocuments(100,function(err){
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Things.create ---> " + err);
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
+        Things.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });
@@ -73,18 +73,19 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
      ****************************************************** POST ******************************************************
      ***************************************************************************************************************** */
 
-    describe('POST /device', function(){
+    describe('POST /thing', function(){
 
-        it('must test device creation [no valid device field - field is not in the schema]', function(done){
-            var bodyParam=JSON.stringify({device:{noschemaField:"invalid"}});
+        it('must test thing creation [no valid thing field - field is not in the schema]', function(done){
+            var bodyParam=JSON.stringify({thing:{noschemaField:"invalid"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [no valid device field - field is not in the schema] -->" + error.message);
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [no valid thing field - field is not in the schema] -->" + error.message);
                 else{
+                    console.log(body);
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
                     results.should.have.property('statusCode');
@@ -100,24 +101,48 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
 
 
-    describe('POST /device', function(){
-
-        it('must test device creation [data validation error due to required fields missing]', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description"}});
+    describe('POST /thing', function(){
+        it('must test thing creation [data validation error due to required fields missing]', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to required fields missing] -->" + error.message);
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [data validation error due to required fields missing] -->" + error.message);
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("device validation failed: typeId: Path `typeId` is required., thingId: Path `thingId` is required.");
+                    results.message.should.be.equal("thing validation failed: siteId: Path `siteId` is required., vendorId: Path `vendorId` is required., ownerId: Path `ownerId` is required.");
+                }
+               done();
+            });
+
+        });
+    });
+
+    describe('POST /thing', function(){
+
+        it('must test thing creation [data validation error due to invalid field siteId]', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description", ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:"siteId"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [data validation error due to invalid field siteId] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("thing validation failed: siteId: Cast to ObjectID failed for value \"siteId\" at path \"siteId\"");
                 }
                 done();
             });
@@ -125,24 +150,26 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
         });
     });
 
-    describe('POST /device', function(){
 
-        it('must test device creation [data validation error due to invalid field typeId]', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
+
+    describe('POST /thing', function(){
+
+        it('must test thing creation [data validation error due to invalid url in field api.url]', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [data validation error due to invalid field typeId] -->" + error.message);
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [data validation error due to invalid url in field api.url] -->" + error.message);
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("device validation failed: typeId: Cast to ObjectID failed for value \"typeId\" at path \"typeId\"");
+                    results.message.should.be.equal("thing validation failed 'api.url'. 127.0.0.1 is not a valid url (eg: http://......)");
                 }
                 done();
             });
@@ -155,20 +182,20 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
      ****************************************************** PUT ******************************************************
      ***************************************************************************************************************** */
 
-    describe('PUT /device', function(){
+    describe('PUT /thing', function(){
 
-        it('must test device update [no valid device field - field is not in the schema]', function(done){
+        it('must test thing update [no valid thing field - field is not in the schema]', function(done){
 
-            Devices.findOne({}, null, function(err, device){
+            Things.findOne({}, null, function(err, thing){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({device:{noschemaField:"invalid"}});
+                var bodyParam=JSON.stringify({thing:{noschemaField:"invalid"}});
                 var requestParams={
-                    url:APIURL+"/" + device._id,
+                    url:APIURL+"/" + thing._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
                     body:bodyParam
                 };
                 request.put(requestParams,function(error, response, body){
-                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [no valid device field - field is not in the schema] -->" + error.message);
+                    if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [no valid thing field - field is not in the schema] -->" + error.message);
                     else{
                         var results = JSON.parse(body);
                         response.statusCode.should.be.equal(400);
@@ -185,26 +212,26 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
 
 
-    describe('PUT /device', function(){
+    describe('PUT /thing', function(){
 
-        it('must test device update [data validation error due to invalid field typeId]', function(done){
-            Devices.findOne({}, null, function(err, device){
+        it('must test thing update [data validation error due to invalid field siteId]', function(done){
+            Things.findOne({}, null, function(err, thing){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
+                var bodyParam=JSON.stringify({thing:{name:"name", description: "description",ownerId:Things.ObjectId(), siteId:"siteId"}});
                 var requestParams={
-                    url:APIURL+"/" + device._id,
+                    url:APIURL+"/" + thing._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
                     body:bodyParam
                 };
                 request.put(requestParams,function(error, response, body){
-                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to invalid field typeId] -->" + error.message);
+                    if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [data validation error due to invalid field siteId] -->" + error.message);
                     else{
                         var results = JSON.parse(body);
                         response.statusCode.should.be.equal(400);
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"typeId\" at path \"typeId\"");
+                        results.message.should.be.eql("Cast to ObjectId failed for value \"siteId\" at path \"siteId\"");
                     }
                     done();
                 });
@@ -213,19 +240,19 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     });
 
 
-    describe('PUT /device', function(){
+    describe('PUT /thing', function(){
 
-        it('must test device update [data validation error due to no Thingmodifiable field dismissed]', function(done){
-            Devices.findOne({}, null, function(err, device){
+        it('must test thing update [data validation error due to no Thingmodifiable field dismissed]', function(done){
+            Things.findOne({}, null, function(err, thing){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), dismissed:true}});
+                var bodyParam=JSON.stringify({thing:{name:"name", description: "description",ownerId:Things.ObjectId(), dismissed:true}});
                 var requestParams={
-                    url:APIURL+"/" + device._id,
+                    url:APIURL+"/" + thing._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
                     body:bodyParam
                 };
                 request.put(requestParams,function(error, response, body){
-                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to no Thingmodifiable field dismissed] -->" + error.message);
+                    if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [data validation error due to no modifiable field dismissed] -->" + error.message);
                     else{
                         console.log(body);
                         var results = JSON.parse(body);
@@ -240,8 +267,6 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
             });
         });
     });
-
-
 
 
 });

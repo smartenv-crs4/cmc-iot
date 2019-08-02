@@ -28,7 +28,7 @@ var server;
 var app = require('../../app');
 var roles=require('./testconfig');
 var setupEnvironmentDefaults=require('../../bin/environmentDefaults/setupDefault');
-// var errorHandler=require('../../routes/utility/error');
+var errorHandler=require('../Utility/errorLogs');
 
 
 var authHost = conf.authUrl;

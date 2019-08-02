@@ -33,7 +33,7 @@ var webUiToken
 var deviceTypeId
 
 
-describe('DeviceTypes API Test - [GENERAL TESTS]', function() {
+describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
 
     before(function(done) {
         this.timeout(0)

@@ -21,13 +21,10 @@
  */
 
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
 
 //Model
 require('./Models-Test/deviceModel');
+require('./Models-Test/thingModel');
 require('./Models-Test/deviceTypeModel');
 require('./Models-Test/vendorModel');
 
@@ -35,3 +32,10 @@ require('./Models-Test/vendorModel');
 require('./Middlewares-Test/decodeTokenMiddleware');
 require('./Middlewares-Test/paginationFilter');
 require('./Middlewares-Test/searchFilter');
+
+//API
+require('./Devices-API-Test/devices-api');
+require('./API-Test-Things/things-api');
+require('./DeviceTypes-API-Test/deviceTypes-api');
+require('./Vendors-API-Test/vendors-api');
+

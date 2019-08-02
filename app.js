@@ -31,12 +31,15 @@ var httpResponse=require('./routes/middlewares/httpResponse').httpResponse;
 
 var indexRouter = require('./routes/index');
 var devicesRouter = require('./routes/devices');
+var thingsRouter = require('./routes/things');
 var deviceTypesRouter = require('./routes/deviceTypes');
 var vendorsRouter = require('./routes/vendors');
 
 var app = express();
 
 // TODO add plugins mode compliabce
+
+// Todo Remove all console.log
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -52,6 +55,7 @@ app.use(httpResponse);
 
 app.use('/', indexRouter);
 app.use('/devices', devicesRouter);
+app.use('/things', thingsRouter);
 app.use('/deviceTypes', deviceTypesRouter);
 app.use('/vendors', vendorsRouter);
 

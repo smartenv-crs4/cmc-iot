@@ -20,49 +20,48 @@
  ############################################################################
  */
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/things" ;
+
+require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"things","name");
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Things API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
 
 
 
+    beforeEach(function (done) {
+      done();
+    });
 
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Things', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
 });
+ */
 
-
-/* Delete devices. */
-router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.deleteDevice(req,res,next);
-});
-
-
-/* Update devices. */
-router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.updateDevice(req,res,next);
-});
-
-
-
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-
-/* Read devices. */
-router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.getDeviceById(req,res,next);
-});
-
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
-
-/* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
-});
-
-module.exports = router;

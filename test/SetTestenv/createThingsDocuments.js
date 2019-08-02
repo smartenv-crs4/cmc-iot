@@ -20,49 +20,40 @@
  ############################################################################
  */
 
-var express = require('express');
-var router = express.Router();
-var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
-var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
-var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+var _ = require('underscore')._;
+var async = require('async');
+var Thing = require('../../DBEngineHandler/drivers/thingDriver');
 
 
 
+module.exports.createDocuments=function(numbers,callback){
 
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
-});
+    var range = _.range(numbers);
+    var thingId;
+    try {
+        async.each(range, function (e, cb) {
+
+            Thing.create({
+                name: "thingName" + e,
+                description: "thingDescription" + e,
+                ownerId: Thing.ObjectId(),
+                vendorId: Thing.ObjectId(),
+                siteId: Thing.ObjectId(),
+                api: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e},
+                direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
+            }, function (err, newThing) {
+                if (err) throw err;
+                if (e === 1) thingId = newThing._id;
+                cb();
+            });
+
+        }, function (err) {
+            callback(err, thingId);
+        });
+    }catch (e) {
+        callback(e);
+    }
+
+};
 
 
-/* Delete devices. */
-router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.deleteDevice(req,res,next);
-});
-
-
-/* Update devices. */
-router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.updateDevice(req,res,next);
-});
-
-
-
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-
-/* Read devices. */
-router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.getDeviceById(req,res,next);
-});
-
-router.use(parseRequestMiddleware.parseOptions);
-router.use(mongosecurity.parseForOperators);
-
-/* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
-});
-
-module.exports = router;

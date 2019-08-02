@@ -112,6 +112,39 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /devices', function () {
 
+        it('must test API compliant to field selection by ID: fields projection [name, description]', function (done) {
+
+
+            Devices.findAll({}, null, null, function(err, results){
+
+                if(err) throw err;
+                else{
+                    var id=results.devices[0]._id;
+                    request.get({
+                        url: APIURL + "/" + id+"?fields=name,description",
+                        headers: {'Authorization': "Bearer " + webUiToken}
+                    }, function (error, response, body) {
+
+                        if(error) consoleLogError.printErrorLog("GET /devices: 'must test API compliant to field selection by ID: fields projection [name, description]' -->" + error.message);
+                        else {
+                            var results = JSON.parse(body);
+                            results.should.have.properties("name");
+                            results.should.have.properties("description");
+                            id.should.be.eql(Devices.ObjectId(results._id));
+                            should(results.thingId).be.eql(undefined);
+                            should(results.typeId).be.eql(undefined);
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+
+    });
+
+
+    describe('GET /devices', function () {
+
         it('must test API compliant to field selection: fields projection must not include  thingId [-thingId]', function (done) {
 
             request.get({

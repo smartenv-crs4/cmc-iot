@@ -25,6 +25,8 @@ var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver.js');
 var deviceUtility = require('./handlerUtility/deviceUtility');
 var async=require('async');
+var config = require('propertiesmanager').conf;
+
 
 var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
 
@@ -44,9 +46,8 @@ module.exports.postCreateThing = function (req, res, next) {
 
 /* Update thing. */
 // TODO notificare  tramite REDIS??
-// TODO update non puo modificare dismissed
 module.exports.updateThing = function (req, res, next) {
-    thingDriver.findByIdAndUpdate(req.params.id, req.body.thing, function (err, results) {
+    thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed"], function (err, results) {
         if (err) {
             return thingDriver.errorResponse(res, err);
         } else {
@@ -60,6 +61,7 @@ module.exports.updateThing = function (req, res, next) {
 
 
 /* GET thing By Id. */
+//todo direct url visibile solamente al proprietario
 module.exports.getThingById = function (req, res, next) {
 
     var id = req.params.id;
@@ -112,7 +114,7 @@ module.exports.deleteThing = function (req, res, next) {
     var id = req.params.id;
 
 
-    deviceDriver.find({thingId: id}, null, {totalCount: true}, function (err, results) {
+    deviceDriver.findAll({thingId: id}, null, {totalCount: true}, function (err, results) {
         if (err) {
             return thingDriver.errorResponse(res, err);
         } else {
@@ -141,8 +143,8 @@ module.exports.deleteThing = function (req, res, next) {
                         }
                     });
                 }, function(err) {
-                    if(dismiss){  // there are devices(dismissed) with observation then thing must be dismissed
-                        thingDriver.findByIdAndUpdate(id, {dismissed: true}, function (err, dismissedThing) {
+                    if(dismiss){  // there are devices(dismissed) with observation then thing must be dismissed and owner change to cmc-IoT
+                        thingDriver.findByIdAndUpdate(id, {dismissed: true,ownerId:config.cmcIoTThingsOwner._id}, function (err, dismissedThing) {
                             if (err) {
                                 return thingDriver.errorResponse(res, err);
                             } else {

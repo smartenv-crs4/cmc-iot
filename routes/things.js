@@ -24,27 +24,27 @@ var express = require('express');
 var router = express.Router();
 var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
 var authorisationManager=require('./middlewares/authorisationMiddleware');
-var devicesHandler=require('./routesHandlers/deviceHandler');
+var thingsHandler=require('./routesHandlers/thingHandler');
 var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
 
 
-/* Create devices */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.postCreateDevice(req,res,next);
+/* Create things */
+router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]), function(req, res, next) {
+  thingsHandler.postCreateThing(req,res,next);
 });
 
 
-/* Delete devices. */
+/* Delete things. */
 router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.deleteDevice(req,res,next);
+  thingsHandler.deleteThing(req,res,next);
 });
 
 
-/* Update devices. */
-router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
-  devicesHandler.updateDevice(req,res,next);
+/* Update things. */
+router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]), function(req, res, next) {
+  thingsHandler.updateThing(req,res,next);
 });
 
 
@@ -52,17 +52,17 @@ router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.valid
 /*Moduli di parsing delle query*/
 router.use(parseRequestMiddleware.parseFields);
 
-/* Read devices. */
+/* Read things. */
 router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
-  devicesHandler.getDeviceById(req,res,next);
+  thingsHandler.getThingById(req,res,next);
 });
 
 router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
-/* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
-  devicesHandler.getDevices(req,res,next);
+/* GET things listing. */
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("things"), function(req, res, next) {
+  thingsHandler.getThings(req,res,next);
 });
 
 module.exports = router;

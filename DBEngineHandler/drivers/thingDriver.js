@@ -21,82 +21,70 @@
  */
 
 
-var devices=require('../models/devices').Device;
-var observations=require('../models/observations').Observation;
+var things=require('../models/things').Thing;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 
 
-/* GET devices listing. */
+/* Thing listing. */
 module.exports.findAll = function(conditions, fields, options, callback){
-    devices.findAll(conditions,fields,options,function(err,results){
+    things.findAll(conditions,fields,options,function(err,results){
         callback(err,results);
     });
 };
 
 
-/* Create Device. */
+/* Create Thing. */
 module.exports.create = function(device, callback){
-    devices.create(device,callback);
+    things.create(device,callback);
 };
 
 
-/* delete Devices. */
+/* delete Thing by query. */
 module.exports.deleteMany = function(conditions,options,callback){
-    devices.deleteMany(conditions,options,function(err){
-        callback(err);
-    });
+    things.deleteMany(conditions,options,callback);
 };
 
 
-/* findOne Device. */
+/* findOne One Thing. */
 module.exports.findOne = function(conditions,projection,options,callback){
-    devices.findOne(conditions,projection,options,function(err,results){
-        callback(err,results);
-    });
+    things.findOne(conditions,projection,options,callback);
 };
 
 
-/* findOne Device. */
+/* findOne one Thing by Id. */
 module.exports.findById = function(id,projection,options,callback){
-    devices.findById(id,projection,options,callback);
+    things.findById(id,projection,options,callback);
 };
-
-
 
 
 /* findOne Device. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    devices.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true},callback);
+    things.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true},callback);
 };
 
 
-
-/* findOne Device. */
+/* Update Thing by Id. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    devices.findByIdAndUpdate(id,newFields,{new:true},callback);
+    things.findByIdAndUpdate(id,newFields,{new:true},callback);
 };
 
 
 
-
-/* findOne Device. */
+/* Remove Thing by Id */
 module.exports.findByIdAndRemove = function(id,callback){
-    devices.findByIdAndRemove(id,callback);
+    things.findByIdAndRemove(id,callback);
 };
 
 
-
-
-
-/* GET/SET Device ObjectId. */
+/* GET/SET Thing ObjectId. */
 module.exports.ObjectId = function(ObjectId){
     return(mongoose.Types.ObjectId(ObjectId));
 };
 
 
 
-/* Create Device. */
+/* Thing Error Handler */
 module.exports.errorResponse = function(res,err){
     mongooseError.handleError(res,err)
 };

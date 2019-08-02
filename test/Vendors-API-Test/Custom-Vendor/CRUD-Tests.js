@@ -33,7 +33,7 @@ var webUiToken
 var vendorId
 
 
-describe('Vendors API Test - [GENERAL TESTS]', function() {
+describe('Vendors API Test - [CRUD-TESTS]', function() {
 
     before(function(done) {
         this.timeout(0)
@@ -47,7 +47,7 @@ describe('Vendors API Test - [GENERAL TESTS]', function() {
     after(function(done) {
         this.timeout(0)
         Vendors.deleteMany({}, function(err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor generalTesta.js - after - deleteMany ---> " + err)
+            if (err) consoleLogError.printErrorLog("Vendor CRUD-Tests.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("Vendor generalTests.js - after - resetAuthMsStatus ---> " + err)
                 done()

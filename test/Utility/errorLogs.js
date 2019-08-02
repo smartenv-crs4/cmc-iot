@@ -42,6 +42,7 @@ exports.printErrorLog= function(message){
     }while(index<message.length);
     console.log("###                                                                                       ###");
     console.log("### +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++ ###");
+    should(message).be.null();
 };
 
 
