@@ -33,6 +33,7 @@ var indexRouter = require('./routes/index');
 var devicesRouter = require('./routes/devices');
 var thingsRouter = require('./routes/things');
 var deviceTypesRouter = require('./routes/deviceTypes');
+var unitsRouter = require('./routes/units');
 var vendorsRouter = require('./routes/vendors');
 
 var app = express();
@@ -57,6 +58,7 @@ app.use('/', indexRouter);
 app.use('/devices', devicesRouter);
 app.use('/things', thingsRouter);
 app.use('/deviceTypes', deviceTypesRouter);
+app.use('/units', unitsRouter)
 app.use('/vendors', vendorsRouter);
 
 

@@ -21,22 +21,38 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
+var _ = require('underscore')._
+var async = require('async')
+var Unit = require('../../DBEngineHandler/drivers/unitDriver')
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
+module.exports.createDocuments = function(numbers, callback) {
+
+    var range = _.range(numbers)
+    var unitId
+
+    try {
+        async.each(range, function(e, cb) {
+            Unit.create({
+                name: "name" + e,
+                symbol: "symbol" + e,
+                minValue: 0 + e,
+                maxValue: 0 + e,
+                observedPropertyId: Unit.ObjectId()
+            }, function(err, newUnit) {
+                if (err) throw err
+                if (e === 1) unitId = newUnit._id
+                cb()
+            })
+        }, function(err) {
+            callback(err, unitId)
+        })
+    }
+    catch (e) {
+        callback (e)
+    }
+
+
+}
+
 

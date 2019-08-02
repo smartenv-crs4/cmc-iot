@@ -39,7 +39,7 @@ var vendorId
 describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
     before(function(done) {
-        this.timeout(0)
+        this.timeout(5000)
         commonFunctioTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
@@ -49,7 +49,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
 
     after(function(done) {
-        this.timeout(0)
+        this.timeout(5000)
         Vendors.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {

@@ -103,7 +103,7 @@ describe('Decode Token Midleware API', function () {
 
 
     describe('GET /configuration', function () {
-        this.timeout(10000);
+        this.timeout(5000);
         try {
             it('must return  error 401 for Unauthorized token', function (done) {
                 request.get({

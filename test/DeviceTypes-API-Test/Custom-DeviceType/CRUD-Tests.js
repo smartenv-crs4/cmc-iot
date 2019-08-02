@@ -36,7 +36,7 @@ var deviceTypeId
 describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
 
     before(function(done) {
-        this.timeout(0)
+        this.timeout(5000)
         commonFunctioTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
@@ -46,7 +46,7 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
 
 
     after(function(done) {
-        this.timeout(0)
+        this.timeout(5000)
         DeviceTypes.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("DeviceType generalTest.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {

@@ -21,22 +21,48 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
+var express = require('express')
+var router = express.Router()
+var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
+var authorisationManager = require('./middlewares/authorisationMiddleware')
+var unitsHandler = require('./routesHandlers/unitHandler')
+var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
+/* Create unit */
+router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["unit"]), function(req, res, next) {
+    unitsHandler.postCreateUnit(req, res, next)
+})
 
+
+/* Read unit */
+router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    unitsHandler.getUnitById(req, res, next)
+})
+
+
+/* Update unit */
+router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["unit"]), function(req, res, next) {
+    unitsHandler.updateUnit(req, res, next)
+})
+
+
+/* Delete unit */
+router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    unitsHandler.deleteUnit(req, res, next)
+})
+
+
+/*Query parsing modules */
+router.use(parseRequestMiddleware.parseFields)
+router.use(parseRequestMiddleware.parseOptions)
+router.use(mongosecurity.parseForOperators)
+
+
+/* GET units list */
+router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("units"), function(req, res, next) {
+    unitsHandler.getUnits(req, res, next)
+})
+
+
+module.exports = router

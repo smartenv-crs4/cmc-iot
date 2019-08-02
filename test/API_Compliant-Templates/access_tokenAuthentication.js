@@ -31,7 +31,7 @@ var webUiToken;
 exports.accessTokenCompliant = function (APIURL, resourceName) {
 
     describe("API Authentication /" + resourceName + " [FROM TEMPLATE]", function () {
-        this.timeout(0);
+        this.timeout(5000);
 
         before(function (done) {
             commonFunctioTest.setAuthMsMicroservice(function (err) {

@@ -21,22 +21,48 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" +  conf.microserviceConf.port + "/units"
+var Units = require('../../../DBEngineHandler/drivers/unitDriver')
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL, "units", Units.ObjectId())
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Units API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Units', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */
 

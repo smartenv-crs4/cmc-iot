@@ -22,7 +22,7 @@
 
 
 var conf = require('propertiesmanager').conf
-var APIURL = conf.testConfig.testUrl + ":" + conf.testConfig.testPort + "/vendors"
+var APIURL = conf.testConfig.testUrl + ":" +  conf.microserviceConf.port  + "/vendors"
 var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
 
 require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL, "vendors", Vendors.ObjectId())

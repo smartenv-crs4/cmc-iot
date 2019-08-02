@@ -38,7 +38,7 @@ var deviceId;
 describe('Devices API Test - [SEARCH FILTERS]', function () {
 
     before(function (done) {
-        this.timeout(0);
+        this.timeout(5000);
         commonFunctioTest.setAuthMsMicroservice(function(err) {
             if(err) throw (err);
             webUiToken=conf.testConfig.myWebUITokenToSignUP;
@@ -47,7 +47,7 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
     });
 
     after(function (done) {
-        this.timeout(0);
+        this.timeout(5000);
         Devices.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("Device searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
