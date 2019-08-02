@@ -34,12 +34,7 @@ var observationsDriver = require('../../DBEngineHandler/drivers/observationDrive
 /* Create thing. */
 module.exports.postCreateThing = function (req, res, next) {
     thingDriver.create(req.body.thing, function (err, results) {
-        if (err) {
-            return thingDriver.errorResponse(res, err);
-        } else {
-            res.status(201).send(results || err);
-        }
-
+        res.httpResponse(err,null,results);
     });
 };
 
@@ -48,14 +43,7 @@ module.exports.postCreateThing = function (req, res, next) {
 // TODO notificare  tramite REDIS??
 module.exports.updateThing = function (req, res, next) {
     thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed"], function (err, results) {
-        if (err) {
-            return thingDriver.errorResponse(res, err);
-        } else {
-            if (results)
-                res.send(results);
-            else
-                res.status(204).send();
-        }
+        res.httpResponse(err,null,results);
     });
 };
 
@@ -67,14 +55,7 @@ module.exports.getThingById = function (req, res, next) {
     var id = req.params.id;
 
     thingDriver.findById(id, req.dbQueryFields, function (err, results) {
-        if (err) {
-            return thingDriver.errorResponse(res, err);
-        } else {
-            if (results)
-                res.send(results);
-            else
-                res.status(204).send();
-        }
+        res.httpResponse(err,null,results);
     })
 };
 
@@ -82,26 +63,14 @@ module.exports.getThingById = function (req, res, next) {
 /* GET things listing. */
 module.exports.getThings = function (req, res, next) {
     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
-        if (err) {
-            return thingDriver.errorResponse(res, err);
-        } else {
-            res.send(results || err);
-        }
-
+        res.httpResponse(err,null,results);
     });
 };
 
 
 function deleteThingById(id,res){
     thingDriver.findByIdAndRemove(id, function (err, deletedThing) {
-        if (err) {
-            return thingDriver.errorResponse(res, err);
-        } else {
-            if(deletedThing)
-                res.status(200).send(deletedThing);
-            else
-                res.status(204).send(); // NO CONTENT
-        }
+        res.httpResponse(err,null,deletedThing);
     });
 }
 
@@ -145,14 +114,7 @@ module.exports.deleteThing = function (req, res, next) {
                 }, function(err) {
                     if(dismiss){  // there are devices(dismissed) with observation then thing must be dismissed and owner change to cmc-IoT
                         thingDriver.findByIdAndUpdate(id, {dismissed: true,ownerId:config.cmcIoTThingsOwner._id}, function (err, dismissedThing) {
-                            if (err) {
-                                return thingDriver.errorResponse(res, err);
-                            } else {
-                                if(dismissedThing)
-                                    res.status(200).send(dismissedThing);
-                                else
-                                    res.status(204).send(); // NO CONTENT
-                            }
+                            res.httpResponse(err,null,dismissedThing);
                         });
                     }else{ // there aren't devices(dismissed) with observation then thing must be deleted
                        deleteThingById(id,res);

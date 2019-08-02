@@ -29,13 +29,7 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
 /* Create device. */
 module.exports.postCreateDevice = function (req, res, next) {
     deviceDriver.create(req.body.device, function (err, results) {
-        if (err) {
-            return deviceDriver.errorResponse(res, err);
-        } else {
-            // res.status(201).send(results || err);
-            res.httpResponse(null,results || err);
-        }
-
+        res.httpResponse(err,null,results);
     });
 };
 
@@ -44,15 +38,7 @@ module.exports.postCreateDevice = function (req, res, next) {
 // TODO notificare tramite redis???
 module.exports.updateDevice = function (req, res, next) {
     deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["dismissed"] ,function (err, results) {
-        if (err) {
-            return deviceDriver.errorResponse(res, err);
-        } else {
-            res.httpResponse(null,results);
-            // if (results)
-            //     res.send(results);
-            // else
-            //     res.status(204).send();
-        }
+        res.httpResponse(err,null,results);
     });
 };
 
@@ -61,18 +47,8 @@ module.exports.updateDevice = function (req, res, next) {
 module.exports.getDeviceById = function (req, res, next) {
 
     var id = req.params.id;
-
     deviceDriver.findById(id, req.dbQueryFields, function (err, results) {
-        if (err) {
-            return deviceDriver.errorResponse(res, err);
-        } else {
-            res.httpResponse(null,results);
-
-            // if (results)
-            //     res.send(results);
-            // else
-            //     res.status(204).send();
-        }
+        res.httpResponse(err,null,results);
     })
 };
 
@@ -80,13 +56,7 @@ module.exports.getDeviceById = function (req, res, next) {
 /* GET devices listing. */
 module.exports.getDevices = function (req, res, next) {
     deviceDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
-        if (err) {
-            return deviceDriver.errorResponse(res, err);
-        } else {
-            // res.send(results || err);
-            res.httpResponse(null,results || err);
-        }
-
+        res.httpResponse(err,null,results);
     });
 };
 
@@ -98,16 +68,7 @@ module.exports.deleteDevice = function (req, res, next) {
     var id = req.params.id;
 
     deviceUtility.deleteDevice(id,function(err,deletedDevice){
-        if (err) {
-            return deviceDriver.errorResponse(res, err);
-        } else {
-            res.httpResponse(null,deletedDevice);
-            // if(deletedDevice){
-            //     res.status(200).send(deletedDevice);
-            // }else{ // NO CONTENT due to no device found
-            //     res.status(204).send();
-            // }
-        }
+        res.httpResponse(err,null,deletedDevice);
     });
 };
 

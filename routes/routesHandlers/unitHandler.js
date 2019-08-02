@@ -27,11 +27,7 @@ var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
 /* Create unit */
 module.exports.postCreateUnit = function(req, res, next) {
     unitDriver.create(req.body.unit, function(err, results) {
-        if (err) {
-            return unitDriver.errorResponse(res, err)
-        } else {
-            res.httpResponse(null, results || err)
-        }
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -39,10 +35,7 @@ module.exports.postCreateUnit = function(req, res, next) {
 /* GET unit list */
 module.exports.getUnits = function(req, res, next) {
     unitDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        if (err) {
-            return unitDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results || err)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -51,10 +44,7 @@ module.exports.getUnits = function(req, res, next) {
 module.exports.getUnitById = function(req, res, next) {
     var id = req.params.id
     unitDriver.findById(id, req.dbQueryFields, function(err, results) {
-        if (err) {
-            return unitDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -62,10 +52,7 @@ module.exports.getUnitById = function(req, res, next) {
 /* Update unit */
 module.exports.updateUnit = function(req, res, next) {
     unitDriver.findByIdAndUpdate(req.params.id, req.body.unit, function(err, results) {
-        if (err) {
-            return unitDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -75,10 +62,6 @@ module.exports.updateUnit = function(req, res, next) {
 module.exports.deleteUnit = function(req, res, next) {
     var id = req.params.id
     unitDriver.findByIdAndRemove(id, function(err, deletedUnit) {
-        if (err) {
-            return unitDriver.errorResponse(res, err)
-        } else {
-            res.httpResponse(null,deletedUnit)
-        }
+        res.httpResponse(err,null,deletedUnit);
     })
 }

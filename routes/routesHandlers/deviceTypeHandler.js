@@ -27,11 +27,7 @@ var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver')
 /* Create deviceType */
 module.exports.postCreateDeviceType = function(req, res, next) {
     deviceTypeDriver.create(req.body.deviceType, function(err, results) {
-        if (err) {
-            return deviceTypeDriver.errorResponse(res, err)
-        } else {
-            res.httpResponse(null, results || err)
-        }
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -39,10 +35,7 @@ module.exports.postCreateDeviceType = function(req, res, next) {
 /* GET deviceTypes list */
 module.exports.getDeviceTypes = function(req, res, next) {
     deviceTypeDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        if (err) {
-            return deviceTypeDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results || err)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -51,10 +44,7 @@ module.exports.getDeviceTypes = function(req, res, next) {
 module.exports.getDeviceTypeById = function(req, res, next) {
     var id = req.params.id
     deviceTypeDriver.findById(id, req.dbQueryFields, function(err, results) {
-        if (err) {
-            return deviceTypeDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -62,10 +52,7 @@ module.exports.getDeviceTypeById = function(req, res, next) {
 /* Update deviceType */
 module.exports.updateDeviceType = function(req, res, next) {
     deviceTypeDriver.findByIdAndUpdate(req.params.id, req.body.deviceType, function(err, results) {
-        if (err) {
-            return deviceTypeDriver.errorResponse(res, err)
-        } else
-            res.httpResponse(null, results)
+        res.httpResponse(err,null,results);
     })
 }
 
@@ -75,10 +62,6 @@ module.exports.updateDeviceType = function(req, res, next) {
 module.exports.deleteDeviceType = function(req, res, next) {
     var id = req.params.id
     deviceTypeDriver.findByIdAndRemove(id, function(err, deletedDeviceType) {
-        if (err) {
-            return deviceTypeDriver.errorResponse(res, err)
-        } else {
-            res.httpResponse(null,deletedDeviceType)
-        }
+        res.httpResponse(err,null,deletedDeviceType);
     })
 }

@@ -20,36 +20,40 @@
  ############################################################################
  */
 
-
+var errorHandler=require('../../routes/utility/mongooseError');
 
 
 /* Delete devices. */
 module.exports.httpResponse = function (req,res,next) {
 
-  res.httpResponse=function(statusC,body){
-      var status_code=null;
-      if(!statusC){
-          switch(req.method) {
-              case "POST":
-                  status_code=201;
-                  break;
-              case "GET":
-              case "PUT":
-              case "DELETE":
-                  status_code=200;
-                  break;
-              default:
-                  status_code=200;
+  res.httpResponse=function(err,statusC,body){
+      if(err){
+          errorHandler.handleError(res,err)
+      }else {
+          var status_code = null;
+          if (!statusC) {
+              switch (req.method) {
+                  case "POST":
+                      status_code = 201;
+                      break;
+                  case "GET":
+                  case "PUT":
+                  case "DELETE":
+                      status_code = 200;
+                      break;
+                  default:
+                      status_code = 200;
+              }
+          } else {
+              status_code = statusC;
           }
-      }else{
-          status_code=statusC;
+          if (!body)
+              status_code = 204;
+
+          res.status(status_code).send(body);
       }
+  };
 
-      if(!body)
-          status_code=204;
-
-      res.status(status_code).send(body);
-  }
   next();
 
 };
