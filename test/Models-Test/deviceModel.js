@@ -23,75 +23,73 @@
 var _ = require('underscore')._;
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
-var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
+var deviceDocuments = require('../SetTestenv/createDevicesDocuments');
+var should = require('should/should');
 
 
-describe('Devices Model Test', function(){
+describe('Devices Model Test', function () {
 
-  before(function(done){
+    before(function (done) {
 
-    db.connect(function(){
-      done();
-    });
-  });
-
-  after(function(done){
-
-    db.disconnect(function(){
-      done();
-    });
-  });
-
-
-
-
-  beforeEach(function(done){
-          deviceDocuments.createDocuments(100,function(err){
-              if (err) throw err;
-              else done();
-          });
-   });
-
-
-  afterEach(function(done){
-      Device.deleteMany(function(err, p){
-          if(err) throw err;
-          done();
-      });
-  });
-
-
-
-  describe('findAll({skip:2, limit:30})', function(){
-
-    it('must include _metadata with correct values', function(done){
-
-      Device.findAll({}, null, {skip:2, limit:30}, function(err, results){
-
-          if(err) throw err;
-          else{
-            results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(30);
-            results._metadata.skip.should.be.equal(2);
-            results._metadata.limit.should.be.equal(30);
-            results._metadata.should.have.property('totalCount');
-            results._metadata.totalCount.should.be.equal(false);
-          }
-          done();
-      });
-
+        db.connect(function () {
+            done();
+        });
     });
 
-  });
+    after(function (done) {
 
-    describe('findAll({skip:2, limit:30})', function(){
+        db.disconnect(function () {
+            done();
+        });
+    });
 
-        it('must include _metadata with correct values', function(done){
 
-            Device.findAll({}, null, {skip:2, limit:30,totalCount:true}, function(err, results){
+    beforeEach(function (done) {
+        deviceDocuments.createDocuments(100, function (err) {
+            if (err) throw err;
+            else done();
+        });
+    });
 
-                if(err) throw err;
-                else{
+
+    afterEach(function (done) {
+        Device.deleteMany(function (err, p) {
+            if (err) throw err;
+            done();
+        });
+    });
+
+
+    describe('findAll({skip:2, limit:30})', function () {
+
+        it('must include _metadata with correct values', function (done) {
+
+            Device.findAll({}, null, {skip: 2, limit: 30}, function (err, results) {
+
+                if (err) throw err;
+                else {
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(30);
+                    results._metadata.skip.should.be.equal(2);
+                    results._metadata.limit.should.be.equal(30);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(false);
+                }
+                done();
+            });
+
+        });
+
+    });
+
+    describe('findAll({skip:2, limit:30})', function () {
+
+        it('must include _metadata with correct values', function (done) {
+
+            Device.findAll({}, null, {skip: 2, limit: 30, totalCount: true}, function (err, results) {
+
+                if (err) throw err;
+                else {
                     results.should.have.property('_metadata');
                     results.devices.length.should.be.equal(30);
                     results._metadata.skip.should.be.equal(2);
@@ -107,127 +105,102 @@ describe('Devices Model Test', function(){
     });
 
 
-  describe('findAll({skip:0, limit:10})', function(){
+    describe('findAll({skip:0, limit:10})', function () {
 
-    it('must include _metadata with correct values', function(done){
-      Device.findAll({}, null, {skip:0, limit:10}, function(err, results){
-          if(err) throw err;
-          else{
-            results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(10);
-            results._metadata.skip.should.be.equal(0);
-            results._metadata.limit.should.be.equal(10);
+        it('must include _metadata with correct values', function (done) {
+            Device.findAll({}, null, {skip: 0, limit: 10}, function (err, results) {
+                if (err) throw err;
+                else {
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(10);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(10);
 
-          }
-          done();
-      });
+                }
+                done();
+            });
 
-    });
-
-  });
-
-  describe('findAll({skip:0, limit:10})', function(){
-
-    it('must include _metadata with correct values', function(done){
-      Device.findAll({}, null, {skip:0, limit:10,totalCount:true}, function(err, results){
-          if(err) throw err;
-          else{
-            results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(10);
-            results._metadata.skip.should.be.equal(0);
-            results._metadata.limit.should.be.equal(10);
-            results._metadata.totalCount.should.be.equal(100);
-
-          }
-          done();
-      });
+        });
 
     });
 
-  });
+    describe('findAll({skip:0, limit:10})', function () {
 
+        it('must include _metadata with correct values', function (done) {
+            Device.findAll({}, null, {skip: 0, limit: 10, totalCount: true}, function (err, results) {
+                if (err) throw err;
+                else {
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(10);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(10);
+                    results._metadata.totalCount.should.be.equal(100);
 
-  describe('findAll() no pagination', function(){
+                }
+                done();
+            });
 
-    it('must include _metadata with default values', function(done){
-
-      Device.findAll({}, null, null, function(err, results){
-
-          if(err) throw err;
-          else{
-            results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(100);
-            results._metadata.skip.should.be.equal(0);
-            results._metadata.limit.should.be.equal(-1);
-            results._metadata.should.have.property('totalCount');
-            results._metadata.totalCount.should.be.equal(false);
-
-          }
-          done();
-      });
+        });
 
     });
 
-  });
 
-  describe('findAll({skip:0, limit:2})', function(){
+    describe('findAll() no pagination', function () {
 
-    it('must include _metadata with correct values and only 2 entries', function(done){
+        it('must include _metadata with default values', function (done) {
 
-      Device.findAll({}, null, {skip:0, limit:2}, function(err, results){
+            Device.findAll({}, null, null, function (err, results) {
 
-          if(err) throw err;
-          else{
-            results.should.have.property('_metadata');
-            results.devices.length.should.be.equal(2);
-            results._metadata.skip.should.be.equal(0);
-            results._metadata.limit.should.be.equal(2);
-            results._metadata.should.have.property('totalCount')
-            results._metadata.totalCount.should.be.equal(false);;
+                if (err) throw err;
+                else {
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(100);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(-1);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(false);
 
-          }
-          done();
+                }
+                done();
+            });
 
-      });
-
-    });
-
-  });
-
-  describe('findOne()', function(){
-
-    it('must include all required properties', function(done){
-
-      Device.findOne({}, null, function(err, device){
-
-          if(err) throw err;
-          else{
-            device.should.have.property('description');
-            device.should.have.property('name');
-            device.should.have.property('thingId');
-            device.should.have.property('typeId');
-            device.should.have.property('dismissed');
-            device.should.have.property('disabled');
-            device.dismissed.should.be.false();
-            device.disabled.should.be.false();
-          }
-          done();
-
-      });
+        });
 
     });
 
-  });
+    describe('findAll({skip:0, limit:2})', function () {
 
+        it('must include _metadata with correct values and only 2 entries', function (done) {
 
-    describe('findById()', function(){
+            Device.findAll({}, null, {skip: 0, limit: 2}, function (err, results) {
 
-        it('must set findById', function(done){
+                if (err) throw err;
+                else {
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(2);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(2);
+                    results._metadata.should.have.property('totalCount')
+                    results._metadata.totalCount.should.be.equal(false);
+                    ;
 
-            Device.findOne({}, null, function(err, device){
+                }
+                done();
 
-                if(err) throw err;
-                else{
+            });
+
+        });
+
+    });
+
+    describe('findOne()', function () {
+
+        it('must include all required properties', function (done) {
+
+            Device.findOne({}, null, function (err, device) {
+
+                if (err) throw err;
+                else {
                     device.should.have.property('description');
                     device.should.have.property('name');
                     device.should.have.property('thingId');
@@ -236,10 +209,36 @@ describe('Devices Model Test', function(){
                     device.should.have.property('disabled');
                     device.dismissed.should.be.false();
                     device.disabled.should.be.false();
-                    Device.findById(device._id, "description name disabled", function(err, deviceById){
+                }
+                done();
 
-                        if(err) throw err;
-                        else{
+            });
+
+        });
+
+    });
+
+
+    describe('findById()', function () {
+
+        it('must set findById', function (done) {
+
+            Device.findOne({}, null, function (err, device) {
+
+                if (err) throw err;
+                else {
+                    device.should.have.property('description');
+                    device.should.have.property('name');
+                    device.should.have.property('thingId');
+                    device.should.have.property('typeId');
+                    device.should.have.property('dismissed');
+                    device.should.have.property('disabled');
+                    device.dismissed.should.be.false();
+                    device.disabled.should.be.false();
+                    Device.findById(device._id, "description name disabled", function (err, deviceById) {
+
+                        if (err) throw err;
+                        else {
                             deviceById.should.have.property('description');
                             deviceById.should.have.property('name');
                             should(deviceById.thingId).be.undefined();
@@ -259,15 +258,14 @@ describe('Devices Model Test', function(){
     });
 
 
+    describe('removeDevice()', function () {
 
-    describe('removeDevice()', function(){
+        it('must remove a device with no observations', function (done) {
 
-        it('must remove a device with no observations', function(done){
+            Device.findOne({}, null, function (err, device) {
 
-            Device.findOne({}, null, function(err, device){
-
-                if(err) throw err;
-                else{
+                if (err) throw err;
+                else {
                     device.should.have.property('description');
                     device.should.have.property('name');
                     device.should.have.property('thingId');
@@ -277,10 +275,10 @@ describe('Devices Model Test', function(){
                     device.dismissed.should.be.false();
                     device.disabled.should.be.false();
 
-                    Device.findByIdAndRemove(device._id,function(err,removedDevice){
+                    Device.findByIdAndRemove(device._id, function (err, removedDevice) {
                         should(err).be.null();
                         removedDevice._id.should.be.eql(device._id);
-                        Device.findById(device._id,function(err,notFoundDevice){
+                        Device.findById(device._id, function (err, notFoundDevice) {
                             should(err).be.null();
                             should(notFoundDevice).be.null();
                             done();
@@ -292,16 +290,14 @@ describe('Devices Model Test', function(){
     });
 
 
+    describe('updateDevice()', function () {
 
+        it('must update a device', function (done) {
 
-    describe('updateDevice()', function(){
+            Device.findOne({}, null, function (err, device) {
 
-        it('must update a device', function(done){
-
-            Device.findOne({}, null, function(err, device){
-
-                if(err) throw err;
-                else{
+                if (err) throw err;
+                else {
                     device.should.have.property('description');
                     device.should.have.property('name');
                     device.should.have.property('thingId');
@@ -310,13 +306,13 @@ describe('Devices Model Test', function(){
                     device.should.have.property('disabled');
                     device.dismissed.should.be.false();
                     device.disabled.should.be.false();
-                    var updateName="updateName";
-                    Device.findByIdAndUpdate(device._id,{name:updateName},function(err,updatedDevice){
+                    var updateName = "updateName";
+                    Device.findByIdAndUpdate(device._id, {name: updateName}, function (err, updatedDevice) {
                         should(err).be.null();
                         updatedDevice._id.should.be.eql(device._id);
                         updatedDevice.name.should.be.eql(updateName);
 
-                        Device.findById(device._id,function(err,findDevice){
+                        Device.findById(device._id, function (err, findDevice) {
                             should(err).be.null();
                             should(findDevice).be.not.null();
                             findDevice.name.should.be.eql(updateName);
@@ -330,23 +326,17 @@ describe('Devices Model Test', function(){
     });
 
 
+    describe('updateDevice()', function () {
 
-    describe('updateDevice()', function(){
+        it('must update a device', function (done) {
 
-        it('must update a device', function(done){
-
-            Device.findByIdAndUpdate(Device.ObjectId(),{name:"aa"},function(err,updatedDevice){
+            Device.findByIdAndUpdate(Device.ObjectId(), {name: "aa"}, function (err, updatedDevice) {
                 should(err).be.null();
                 should(updatedDevice).be.null();
                 done();
             });
         });
     });
-
-
-
-
-
 
 
 });

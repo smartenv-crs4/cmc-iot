@@ -25,6 +25,7 @@ var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
 var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver')
 var deviceTypeDocuments = require('../SetTestenv/createDeviceTypesDocuments')
+var should = require('should/should');
 
 
 describe('DeviceTypes Model Test', function() {

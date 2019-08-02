@@ -24,6 +24,7 @@ var _ = require('underscore')._;
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Thing = require('../../DBEngineHandler/drivers/thingDriver');
 var thingDocuments=require('../SetTestenv/createThingsDocuments');
+var should = require('should/should');
 
 
 describe('Things Model Test', function(){
