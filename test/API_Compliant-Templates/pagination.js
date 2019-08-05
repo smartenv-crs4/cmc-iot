@@ -68,10 +68,6 @@ exports.paginationTests = function (APIURL,route,fields) {
 
                     if (error) consoleLogError.printErrorLog("GET /"+route+": 'must test API pagination compliant: return ONE "+route+" and _metadata, all fields -->" + error.message);
                     else {
-
-                        // console.log(webUiToken);
-                        console.log(body);
-
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
 

@@ -25,20 +25,21 @@ var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/configuration" ;
 var commonFunctioTest=require("../SetTestenv/testEnvironmentCreation");
+var consoleLogError=require('../Utility/errorLogs');
 
 
 describe('Decode Token Midleware API', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
-            if(err) throw (err);
+            if (err) consoleLogError.printErrorLog("decodeTokenMidleware.js - before - setAuthMsMicroservice ---> " + err);
             done();
         });
     });
 
     after(function (done) {
         commonFunctioTest.resetAuthMsStatus(function(err){
-            if (err) throw (err);
+            if (err) consoleLogError.printErrorLog("decodeTokenMidleware.js - after - resetAuthMsStatus ---> " + err);
             done();
         });
     });
@@ -65,7 +66,7 @@ describe('Decode Token Midleware API', function () {
                 headers: {'Authorization': "Bearer " + conf.testConfig.myWebUITokenToSignUP + "d"}
             }, function (error, response, body) {
 
-                if (error) console.log("######   ERRORE: " + error +"  ######");
+                if (error) consoleLogError.printErrorLog("decodeTokenMidleware.js - GET /configuration [must return  error 400 for invalid token] ---> " + err);
                 else {
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(401);
@@ -87,7 +88,7 @@ describe('Decode Token Midleware API', function () {
 
             request.get({url: APIURL + '?skip=0&limit=2'}, function (error, response, body) {
 
-                if (error) console.log("######   ERRORE: " + error +"  ######");
+                if (error) consoleLogError.printErrorLog("decodeTokenMidleware.js - GET /configuration [must return  error 400 for Access_token required] ---> " + err);
                 else {
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
@@ -110,7 +111,7 @@ describe('Decode Token Midleware API', function () {
                     url: APIURL + '?skip=0&limit=2',
                     headers: {'Authorization': "Bearer " + conf.testConfig.myWebUITokenToSignUP}
                 }, function (error, response, body) {
-                    if (error) console.log("######   ERRORE: 401 2 " + error + "  ######");
+                    if (error) consoleLogError.printErrorLog("decodeTokenMidleware.js - GET /configuration [must return  error 401 for Unauthorized token] ---> " + err);
                     else {
                         var results;
                         results = JSON.parse(body);
@@ -124,7 +125,7 @@ describe('Decode Token Midleware API', function () {
                 });
             });
         }catch (err){
-           console.log("Catch " + err);
+            consoleLogError.printErrorLog("decodeTokenMidleware.js - GET /configuration [must return  error 401 for Unauthorized token] in try/catch---> " + err);
         }
     });
 

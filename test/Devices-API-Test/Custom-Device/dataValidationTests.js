@@ -34,7 +34,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
-            if(err) throw (err);
+            if (err) consoleLogError.printErrorLog("dataValidationTests.js - before - Devices API Test - [DATA VALIDATION] ---> " + err);
             webUiToken=conf.testConfig.myWebUITokenToSignUP;
             done();
         });
@@ -227,7 +227,6 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
                 request.put(requestParams,function(error, response, body){
                     if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to no Thingmodifiable field dismissed] -->" + error.message);
                     else{
-                        console.log(body);
                         var results = JSON.parse(body);
                         response.statusCode.should.be.equal(400);
                         results.should.have.property('statusCode');

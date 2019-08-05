@@ -60,8 +60,7 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
         if (!err) {
 
             var entities = entityName ? entityName : 'entities';
-//                           console.log(entities);
-//                           console.log(count);
+
             var results = {
                 _metadata: {
                     totalCount: false,
@@ -128,7 +127,6 @@ exports.findAllPopulated = function findAllPopulated(schema, entityName, conditi
         //populate
         _.each(_.keys(populate), function (p, index) {
 
-            // console.log(p);
             query = query.populate(p, populate[p].join(' '));
 
         });
@@ -142,8 +140,7 @@ exports.findAllPopulated = function findAllPopulated(schema, entityName, conditi
                     if (!err) {
 
                         var entities = entityName ? entityName : 'entities';
-                        //                           console.log(entities);
-                        //                           console.log(count);
+
                         var results = {
                             _metadata: {
                                 totalCount: count,

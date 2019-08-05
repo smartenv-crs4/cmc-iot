@@ -20,7 +20,6 @@
  ############################################################################
  */
 
-var _ = require('underscore')._;
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceDocuments = require('../SetTestenv/createDevicesDocuments');

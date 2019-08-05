@@ -70,7 +70,7 @@ describe('Pagination Filter Test', function(){
 
       Device.findAll({}, null, {skip:2, limit:30}, function(err, results){
 
-          if(err) throw err;
+          if (err) consoleLogError.printErrorLog("paginationFilter.js -  must include _metadata with correct values -->[ skip:2, limit:30, totalCount:false] ---> " + err);
           else{
             results.should.have.property('_metadata');
             results.devices.length.should.be.equal(30);
@@ -92,7 +92,7 @@ describe('Pagination Filter Test', function(){
 
             Device.findAll({}, null, {skip:2, limit:30,totalCount:true}, function(err, results){
 
-                if(err) throw err;
+                if (err) consoleLogError.printErrorLog("paginationFilter.js -  must include _metadata with correct values -->[ skip:2, limit:30, totalCount:100] ---> " + err);
                 else{
                     results.should.have.property('_metadata');
                     results.devices.length.should.be.equal(30);
@@ -113,7 +113,7 @@ describe('Pagination Filter Test', function(){
 
     it('must include _metadata with correct values -->[ skip:2, limit:30, totalCount:false]', function(done){
       Device.findAll({}, null, {skip:0, limit:10}, function(err, results){
-          if(err) throw err;
+          if (err) consoleLogError.printErrorLog("paginationFilter.js -  must include _metadata with correct values -->[ skip:2, limit:30, totalCount:false] ---> " + err);
           else{
             results.should.have.property('_metadata');
             results.devices.length.should.be.equal(10);
@@ -133,7 +133,7 @@ describe('Pagination Filter Test', function(){
 
     it('must include _metadata with correct values -->[ skip:0, limit:10, totalCount:100]', function(done){
       Device.findAll({}, null, {skip:0, limit:10,totalCount:true}, function(err, results){
-          if(err) throw err;
+          if (err) consoleLogError.printErrorLog("paginationFilter.js -  must include _metadata with correct values -->[ skip:0, limit:10, totalCount:100] ---> " + err);
           else{
             results.should.have.property('_metadata');
             results.devices.length.should.be.equal(10);
@@ -156,7 +156,7 @@ describe('Pagination Filter Test', function(){
 
       Device.findAll({}, null, null, function(err, results){
 
-          if(err) throw err;
+          if (err) consoleLogError.printErrorLog("paginationFilter.js -  'must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false] ---> " + err);
           else{
             results.should.have.property('_metadata');
             results.devices.length.should.be.equal(100);
@@ -179,7 +179,7 @@ describe('Pagination Filter Test', function(){
 
       Device.findAll({}, null, {skip:0, limit:2}, function(err, results){
 
-          if(err) throw err;
+          if (err) consoleLogError.printErrorLog("paginationFilter.js - must include _metadata with correct values and only 2 entries  ---> " + err);
           else{
             results.should.have.property('_metadata');
             results.devices.length.should.be.equal(2);

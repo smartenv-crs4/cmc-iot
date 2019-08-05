@@ -130,8 +130,6 @@ function onListening() {
 
 setupEnvironmentDefaults.setupDefaults(function(err,cmc_IotDismissedID){
    if(!err){
-
-       console.log("cmc-IoT_ThingsOwneId " + cmc_IotDismissedID);
        conf.cmcIoTThingsOwner._id=cmc_IotDismissedID;
 
 

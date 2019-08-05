@@ -85,7 +85,6 @@ describe('Things API Test - [DATA VALIDATION]', function () {
             request.post(requestParams,function(error, response, body){
                 if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [no valid thing field - field is not in the schema] -->" + error.message);
                 else{
-                    console.log(body);
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
                     results.should.have.property('statusCode');
@@ -254,7 +253,6 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                 request.put(requestParams,function(error, response, body){
                     if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [data validation error due to no modifiable field dismissed] -->" + error.message);
                     else{
-                        console.log(body);
                         var results = JSON.parse(body);
                         response.statusCode.should.be.equal(400);
                         results.should.have.property('statusCode');

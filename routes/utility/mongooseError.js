@@ -35,7 +35,6 @@ function badRequestError(res,err,message){
 }
 
 exports.handleError= function(res,err){
-    console.log(err);
 
     switch(err.name) {
         case "MongooseError":

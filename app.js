@@ -40,7 +40,6 @@ var app = express();
 
 // TODO add plugins mode compliabce
 
-// Todo Remove all console.log
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
