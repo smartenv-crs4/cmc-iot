@@ -28,7 +28,8 @@
         "unitSchema": null,
         "vendorSchema": null,
         "observationSchema": null,
-        "thingSchema": null
+        "thingSchema": null,
+        "siteSchema": null
     },
     "cmcIoTThingsOwner": {
       "name": "Cmc-IoT dismissed Things owner",
@@ -66,7 +67,8 @@
       "unitSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
-      "thingSchema": null
+      "thingSchema": null,
+      "siteSchema": null
     },
     "cmcIoTThingsOwner": {
       "name": "Cmc-IoT dismissed Things owner",
@@ -104,7 +106,8 @@
       "unitSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
-      "thingSchema": null
+      "thingSchema": null,
+      "siteSchema": null
     },
     "testConfig":{
       "usertokens":["UserType1"],

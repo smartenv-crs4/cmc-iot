@@ -35,10 +35,11 @@ var thingsRouter = require('./routes/things');
 var deviceTypesRouter = require('./routes/deviceTypes');
 var unitsRouter = require('./routes/units');
 var vendorsRouter = require('./routes/vendors');
+var sitesRouter = require('./routes/sites');
 
 var app = express();
 
-// TODO add plugins mode compliabce
+// TODO add plugins mode compliance
 
 
 // view engine setup
@@ -59,6 +60,7 @@ app.use('/things', thingsRouter);
 app.use('/deviceTypes', deviceTypesRouter);
 app.use('/units', unitsRouter)
 app.use('/vendors', vendorsRouter);
+app.use('/sites', sitesRouter);
 
 
 // catch 404 and forward to error handler

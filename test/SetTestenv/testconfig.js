@@ -66,7 +66,12 @@ function customTestConfig(config){
                 {URI:"/units",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/units/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/units/:id", token:testConfig.authApptokens, method:"PUT"},
-                {URI:"/units/:id", token:testConfig.authApptokens, method:"DELETE"}
+                {URI:"/units/:id", token:testConfig.authApptokens, method:"DELETE"},
+                {URI:"/sites", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/sites",token:testConfig.adminTokens, method:"POST"},
+                {URI:"/sites/:id", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/sites/:id", token:testConfig.authApptokens, method:"PUT"},
+                {URI:"/sites/:id", token:testConfig.authApptokens, method:"DELETE"}
     ]
     testConfig.webUiID="";
 

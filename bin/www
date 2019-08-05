@@ -33,7 +33,7 @@ var conf = require('propertiesmanager').conf;
 var db = require("../DBEngineHandler/models/mongooseConnection");
 
 var setupEnvironmentDefaults=require('./environmentDefaults/setupDefault');
-var errorHanfìdler=require('../routes/utility/error');
+var errorHandler=require('../routes/utility/error');
 var server;
 
 
@@ -174,7 +174,7 @@ setupEnvironmentDefaults.setupDefaults(function(err,cmc_IotDismissedID){
 
 
    } else{
-       errorHanfìdler.printErrorLog("App can not start due to " + err );
+       errorHandler.printErrorLog("App can not start due to " + err );
    }
 });
 
