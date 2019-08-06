@@ -29,6 +29,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devic
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
+var should=require('should');
 
 var webUiToken;
 var deviceId;
@@ -97,6 +98,57 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('typeId');
                 }
                 done();
+            });
+
+        });
+    });
+
+
+    /******************************************************************************************************************
+     ********************************************* READ TESTS (Get )**********************************************
+     ***************************************************************************************************************** */
+
+    describe('GET /device', function(){
+
+        it('must test get device filter by disabled(Boolean)', function(done){
+            var bodyParam=JSON.stringify({device:{disabled:true,name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Device
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /device :'must test get device filter by disabled(Boolean) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('thingId');
+                    results.should.have.property('typeId');
+                }
+
+                var geByIdRequestUrl=APIURL + "?disabled=true&access_token="+ webUiToken;
+                request.get(geByIdRequestUrl,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("GET /device :'must test get device filter by disabled(Boolean) -->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.property('_metadata');
+                        resultsById.should.have.property('devices');
+                        resultsById.devices[0].should.have.property('name');
+                        resultsById.devices[0].should.have.property('description');
+                        resultsById.devices[0].should.have.property('thingId');
+                        resultsById.devices[0].should.have.property('typeId');
+                        resultsById.devices[0].should.have.property('disabled');
+                        resultsById.devices[0].disabled.should.be.true();
+                        resultsById.devices.length.should.be.eql(1);
+                        resultsById.devices[0]._id.should.be.eql(results._id);
+                    }
+                    done();
+                });
             });
 
         });
