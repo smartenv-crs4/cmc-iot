@@ -21,48 +21,46 @@
  */
 
 
-var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/sites"
 
 
-/* Create vendor */
-module.exports.postCreateVendor = function(req, res, next) {
-    vendorDriver.create(req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL, "sites")
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
 
 
-/* GET vendors list */
-module.exports.getVendors = function(req, res, next) {
-    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+describe('Test Title eg. Sites API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
 
 
-/* GET vendor By Id */
-module.exports.getVendorById = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+
+    beforeEach(function (done) {
+      done();
+    });
 
 
-/* Update vendor */
-module.exports.updateVendor = function(req, res, next) {
-    vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+    afterEach(function (done) {
+       done();
+    });
 
 
-//TODO Gestire la cancellazione in presenza di Things collegati
-/* Delete vendors */
-module.exports.deleteVendor = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err, null, deletedVendor)
-    })
-}
+    describe('test Type : eg. POST /sites', function(){
 
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

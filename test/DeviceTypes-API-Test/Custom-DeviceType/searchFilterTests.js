@@ -104,10 +104,9 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
         it('must test API compliance to field selection: fields projection must not include observedPropertyId [-observedPropertyId]', function(done) {
 
             request.get({
-                url: APIURL + '?fields=-thingId',
+                url: APIURL + '?fields=-observedPropertyId',
                 headers: {'Authorization': "Bearer " + webUiToken}
             }, function(error, response, body) {
-
                 if (error) consoleLogError.printErrorLog("GET /deviceTypes: 'must test API compliance to field selection: fields projection must not include observedPropertyId [-observedPropertyId]' -->" + error.message)
                 else {
                     response.statusCode.should.be.equal(200)
@@ -118,7 +117,6 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
                     results.deviceTypes.length.should.be.equal(conf.pagination.limit)
                     results.deviceTypes[0].should.have.properties("name")
                     results.deviceTypes[0].should.have.properties("description")
-                    results.deviceTypes[0].should.have.properties("observedPropertyId")
                 }
                 done()
             })
@@ -249,7 +247,6 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
                         url: APIURL + '?name=' + name,
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function(error, response, body) {
-
                         if (error) consoleLogError.printErrorLog("GET /deviceTypes: 'must test API compliant to filter by field as comma separated elements of a list -- name='name1,name2'  -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(200)

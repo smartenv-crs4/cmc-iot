@@ -21,48 +21,31 @@
  */
 
 
-var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var _ = require('underscore')._
+var async = require('async')
+var Site = require('../../DBEngineHandler/drivers/siteDriver')
 
 
-/* Create vendor */
-module.exports.postCreateVendor = function(req, res, next) {
-    vendorDriver.create(req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
+module.exports.createDocuments = function(numbers, callback) {
+
+    var range = _.range(numbers)
+    var siteId
+
+    async.each(range, function(e, cb) {
+        Site.create({
+            name: "name" + e,
+            description: "description" + e,
+            location: {type: "Point", coordinates: [0, 0]},
+            locatedInSiteId: Site.ObjectId()
+        }, function(err, newSite) {
+            if (err) throw err
+            if (e === 1) siteId = newSite._id
+            cb()
+        })
+    }, function(err) {
+        callback(err, siteId)
     })
+
 }
 
-
-/* GET vendors list */
-module.exports.getVendors = function(req, res, next) {
-    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
-
-
-/* GET vendor By Id */
-module.exports.getVendorById = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
-
-
-/* Update vendor */
-module.exports.updateVendor = function(req, res, next) {
-    vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
-
-
-//TODO Gestire la cancellazione in presenza di Things collegati
-/* Delete vendors */
-module.exports.deleteVendor = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err, null, deletedVendor)
-    })
-}
 

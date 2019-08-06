@@ -27,6 +27,7 @@ require('./Models-Test/thingModel');
 require('./Models-Test/deviceTypeModel');
 require('./Models-Test/vendorModel');
 require('./Models-Test/unitModel');
+require('./Models-Test/siteModel');
 
 //Middlewares
 require('./Middlewares-Test/decodeTokenMiddleware');
@@ -39,4 +40,5 @@ require('./API-Test-Things/things-api');
 require('./DeviceTypes-API-Test/deviceTypes-api');
 require('./Vendors-API-Test/vendors-api');
 require('./Units-API-Test/units-api');
+require('./Sites-API-Test/sites-api');
 

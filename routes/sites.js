@@ -21,48 +21,48 @@
  */
 
 
-var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var express = require('express')
+var router = express.Router()
+var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
+var authorisationManager = require('./middlewares/authorisationMiddleware')
+var sitesHandler = require('./routesHandlers/siteHandler')
+var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 
-/* Create vendor */
-module.exports.postCreateVendor = function(req, res, next) {
-    vendorDriver.create(req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+/* Create site */
+router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {
+    sitesHandler.postCreateSite(req, res, next)
+})
 
 
-/* GET vendors list */
-module.exports.getVendors = function(req, res, next) {
-    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+/* Read site */
+router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    sitesHandler.getSiteById(req, res, next)
+})
 
 
-/* GET vendor By Id */
-module.exports.getVendorById = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+/* Update site */
+router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {
+    sitesHandler.updateSite(req, res, next)
+})
 
 
-/* Update vendor */
-module.exports.updateVendor = function(req, res, next) {
-    vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+/* Delete site */
+router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    sitesHandler.deleteSite(req, res, next)
+})
 
 
-//TODO Gestire la cancellazione in presenza di Things collegati
-/* Delete vendors */
-module.exports.deleteVendor = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err, null, deletedVendor)
-    })
-}
+/*Query parsing modules */
+router.use(parseRequestMiddleware.parseFields)
+router.use(parseRequestMiddleware.parseOptions)
+router.use(mongosecurity.parseForOperators)
 
+
+/* GET sites list */
+router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("sites"), function(req, res, next) {
+    sitesHandler.getSites(req, res, next)
+})
+
+
+module.exports = router

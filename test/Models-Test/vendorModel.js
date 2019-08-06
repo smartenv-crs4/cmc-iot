@@ -20,11 +20,12 @@
  ############################################################################
  */
 
+
 var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
 var Vendor = require('../../DBEngineHandler/drivers/vendorDriver')
 var vendorDocuments = require('../SetTestenv/createVendorsDocuments')
-var should = require('should/should');
+var should = require('should/should')
 
 
 describe('Vendors Model Test', function() {
@@ -41,6 +42,7 @@ describe('Vendors Model Test', function() {
             done()
         })
     })
+
 
     beforeEach(function(done) {
         vendorDocuments.createDocuments(100, function(err) {
@@ -173,27 +175,85 @@ describe('Vendors Model Test', function() {
     })
 
 
-    // describe('removeVendor()', function() {
-    //
-    //     it('must remove a vendor with no observations', function(done) {
-    //         Vendor.findOne({}, null, function(err, vendor){
-    //             if(err) throw err;
-    //             else{
-    //                 vendor.should.have.property('description');
-    //                 vendor.should.have.property('name');
-    //                 Vendor.findByIdAndRemove(vendor._id, function(err, removedVendor) {
-    //                     should(err).be.null();
-    //                     removedVendor._id.should.be.eql(device._id);
-    //                     Vendor.findById(device._id, function(err, notFoundDevice) {
-    //                         should(err).be.null();
-    //                         should(notFoundDevice).be.null();
-    //                         done();
-    //                     })
-    //                 })
-    //             }
-    //         })
-    //     })
-    // })
+    describe('findById()', function() {
+        it('must set findById', function(done) {
+            Vendor.findOne({}, null, function(err, vendor) {
+                if (err) throw err
+                else {
+                    vendor.should.have.property('name')
+                    vendor.should.have.property('description')
+                    Vendor.findById(vendor._id, "name disabled", function(err, vendorById) {
+                        if (err) throw err
+                        else {
+                            vendorById.should.have.property('name')
+                            should(vendorById.description).be.undefined()
+                            vendorById._id.should.be.eql(vendor._id)
+                        }
+                        done()
+                    })
+                }
+            })
+        })
+    })
+
+
+    describe('removeVendor()', function() {
+        it('must remove a vendor', function(done) {
+            Vendor.findOne({}, null, function(err, vendor) {
+                if (err) throw err
+                else {
+                    vendor.should.have.property('name')
+                    vendor.should.have.property('description')
+                    Vendor.findByIdAndRemove(vendor._id, function(err, removedVendor) {
+                        should(err).be.null()
+                        removedVendor._id.should.be.eql(vendor._id)
+                        Vendor.findById(vendor._id, function(err, notFoundVendor) {
+                            should(err).be.null()
+                            should(notFoundVendor).be.null()
+                            done()
+                        })
+                    })
+                }
+            })
+        })
+    })
+
+
+    describe('updateVendor()', function() {
+        it('must update a Vendor', function(done) {
+            Vendor.findOne({}, null, function(err, vendor) {
+                if (err) throw err
+                else {
+                    vendor.should.have.property('name')
+                    vendor.should.have.property('description')
+                    var updatedName = "updatedName"
+                    Vendor.findByIdAndUpdate(vendor._id, {name: updatedName}, function(err, updatedVendor) {
+                        should(err).be.null()
+                        updatedVendor._id.should.be.eql(vendor._id)
+                        updatedVendor.name.should.be.eql(updatedName)
+                        Vendor.findById(vendor._id, function(err, foundVendor) {
+                            should(err).be.null()
+                            should(foundVendor).be.not.null()
+                            foundVendor.name.should.be.eql(updatedName)
+                            foundVendor.name.should.be.not.eql(vendor.name)
+                            done()
+                        })
+                    })
+                }
+            })
+        })
+    })
+
+
+    describe('updateVendor()', function() {
+        it('must update a Vendor', function(done) {
+            Vendor.findByIdAndUpdate(Vendor.ObjectId(), {name: "aa"}, function(err, updatedVendor) {
+                should(err).be.null()
+                should(updatedVendor).be.null()
+                done()
+            })
+        })
+    })
 
 
 })

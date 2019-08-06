@@ -21,68 +21,68 @@
  */
 
 
-var vendors = require('../models/vendors').Vendor
+var sites = require('../models/sites').Site
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
 
 
-/* GET vendors list */
+/* GET site listing */
 module.exports.findAll = function(conditions, fields, options, callback) {
-    vendors.findAll(conditions, fields, options, function(err, results) {
+    sites.findAll(conditions, fields, options, function(err, results) {
         callback(err, results)
     })
 }
 
 
-/* Create Vendor */
-module.exports.create = function(vendor, callback) {
-    vendors.create(vendor, function(err, createdVendor) {
-        callback(err, createdVendor)
+/* Create Site */
+module.exports.create = function(site, callback) {
+    sites.create(site, function(err, createdSite) {
+        callback(err, createdSite)
     })
 }
 
 
-/* Delete Vendors */
+/* delete Sites */
 module.exports.deleteMany = function(conditions, options, callback) {
-    vendors.deleteMany(conditions, options, function(err) {
+    sites.deleteMany(conditions, options, function(err) {
         callback(err)
     })
 }
 
 
-/* findOne Vendor */
+/* findOne Site */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    vendors.findOne(conditions, projection, options, function(err, results) {
+    sites.findOne(conditions, projection, options, function(err, results) {
         callback(err, results)
     })
 }
 
 
-/* findOne Vendor by ID */
+/* findOne Site by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    vendors.findById(id, projection, options, callback)
+    sites.findById(id, projection, options, callback)
 }
 
 
-/* findOne Vendor and update it */
+/* findOne Site and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    vendors.findByIdAndUpdate(id, newFields, {new: true}, callback)
+    sites.findByIdAndUpdate(id, newFields, {new: true}, callback)
 }
 
 
-/* findOne Vendor by ID and remove it */
+/* findOne Site by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    vendors.findByIdAndRemove(id, callback)
+    sites.findByIdAndRemove(id, callback)
 }
 
 
-/* GET/SET Vendor ObjectId */
+/* GET/SET Site ObjectId */
 module.exports.ObjectId = function(ObjectId) {
     return (mongoose.Types.ObjectId(ObjectId))
 }
 
 
-/* Error Handler */
+/* Error handling */
 module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
 }

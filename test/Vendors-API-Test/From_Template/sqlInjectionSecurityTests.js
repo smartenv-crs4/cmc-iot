@@ -24,6 +24,7 @@
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/vendors" ;
 
+
 require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"vendors","name");
 
 

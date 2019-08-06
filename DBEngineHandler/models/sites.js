@@ -21,48 +21,33 @@
  */
 
 
-var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
 
-
-/* Create vendor */
-module.exports.postCreateVendor = function(req, res, next) {
-    vendorDriver.create(req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
+var site = conf.customSchema.siteSchema || {
+    name: {type: String, required: true},
+    description: {type: String, required: true},
+    location: {
+        type: {type: String, enum: ['Point'], required: true},
+        coordinates: {type: [Number], required: true}
+    },
+    locatedInSiteId: {type: mongoose.ObjectId, index: true, required: true}
 }
 
 
-/* GET vendors list */
-module.exports.getVendors = function(req, res, next) {
-    vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
+var siteSchema = new Schema(site, {strict: "throw"})
+
+
+// Static method to retrieve resource WITH metadata
+siteSchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'sites', conditions, fields, options, callback)
 }
 
 
-/* GET vendor By Id */
-module.exports.getVendorById = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+var Site = mongoose.model('site', siteSchema)
 
 
-/* Update vendor */
-module.exports.updateVendor = function(req, res, next) {
-    vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
-
-
-//TODO Gestire la cancellazione in presenza di Things collegati
-/* Delete vendors */
-module.exports.deleteVendor = function(req, res, next) {
-    var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err, null, deletedVendor)
-    })
-}
-
+module.exports.SiteSchema = siteSchema
+module.exports.Site = Site

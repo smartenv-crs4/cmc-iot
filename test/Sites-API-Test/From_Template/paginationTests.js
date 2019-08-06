@@ -21,17 +21,17 @@
  */
 
 var _ = require('underscore')._
-var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+var Sites = require('../../../DBEngineHandler/drivers/siteDriver')
 var conf = require('propertiesmanager').conf
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vendors"
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/sites"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
-var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
+var siteDocuments = require('../../SetTestenv/createSitesDocuments')
 
 var webUiToken
-var vendorId
+var siteId
 
 
-describe('Vendors API Test - [PAGINATION TESTS]', function() {
+describe('Sites API Test - [PAGINATION TESTS]', function() {
 
     before(function(done) {
         commonFunctionTest.setAuthMsMicroservice(function(err) {
@@ -43,10 +43,10 @@ describe('Vendors API Test - [PAGINATION TESTS]', function() {
 
 
     after(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - deleteMany ---> " + err)
+        Sites.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Site paginationTests.js - after - deleteMany ---> " + err)
             commonFunctionTest.resetAuthMsStatus(function(err) {
-                if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - resetAuthMsStatus ---> " + err)
+                if (err) consoleLogError.printErrorLog("Site paginationTests.js - after - resetAuthMsStatus ---> " + err)
                 done()
             })
         })
@@ -54,34 +54,37 @@ describe('Vendors API Test - [PAGINATION TESTS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newVendorId) {
-            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - beforeEach - Vendors.create ---> " + err)
-            vendorId = newVendorId
+        siteDocuments.createDocuments(100, function(err, newSiteId) {
+            if (err) consoleLogError.printErrorLog("Site paginationTests.js - beforeEach - Sites.create ---> " + err)
+            siteId = newSiteId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - afterEach - deleteMany ---> " + err)
+        Sites.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Site paginationTests.js - afterEach - deleteMany ---> " + err)
             done()
         })
     })
 
 
-    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL, "vendors", ["description", "name"])
+    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL, "sites", ["name", "description", "location", "locatedInSiteId"])
 
 
     /*
+
     UNCOMMENT to define other CUSTOM tests
 
-    describe('test Type : eg. POST /vendors', function(){
+    describe('test Type : eg. POST /sites', function(){
+
         it('must test ...', function(done){
            done();
+
         });
     });
-     */
 
+     */
 
 })
