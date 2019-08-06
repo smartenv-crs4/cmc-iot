@@ -23,12 +23,12 @@
 
 var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
-var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver')
-var deviceTypeDocuments = require('../SetTestenv/createDeviceTypesDocuments')
+var Unit = require('../../DBEngineHandler/drivers/unitDriver')
+var unitDocuments = require('../SetTestenv/createUnitsDocuments')
 var should = require('should/should');
 
 
-describe('DeviceTypes Model Test', function() {
+describe('Unit Model Test', function() {
 
     before(function(done) {
         db.connect(function() {
@@ -45,7 +45,7 @@ describe('DeviceTypes Model Test', function() {
 
 
     beforeEach(function(done) {
-        deviceTypeDocuments.createDocuments(100, function(err) {
+        unitDocuments.createDocuments(100, function(err) {
             if (err) throw err
             else done()
         })
@@ -53,7 +53,7 @@ describe('DeviceTypes Model Test', function() {
 
 
     afterEach(function(done) {
-        DeviceType.deleteMany(function(err, p) {
+        Unit.deleteMany(function(err, p) {
             if (err) throw err
             done()
         })
@@ -62,11 +62,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll({skip:2, limit:30})', function() {
         it('must include _metadata with correct values', function(done) {
-            DeviceType.findAll({}, null, {skip: 2, limit: 30}, function(err, results) {
+            Unit.findAll({}, null, {skip: 2, limit: 30}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(30)
+                    results.units.length.should.be.equal(30)
                     results._metadata.skip.should.be.equal(2)
                     results._metadata.limit.should.be.equal(30)
                     results._metadata.should.have.property('totalCount')
@@ -80,11 +80,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll({skip:2, limit:30})', function() {
         it('must include _metadata with correct values', function(done) {
-            DeviceType.findAll({}, null, {skip: 2, limit: 30, totalCount: true}, function(err, results) {
+            Unit.findAll({}, null, {skip: 2, limit: 30, totalCount: true}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(30)
+                    results.units.length.should.be.equal(30)
                     results._metadata.skip.should.be.equal(2)
                     results._metadata.limit.should.be.equal(30)
                     results._metadata.should.have.property('totalCount')
@@ -98,11 +98,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll({skip:0, limit:10})', function() {
         it('must include _metadata with correct values', function(done) {
-            DeviceType.findAll({}, null, {skip: 0, limit: 10}, function(err, results) {
+            Unit.findAll({}, null, {skip: 0, limit: 10}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(10)
+                    results.units.length.should.be.equal(10)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(10)
                 }
@@ -114,11 +114,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll({skip:0, limit:10})', function() {
         it('must include _metadata with correct values', function(done) {
-            DeviceType.findAll({}, null, {skip: 0, limit: 10, totalCount: true}, function(err, results) {
+            Unit.findAll({}, null, {skip: 0, limit: 10, totalCount: true}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(10)
+                    results.units.length.should.be.equal(10)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(10)
                     results._metadata.totalCount.should.be.equal(100)
@@ -131,11 +131,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll() no pagination', function() {
         it('must include _metadata with default values', function(done) {
-            DeviceType.findAll({}, null, null, function(err, results) {
+            Unit.findAll({}, null, null, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(100)
+                    results.units.length.should.be.equal(100)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(-1)
                     results._metadata.should.have.property('totalCount')
@@ -149,11 +149,11 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findAll({skip:0, limit:2})', function() {
         it('must include _metadata with correct values and only 2 entries', function(done) {
-            DeviceType.findAll({}, null, {skip: 0, limit: 2}, function(err, results) {
+            Unit.findAll({}, null, {skip: 0, limit: 2}, function(err, results) {
                 if (err) throw err
                 else {
                     results.should.have.property('_metadata')
-                    results.deviceTypes.length.should.be.equal(2)
+                    results.units.length.should.be.equal(2)
                     results._metadata.skip.should.be.equal(0)
                     results._metadata.limit.should.be.equal(2)
                     results._metadata.should.have.property('totalCount')
@@ -167,12 +167,13 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findOne()', function() {
         it('must include all required properties', function(done) {
-            DeviceType.findOne({}, null, function(err, deviceType) {
+            Unit.findOne({}, null, function(err, unit) {
                 if (err) throw err
                 else {
-                    deviceType.should.have.property('description')
-                    deviceType.should.have.property('name')
-                    deviceType.should.have.property('observedPropertyId')
+                    unit.should.have.property('name')
+                    unit.should.have.property('symbol')
+                    unit.should.have.property('minValue')
+                    unit.should.have.property('maxValue')
                 }
                 done()
             })
@@ -182,19 +183,19 @@ describe('DeviceTypes Model Test', function() {
 
     describe('findById()', function() {
         it('must set findById', function(done) {
-            DeviceType.findOne({}, null, function(err, deviceType) {
+            Unit.findOne({}, null, function(err, unit) {
                 if (err) throw err
                 else {
-                    deviceType.should.have.property('description')
-                    deviceType.should.have.property('name')
-                    deviceType.should.have.property('observedPropertyId')
-                    DeviceType.findById(deviceType._id, "description name disabled", function(err, deviceTypeById) {
+                    unit.should.have.property('name')
+                    unit.should.have.property('symbol')
+                    unit.should.have.property('minValue')
+                    unit.should.have.property('maxValue')
+                    Unit.findById(unit._id, "name disabled", function(err, unitById) {
                         if (err) throw err
                         else {
-                            deviceTypeById.should.have.property('name')
-                            deviceTypeById.should.have.property('description')
-                            should(deviceTypeById.observedPropertyId).be.undefined()
-                            deviceTypeById._id.should.be.eql(deviceType._id)
+                            unitById.should.have.property('name')
+                            should(unitById.description).be.undefined()
+                            unitById._id.should.be.eql(unit._id)
                         }
                         done()
                     })
@@ -204,20 +205,21 @@ describe('DeviceTypes Model Test', function() {
     })
 
 
-    describe('removeDeviceType()', function() {
-        it('must remove a deviceType', function(done) {
-            DeviceType.findOne({}, null, function(err, deviceType) {
+    describe('removeUnit()', function() {
+        it('must remove a Unit', function(done) {
+            Unit.findOne({}, null, function(err, unit) {
                 if (err) throw err
                 else {
-                    deviceType.should.have.property('name')
-                    deviceType.should.have.property('description')
-                    deviceType.should.have.property('observedPropertyId')
-                    DeviceType.findByIdAndRemove(deviceType._id, function(err, removedDeviceType) {
+                    unit.should.have.property('name')
+                    unit.should.have.property('symbol')
+                    unit.should.have.property('minValue')
+                    unit.should.have.property('maxValue')
+                    Unit.findByIdAndRemove(unit._id, function(err, removedUnit) {
                         should(err).be.null()
-                        removedDeviceType._id.should.be.eql(deviceType._id)
-                        DeviceType.findById(deviceType._id, function(err, notFoundDeviceType) {
+                        removedUnit._id.should.be.eql(unit._id)
+                        Unit.findById(unit._id, function(err, notFoundUnit) {
                             should(err).be.null()
-                            should(notFoundDeviceType).be.null()
+                            should(notFoundUnit).be.null()
                             done()
                         })
                     })
@@ -227,24 +229,25 @@ describe('DeviceTypes Model Test', function() {
     })
 
 
-    describe('updateDeviceType()', function() {
-        it('must update a deviceType', function(done) {
-            DeviceType.findOne({}, null, function(err, deviceType) {
+    describe('updateUnit()', function() {
+        it('must update a Unit', function(done) {
+            Unit.findOne({}, null, function(err, unit) {
                 if (err) throw err
                 else {
-                    deviceType.should.have.property('description')
-                    deviceType.should.have.property('name')
-                    deviceType.should.have.property('observedPropertyId')
-                    var updateName = "updateName"
-                    DeviceType.findByIdAndUpdate(deviceType._id, {name: updateName}, function(err, updatedDeviceType) {
+                    unit.should.have.property('name')
+                    unit.should.have.property('symbol')
+                    unit.should.have.property('minValue')
+                    unit.should.have.property('maxValue')
+                    var updatedName = "updatedName"
+                    Unit.findByIdAndUpdate(unit._id, {name: updatedName}, function(err, updatedUnit) {
                         should(err).be.null()
-                        updatedDeviceType._id.should.be.eql(deviceType._id)
-                        updatedDeviceType.name.should.be.eql(updateName)
-                        DeviceType.findById(deviceType._id, function(err, findDeviceType) {
+                        updatedUnit._id.should.be.eql(unit._id)
+                        updatedUnit.name.should.be.eql(updatedName)
+                        Unit.findById(unit._id, function(err, foundUnit) {
                             should(err).be.null()
-                            should(findDeviceType).be.not.null()
-                            findDeviceType.name.should.be.eql(updateName)
-                            findDeviceType.name.should.be.not.eql(deviceType.name)
+                            should(foundUnit).be.not.null()
+                            foundUnit.name.should.be.eql(updatedName)
+                            foundUnit.name.should.be.not.eql(unit.name)
                             done()
                         })
                     })
@@ -254,11 +257,11 @@ describe('DeviceTypes Model Test', function() {
     })
 
 
-    describe('updateDeviceType()', function() {
-        it('must update a deviceType', function(done) {
-            DeviceType.findByIdAndUpdate(DeviceType.ObjectId(), {name: "aa"}, function(err, updatedDeviceType) {
+    describe('updateUnit()', function() {
+        it('must update a Unit', function(done) {
+            Unit.findByIdAndUpdate(Unit.ObjectId(), {name: "aa"}, function(err, updatedUnit) {
                 should(err).be.null()
-                should(updatedDeviceType).be.null()
+                should(updatedUnit).be.null()
                 done()
             })
         })

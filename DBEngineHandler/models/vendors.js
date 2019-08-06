@@ -21,28 +21,28 @@
  */
 
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
 
 var vendor = conf.customSchema.vendorSchema || {
-    name: {type:String, required:true},
-    description: {type:String, required:true}
-};
+    name: {type: String, required: true},
+    description: {type: String, required: true}
+}
 
 
-var vendorSchema = new Schema(vendor, {strict: "throw"});
+var vendorSchema = new Schema(vendor, {strict: "throw"})
 
 
 // Static method to retrieve resource WITH metadata
-vendorSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'vendors', conditions, fields, options, callback);
-};
+vendorSchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'vendors', conditions, fields, options, callback)
+}
 
 
-var Vendor = mongoose.model('vendor', vendorSchema);
+var Vendor = mongoose.model('vendor', vendorSchema)
 
 
-module.exports.VendorSchema = vendorSchema;
-module.exports.Vendor = Vendor;
+module.exports.VendorSchema = vendorSchema
+module.exports.Vendor = Vendor

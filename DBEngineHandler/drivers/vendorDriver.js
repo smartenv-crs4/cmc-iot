@@ -21,9 +21,9 @@
  */
 
 
-var vendors=require('../models/vendors').Vendor;
-var mongooseError=require('../../routes/utility/mongooseError');
-var mongoose=require('mongoose');
+var vendors = require('../models/vendors').Vendor
+var mongooseError = require('../../routes/utility/mongooseError')
+var mongoose = require('mongoose')
 
 
 /* GET vendors list */
@@ -44,7 +44,7 @@ module.exports.create = function(vendor, callback) {
 
 /* Delete Vendors */
 module.exports.deleteMany = function(conditions, options, callback) {
-    vendors.deleteMany(conditions,options, function(err) {
+    vendors.deleteMany(conditions, options, function(err) {
         callback(err)
     })
 }
@@ -59,7 +59,7 @@ module.exports.findOne = function(conditions, projection, options, callback) {
 
 
 /* findOne Vendor by ID */
-module.exports.findById = function (id, projection, options, callback) {
+module.exports.findById = function(id, projection, options, callback) {
     vendors.findById(id, projection, options, callback)
 }
 
@@ -78,7 +78,7 @@ module.exports.findByIdAndRemove = function(id, callback) {
 
 /* GET/SET Vendor ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return(mongoose.Types.ObjectId(ObjectId))
+    return (mongoose.Types.ObjectId(ObjectId))
 }
 
 

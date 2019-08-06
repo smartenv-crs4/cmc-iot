@@ -27,7 +27,7 @@ var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
 /* Create vendor */
 module.exports.postCreateVendor = function(req, res, next) {
     vendorDriver.create(req.body.vendor, function(err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err, null, results)
     })
 }
 
@@ -35,7 +35,7 @@ module.exports.postCreateVendor = function(req, res, next) {
 /* GET vendors list */
 module.exports.getVendors = function(req, res, next) {
     vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err, null, results)
     })
 }
 
@@ -44,7 +44,7 @@ module.exports.getVendors = function(req, res, next) {
 module.exports.getVendorById = function(req, res, next) {
     var id = req.params.id
     vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err, null, results)
     })
 }
 
@@ -52,7 +52,7 @@ module.exports.getVendorById = function(req, res, next) {
 /* Update vendor */
 module.exports.updateVendor = function(req, res, next) {
     vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err, null, results)
     })
 }
 
@@ -62,7 +62,7 @@ module.exports.updateVendor = function(req, res, next) {
 module.exports.deleteVendor = function(req, res, next) {
     var id = req.params.id
     vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err,null,deletedVendor);
+        res.httpResponse(err, null, deletedVendor)
     })
 }
 

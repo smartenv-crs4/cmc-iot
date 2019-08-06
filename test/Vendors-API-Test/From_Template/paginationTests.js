@@ -20,73 +20,63 @@
  ############################################################################
  */
 
-var _ = require('underscore')._;
-var async = require('async');
-var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver');
-var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vendors" ;
-var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
+var _ = require('underscore')._
+var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vendors"
+var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
+var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
 
-var webUiToken;
-var vendorId;
+var webUiToken
+var vendorId
 
 
-describe('Vendors API Test - [PAGINATION TESTS]', function () {
+describe('Vendors API Test - [PAGINATION TESTS]', function() {
 
-    before(function (done) {
-        this.timeout(5000)
-        commonFunctioTest.setAuthMsMicroservice(function(err){
-            if(err) throw (err);
-            webUiToken=conf.testConfig.myWebUITokenToSignUP;
-            done();
+    before(function(done) {
+        commonFunctionTest.setAuthMsMicroservice(function(err) {
+            if (err) throw (err)
+            webUiToken = conf.testConfig.myWebUITokenToSignUP
+            done()
         })
     })
 
-    after(function (done) {
-        this.timeout(5000)
-        Vendors.deleteMany({}, function (err,elm) {
-            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - deleteMany ---> " + err);
-            commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - resetAuthMsStatus ---> " + err);
-                done();
+
+    after(function(done) {
+        Vendors.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - deleteMany ---> " + err)
+            commonFunctionTest.resetAuthMsStatus(function(err) {
+                if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - resetAuthMsStatus ---> " + err)
+                done()
             })
         })
     })
 
 
-    beforeEach(function (done) {
-        var range = _.range(100);
-        async.each(range, function (e, cb) {
-            Vendors.create({
-                name:"name" + e,
-                description:"description" +e
-            }, function (err, newVendor) {
-                if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - beforeEach - Vendors.create ---> " + err);
-                if(e===1) vendorId=newVendor._id;
-                cb();
-            })
-        }, function (err) {
-            done();
+    beforeEach(function(done) {
+        vendorDocuments.createDocuments(100, function(err, newVendorId) {
+            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - beforeEach - Vendors.create ---> " + err)
+            vendorId = newVendorId
+            done()
         })
     })
 
 
-    afterEach(function (done) {
-        Vendors.deleteMany({}, function (err, elm) {
-            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - afterEach - deleteMany ---> " + err);
-            done();
+    afterEach(function(done) {
+        Vendors.deleteMany({}, function(err, elm) {
+            if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - afterEach - deleteMany ---> " + err)
+            done()
         })
     })
 
 
-    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL,"vendors",["description","name"]);
-
+    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL, "vendors", ["description", "name"])
 
 
     /*
     UNCOMMENT to define other CUSTOM tests
 
-    describe('test Type : eg. POST /Vendors', function(){
+    describe('test Type : eg. POST /vendors', function(){
         it('must test ...', function(done){
            done();
         });
@@ -94,5 +84,4 @@ describe('Vendors API Test - [PAGINATION TESTS]', function () {
      */
 
 
-
-});
+})

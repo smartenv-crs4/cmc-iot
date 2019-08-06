@@ -22,8 +22,6 @@
 
 
 var should = require('should/should')
-var _ = require('underscore')._
-var async = require('async')
 var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
@@ -31,6 +29,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vend
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var Vendor = require('../../../DBEngineHandler/models/vendors').Vendor
+var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
 
 var webUiToken
 var vendorId
@@ -61,17 +60,9 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        var range = _.range(100)
-        async.each(range, function(e, cb) {
-            Vendors.create({
-                name: "name" + e,
-                description: "description" + e
-            }, function(err, newVendor) {
-                if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - beforeEach - Vendors.create ---> " + err)
-                if (e === 1) vendorId = newVendor._id
-                cb()
-            })
-        }, function(err) {
+        vendorDocuments.createDocuments(100, function(err, newVendorId) {
+            if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - beforeEach - Vendors.create ---> " + err)
+            vendorId = newVendorId
             done()
         })
     })
@@ -161,7 +152,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
     })
 
 
-    describe('GET /_metadata', function() {
+    describe('GET /vendors', function() {
         it('must test API compliance to filter by vendors as comma separated elements of a list  ---> vendors="_id1, _id2"', function(done) {
             Vendor.findAll({}, null, null, function(err, results) {
                 if (err) throw err
@@ -282,7 +273,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
 
     describe('GET /vendors', function() {
-        it('must test results order - desc', function(done) {
+        it('must test results order - descending', function(done) {
             Vendor.findAll({}, null, null, function(err, results) {
                 if (err) throw err
                 else {
@@ -290,7 +281,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
                         url: APIURL + '?sortDesc=name,description',
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("GET /vendors: 'must test results order - desc'  -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("GET /vendors: 'must test results order - descending'  -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(200)
                             var results = JSON.parse(body)
@@ -311,7 +302,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
 
     describe('GET /vendors', function() {
-        it('must test results order - asc', function(done) {
+        it('must test results order - ascending', function(done) {
             Vendor.findAll({}, null, null, function(err, results) {
                 if (err) throw err
                 else {
@@ -319,7 +310,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
                         url: APIURL + '?sortAsc=name,description',
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("GET /vendors: 'must test results order - asc'  -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("GET /vendors: 'must test results order - ascending'  -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(200)
                             var results = JSON.parse(body)
