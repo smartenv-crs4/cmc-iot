@@ -20,27 +20,28 @@
  ############################################################################
  */
 
+var _ = require('underscore')._
+var async = require('async')
+var ObservedProperty = require('../../DBEngineHandler/drivers/observedPropertyDriver')
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+module.exports.createDocuments = function(numbers, callback) {
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
+    var range = _.range(numbers)
+    var observedPropertyId
+    async.each(range, function(e, cb) {
+        ObservedProperty.create({
+            name: "name" + e,
+            description: "description" + e
+        }, function(err, newObservedProperty) {
+            if (err) throw err
+            if (e === 1) observedPropertyId = newObservedProperty._id
+            cb()
+        })
+    }, function(err) {
+        callback(err, observedPropertyId)
+    })
+
+}
+
 

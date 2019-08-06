@@ -21,26 +21,28 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+var observedProperty = conf.customSchema.observedPropertySchema || {
+    name: {type: String, required: true},
+    description: {type: String, required: true}
+}
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
 
+var observedPropertySchema = new Schema(observedProperty, {strict: "throw"})
+
+
+// Static method to retrieve resource WITH metadata
+observedPropertySchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'observedProperties', conditions, fields, options, callback)
+}
+
+
+var ObservedProperty = mongoose.model('observedProperty', observedPropertySchema)
+
+
+module.exports.ObservedPropertySchema = observedPropertySchema
+module.exports.ObservedProperty = ObservedProperty

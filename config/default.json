@@ -28,6 +28,7 @@
         "unitSchema": null,
         "vendorSchema": null,
         "observationSchema": null,
+        "observedPropertySchema": null,
         "thingSchema": null,
         "siteSchema": null
     },
@@ -67,6 +68,7 @@
       "unitSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
+      "observedPropertySchema": null,
       "thingSchema": null,
       "siteSchema": null
     },
@@ -106,6 +108,7 @@
       "unitSchema": null,
       "vendorSchema": null,
       "observationSchema": null,
+      "observedPropertySchema": null,
       "thingSchema": null,
       "siteSchema": null
     },
