@@ -106,7 +106,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
                 url: APIURL + '?fields=-description',
                 headers: {'Authorization': "Bearer " + webUiToken}
             }, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("GET /devices: 'must test API compliance to field selection: fields projection must not include description [-description]' -->" + error.message)
+                if (error) consoleLogError.printErrorLog("GET /vendors: 'must test API compliance to field selection: fields projection must not include description [-description]' -->" + error.message)
                 else {
                     response.statusCode.should.be.equal(200)
                     var results = JSON.parse(body)

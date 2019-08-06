@@ -36,6 +36,7 @@ var deviceTypesRouter = require('./routes/deviceTypes');
 var unitsRouter = require('./routes/units');
 var vendorsRouter = require('./routes/vendors');
 var sitesRouter = require('./routes/sites');
+var observedPropertiesRouter = require('./routes/observedProperties');
 
 var app = express();
 
@@ -61,6 +62,7 @@ app.use('/deviceTypes', deviceTypesRouter);
 app.use('/units', unitsRouter)
 app.use('/vendors', vendorsRouter);
 app.use('/sites', sitesRouter);
+app.use('/observedProperties', observedPropertiesRouter);
 
 
 // catch 404 and forward to error handler

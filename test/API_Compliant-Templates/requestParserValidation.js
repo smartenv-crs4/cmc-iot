@@ -164,7 +164,7 @@ exports.requestParserValidation = function (APIURL,route) {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.equal("body fields '"+(route.slice(0,-1))+"' missing");
+                        results.message.should.be.equal("body fields '"+((route.endsWith("ies")) ? (route.slice(0,-3))+"y" :(route.slice(0,-1))) + "' missing");
                     }
                     done();
                 });

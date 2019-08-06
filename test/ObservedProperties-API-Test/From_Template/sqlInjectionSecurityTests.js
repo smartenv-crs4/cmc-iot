@@ -21,26 +21,48 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
+var conf = require('propertiesmanager').conf
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observedProperties"
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
+require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL, "observedProperties", "name")
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. ObservedProperties API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /observedProperties', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */
 

@@ -21,26 +21,11 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
-
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
-
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
-
+require('./Custom-ObservedProperty/CRUD-Tests')
+require('./From_Template/accessTokenSecurityTests')
+require('./Custom-ObservedProperty/dataValidationTests')
+require('./From_Template/requestParserValidationTests')
+require('./From_Template/sqlInjectionSecurityTests')
+require('./From_Template/paginationTests')
+require('./From_Template/httpStatusCodeTests')
+require('./Custom-ObservedProperty/searchFilterTests')

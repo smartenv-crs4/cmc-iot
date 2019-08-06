@@ -21,26 +21,49 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
+var observedPropertyDriver = require('../../DBEngineHandler/drivers/observedPropertyDriver')
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./Devices-API-Test/devices-api');
-require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
+/* Create ObservedProperty */
+module.exports.postCreateObservedProperty = function(req, res, next) {
+    observedPropertyDriver.create(req.body.observedProperty, function(err, results) {
+        res.httpResponse(err, null, results)
+    })
+}
+
+
+/* GET ObservedProperties list */
+module.exports.getObservedProperties = function(req, res, next) {
+    observedPropertyDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
+        res.httpResponse(err, null, results)
+    })
+}
+
+
+/* GET ObservedProperty By Id */
+module.exports.getObservedPropertyById = function(req, res, next) {
+    var id = req.params.id
+    observedPropertyDriver.findById(id, req.dbQueryFields, function(err, results) {
+        res.httpResponse(err, null, results)
+    })
+}
+
+
+/* Update ObservedProperty */
+module.exports.updateObservedProperty = function(req, res, next) {
+    observedPropertyDriver.findByIdAndUpdate(req.params.id, req.body.observedProperty, function(err, results) {
+        res.httpResponse(err, null, results)
+    })
+}
+
+
+//TODO Gestire la cancellazione in presenza di DeviceTypes e Units collegati
+
+/* Delete ObservedProperties */
+module.exports.deleteObservedProperty = function(req, res, next) {
+    var id = req.params.id
+    observedPropertyDriver.findByIdAndRemove(id, function(err, deletedObservedProperty) {
+        res.httpResponse(err, null, deletedObservedProperty)
+    })
+}
 
