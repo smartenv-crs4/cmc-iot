@@ -49,7 +49,7 @@ module.exports.updateThing = function (req, res, next) {
 
 
 /* GET thing By Id. */
-//todo direct url visibile solamente al proprietario
+//todo direct url visibile solamente al proprietario usare la proprieta --di mongoose per toglierlo
 module.exports.getThingById = function (req, res, next) {
 
     var id = req.params.id;
@@ -61,11 +61,20 @@ module.exports.getThingById = function (req, res, next) {
 
 
 /* GET things listing. */
+// TODO descrivere che dismissed non è un prametro di ricerca di usare laction per cercare i dsmissed
 module.exports.getThings = function (req, res, next) {
     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err,req.statusCode,results);
     });
 };
+
+// /* GET things listing. */
+// module.exports.getDissmissedThings = function (req, res, next) {
+//     req.query.dismissed=true; // dismissed thing must be a query filter
+//     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
+//         res.httpResponse(err,201,results);
+//     });
+// };
 
 
 function deleteThingById(id,res){

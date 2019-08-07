@@ -160,7 +160,6 @@ exports.validateBody = function (mandatoryFields) {
 };
 
 
-
 //Middleware to parse sort option from request
 //Adds sort to request
 exports.parseIds = function(field){
@@ -173,4 +172,45 @@ exports.parseIds = function(field){
         next();
     });
 };
+
+
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.parseBodyQueries = function (req,res,next) {
+
+    var bodyRequest=req.body || null;
+
+    if (!bodyRequest || _.isEmpty(bodyRequest)){
+        return res.boom.badRequest('body missing');
+    }else{
+        if(!bodyRequest.searchFilters)
+            return res.boom.badRequest('mandatory searchFilters body field missing');
+
+        req.query={};
+        _.each(bodyRequest.searchFilters,function(value,key){
+            req.query[key]=value;
+        });
+
+        if(bodyRequest.pagination){
+            if(bodyRequest.pagination.skip)
+                req.query.skip=bodyRequest.pagination.skip;
+
+            if(bodyRequest.pagination.limit)
+                req.query.limit=bodyRequest.pagination.limit;
+
+            if(bodyRequest.pagination.totalCount)
+                req.query.totalCount=bodyRequest.pagination.totalCount;
+        }
+
+        if(bodyRequest.options && bodyRequest.options.sortAsc)
+            req.query.sortAsc=bodyRequest.options.sortAsc;
+
+        if(bodyRequest.options && bodyRequest.options.sortDesc)
+            req.query.sortDesc=bodyRequest.options.sortDesc;
+
+    }
+    next();
+};
+
+
 

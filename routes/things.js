@@ -29,6 +29,27 @@ var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
 
+//actions
+
+// /* get dismissed things */
+var dismssedMiddlewared=[
+    authorisationManager.checkToken,
+    parseRequestMiddleware.parseBodyQueries,
+    parseRequestMiddleware.parseFields,
+    parseRequestMiddleware.parseOptions,
+    mongosecurity.parseForOperators,
+    parseRequestMiddleware.parseIds("things")
+];
+router.post('/actions/searchDismissed',dismssedMiddlewared,function(req, res, next) {
+  req.query.dismissed=true; // dismissed thing must be a query filter
+  req.statusCode=200; // to redefine http status code response
+  //todo remove
+  console.log(req.options);;
+  thingsHandler.getThings(req,res,next);
+});
+
+
+
 
 /* Create things */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]), function(req, res, next) {
@@ -62,6 +83,7 @@ router.use(mongosecurity.parseForOperators);
 
 /* GET things listing. */
 router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("things"), function(req, res, next) {
+  req.query.dismissed=false; // dismissed thing must be removed from query results
   thingsHandler.getThings(req,res,next);
 });
 

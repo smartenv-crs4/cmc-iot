@@ -23,6 +23,7 @@
 require('./Custom-Thing/dataValidationTests');
 require('./Custom-Thing/searchFilterTests');
 require('./Custom-Thing/CRUD-Tests');
+require('./Custom-Thing/APIActionsTests');
 require('./From_Template/accessTokenSecurityTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');
