@@ -43,9 +43,18 @@ var dismssedMiddlewared=[
 router.post('/actions/searchDismissed',dismssedMiddlewared,function(req, res, next) {
   req.query.dismissed=true; // dismissed thing must be a query filter
   req.statusCode=200; // to redefine http status code response
-  //todo remove
-  console.log(req.options);;
   thingsHandler.getThings(req,res,next);
+});
+
+
+router.post('/:id/actions/disable',[authorisationManager.checkToken],function(req, res, next) {
+  req.disableThing=true;
+  thingsHandler.disableEnableThing(req,res,next);
+});
+
+router.post('/:id/actions/enable',[authorisationManager.checkToken],function(req, res, next) {
+    req.disableThing=false;
+    thingsHandler.disableEnableThing(req,res,next);
 });
 
 

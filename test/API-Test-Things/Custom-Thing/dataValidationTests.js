@@ -27,6 +27,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/thing
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var thingDocuments=require('../../SetTestenv/createThingsDocuments');
+var should=require('should');
 
 var webUiToken;
 
@@ -241,7 +242,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
 
     describe('PUT /thing', function(){
 
-        it('must test thing update [data validation error due to no Thingmodifiable field dismissed]', function(done){
+        it('must test thing update [data validation error due to no Thing modifiable field dismissed]', function(done){
             Things.findOne({}, null, function(err, thing){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({thing:{name:"name", description: "description",ownerId:Things.ObjectId(), dismissed:true}});
@@ -259,6 +260,34 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('error');
                         results.should.have.property('message');
                         results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore");
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+    describe('PUT /thing', function(){
+
+        it('must test thing update [data validation error due to update field disabled]', function(done){
+            Things.findOne({}, null, function(err, thing){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({thing:{name:"name", description: "description",ownerId:Things.ObjectId(), disabled:true}});
+                var requestParams={
+                    url:APIURL+"/" + thing._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [data validation error due to no modifiable field dismissed] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.eql("The field 'disabled' is in Schema but cannot be changed anymore");
                     }
                     done();
                 });

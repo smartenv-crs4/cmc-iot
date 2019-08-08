@@ -23,12 +23,51 @@
 
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver.js');
+var disabledDeviceDriver = require('../../DBEngineHandler/drivers/disabledDeviceDriver.js');
 var deviceUtility = require('./handlerUtility/deviceUtility');
 var async=require('async');
 var config = require('propertiesmanager').conf;
 
 
 var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
+
+
+function deleteThingById(id,res){
+    thingDriver.findByIdAndRemove(id, function (err, deletedThing) {
+        res.httpResponse(err,null,deletedThing);
+    });
+}
+
+function enableDisableThingById(id,action,res){
+    thingDriver.findByIdAndUpdate(id,{disabled:action}, function (err, updatedThing) {
+        res.httpResponse(err,200,updatedThing);
+    });
+}
+
+
+function enableDisableDeviceyId(deviceId,thingId,action,callback){
+
+    deviceDriver.findByIdAndUpdate(deviceId,{disabled:action},function(err,disabledDevice){
+        if(err){
+            return callback(err);
+        }else{
+            if(action){
+                disabledDeviceDriver.create({deviceId:deviceId,thingId:thingId},function(err,disabledDeviceList){
+                    if(err){
+                        return callback(err);
+                    }else{
+                        callback();
+                    }
+                });
+            }else{
+                callback();
+            }
+
+        }
+    });
+}
+
+
 
 
 /* Create thing. */
@@ -42,7 +81,7 @@ module.exports.postCreateThing = function (req, res, next) {
 /* Update thing. */
 // TODO notificare  tramite REDIS??
 module.exports.updateThing = function (req, res, next) {
-    thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed"], function (err, results) {
+    thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed","disabled"], function (err, results) {
         res.httpResponse(err,null,results);
     });
 };
@@ -68,20 +107,91 @@ module.exports.getThings = function (req, res, next) {
     });
 };
 
-// /* GET things listing. */
-// module.exports.getDissmissedThings = function (req, res, next) {
-//     req.query.dismissed=true; // dismissed thing must be a query filter
-//     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
-//         res.httpResponse(err,201,results);
-//     });
-// };
+/* disable/enable Thing. */
+module.exports.disableEnableThing = function (req, res, next) {
+
+    if(req.disableThing==undefined){
+        const err = new Error("req.disableThing==undefined. It must be true to disable or false to enable");
+        err.name="GeneralError";
+        res.httpResponse(err,null,null);
+    }else{
+        var id=req.params.id;
+        if(req.disableThing){ // disable
+
+            //  Get All associated enabled devices then
+            //     - set device as disabled
+            //     - save disabling into disabledDevice collection
+
+            deviceDriver.findAll({thingId: id, disabled:false}, null, {totalCount: true}, function (err, results) {
+                if (err) {
+                    return res.httpResponse(err,null,null);
+                } else {
+                    if ((results._metadata.totalCount) > 0) { // there are associated device
+
+                        //  For Each Device
+                        //      - set device as disabled
+                        //      - save disabling into disabledDevice collection
+
+                        async.each(results.devices, function(device, callbackDevice) {
+                            enableDisableDeviceyId(device._id,id,true,function(err){
+                               callbackDevice(err);
+                            });
+                        }, function(err) {
+                            if(err){
+                                return res.httpResponse(err,null,null);
+                            }else {
+                                enableDisableThingById(id, true, res);
+                            }
+                        });
+                    } else { // there aren't associated device then disable
+                        enableDisableThingById(id,true,res);
+                    }
+                }
+            });
+        }else{  //enable
 
 
-function deleteThingById(id,res){
-    thingDriver.findByIdAndRemove(id, function (err, deletedThing) {
-        res.httpResponse(err,null,deletedThing);
-    });
-}
+            //  Get All associated devices previously disabled
+
+            disabledDeviceDriver.findAll({thingId: id}, null, {totalCount: true}, function (err, results) {
+                if (err) {
+                    return res.httpResponse(err,null,null);
+                } else {
+                    if ((results._metadata.totalCount) > 0) { // there are associated device
+
+                        //  1. For Each Device
+                        //      - set device as enabled
+                        //  2. Delete all previously disabled device list
+
+                        async.each(results.disabledDevices, function(device, callbackDevice) {
+                            enableDisableDeviceyId(device.deviceId,id,false,function(err){
+                                callbackDevice(err);
+                            });
+                        }, function(err) {
+                            if(err){
+                                return res.httpResponse(err,null,null);
+                            }else {
+                                disabledDeviceDriver.deleteMany({thingId:id},function(err){
+                                    if(err){
+                                        return res.httpResponse(err,null,null);
+                                    }else {
+                                        enableDisableThingById(id, false, res);
+                                    }
+                                });
+                            }
+                        });
+                    } else { // there aren't associated device then disable
+                        enableDisableThingById(id,false,res);
+                    }
+                }
+            });
+        }
+
+    }
+};
+
+
+
 
 /* Delete things. */
 //TODO descrivere che quando si elimina un thing, se non ha misurazioni vene eliminato atrimenti rimane nel sistema  viene messo in stato dismesso e l'owner diventa Cmc-Iot

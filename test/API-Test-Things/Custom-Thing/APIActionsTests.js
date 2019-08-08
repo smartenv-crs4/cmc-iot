@@ -23,13 +23,16 @@
 
 var should = require('should/should');
 var Things = require('../../../DBEngineHandler/drivers/thingDriver');
+var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
+var disabledDevices = require('../../../DBEngineHandler/drivers/disabledDeviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/things" ;
-var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
-var consoleLogError=require('../../Utility/errorLogs');
-var async=require('async');
-var thingDocuments=require('../../SetTestenv/createThingsDocuments');
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
+var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation");
+var consoleLogError = require('../../Utility/errorLogs');
+var async = require('async');
+var thingDocuments = require('../../SetTestenv/createThingsDocuments');
+var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var thingId;
@@ -39,18 +42,18 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
 
     before(function (done) {
         this.timeout(0);
-        commonFunctioTest.setAuthMsMicroservice(function(err) {
-            if(err) throw (err);
-            webUiToken=conf.testConfig.myWebUITokenToSignUP;
+        commonFunctioTest.setAuthMsMicroservice(function (err) {
+            if (err) throw (err);
+            webUiToken = conf.testConfig.myWebUITokenToSignUP;
             done();
         });
     });
 
     after(function (done) {
         this.timeout(0);
-        Things.deleteMany({}, function (err,elm) {
+        Things.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - after - deleteMany ---> " + err);
-            commonFunctioTest.resetAuthMsStatus(function(err){
+            commonFunctioTest.resetAuthMsStatus(function (err) {
                 if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
@@ -58,13 +61,18 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
     beforeEach(function (done) {
 
-        thingDocuments.createDocuments(100,function(err,newThingId){
+        thingDocuments.createDocuments(100, function (err, newThingId) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Things.create ---> " + err);
-            thingId=newThingId;
-            done();
+            thingId = newThingId;
+            deviceDocuments.createDocuments(100, function (err, newThingId) {
+                if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Device.create ---> " + err);
+                disabledDevices.deleteMany({},function(err){
+                    if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Device.create ---> " + err);
+                    done();
+                });
+            });
         });
     });
 
@@ -72,7 +80,10 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     afterEach(function (done) {
         Things.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            done();
+            Devices.deleteMany({}, function (err, elm) {
+                if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - afterEach - deleteMany ---> " + err);
+                done();
+            });
         });
     });
 
@@ -86,7 +97,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                 headers: {'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed error due to no body'  -->" + error.message);
+                if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed error due to no body'  -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(400);
                     var results = JSON.parse(body);
@@ -109,11 +120,11 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
 
             request.post({
                 url: APIURL + '/actions/searchDismissed',
-                headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                body:JSON.stringify({skip:0})
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({skip: 0})
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed error due to searchFilters body field missing'  -->" + error.message);
+                if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed error due to searchFilters body field missing'  -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(400);
                     var results = JSON.parse(body);
@@ -136,11 +147,11 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
 
             request.post({
                 url: APIURL + '/actions/searchDismissed',
-                headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                body:JSON.stringify({searchFilters:{}})
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed no results due to no dismissed things'  -->" + error.message);
+                if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed no results due to no dismissed things'  -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
@@ -155,35 +166,34 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
     describe('POST /things/actions/searchDismissed', function () {
 
         it('must test API action searchDismissed', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
+                    }, function (err) {
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify({searchFilters:{}})
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({searchFilters: {}})
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
@@ -206,29 +216,29 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         it('must test API action searchDismissed skip, limit', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
+                    }, function (err) {
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify({pagination:{limit:10 ,skip:2}, searchFilters:{}})
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({pagination: {limit: 10, skip: 2}, searchFilters: {}})
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
@@ -250,35 +260,37 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
     describe('POST /things/actions/searchDismissed', function () {
 
         it('must test API action searchDismissed skip, limit, totalCount', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
+                    }, function (err) {
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify({pagination:{limit:10 ,skip:2, totalCount:true}, searchFilters:{}})
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({
+                                pagination: {limit: 10, skip: 2, totalCount: true},
+                                searchFilters: {}
+                            })
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed skip, limit, totalCount'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
@@ -300,43 +312,42 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
     describe('POST /things/actions/searchDismissed', function () {
 
         it('must test API action searchDismissed field projection[description, name]', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
+                    }, function (err) {
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify({searchFilters:{fields:"name description"}})
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({searchFilters: {fields: "name description"}})
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[description, name]'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
                                 results.should.have.property('_metadata');
                                 results.should.have.property('things');
                                 results.things.length.should.be.eql(conf.pagination.limit);
-                                results.things[0].should.have.properties("name","description");
-                                results.things[0].should.not.have.properties("dismissed","disabled","ownerId", "vendorId");
+                                results.things[0].should.have.properties("name", "description");
+                                results.things[0].should.not.have.properties("dismissed", "disabled", "ownerId", "vendorId");
                             }
                             done();
                         });
@@ -353,29 +364,29 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         it('must test API action searchDismissed field projection[-description]', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
+                    }, function (err) {
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify({searchFilters:{fields:"-description"}})
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({searchFilters: {fields: "-description"}})
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed field projection[-description]'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
@@ -383,7 +394,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('things');
                                 results.things.length.should.be.eql(conf.pagination.limit);
                                 results.things[0].should.not.have.properties("description");
-                                results.things[0].should.have.properties("dismissed","disabled","ownerId", "vendorId","name");
+                                results.things[0].should.have.properties("dismissed", "disabled", "ownerId", "vendorId", "name");
                             }
                             done();
                         });
@@ -400,34 +411,34 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         it('must test API action searchDismissed with filters [by single name]', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
-                        var bodyParams={
-                                searchFilters:{
-                                    name:[results.things[0].name]
-                                }
+                    }, function (err) {
+                        var bodyParams = {
+                            searchFilters: {
+                                name: [results.things[0].name]
+                            }
                         };
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify(bodyParams)
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify(bodyParams)
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var results = JSON.parse(body);
@@ -451,34 +462,34 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         it('must test API action searchDismissed with filters [by double name]', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
-                        var bodyParams={
-                            searchFilters:{
-                                name:[results.things[0].name,results.things[1].name]
+                    }, function (err) {
+                        var bodyParams = {
+                            searchFilters: {
+                                name: [results.things[0].name, results.things[1].name]
                             }
                         };
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify(bodyParams)
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify(bodyParams)
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by single name]'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var searchresults = JSON.parse(body);
@@ -502,34 +513,34 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         it('must test API action searchDismissed with filters [by things]', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
-                        var bodyParams={
-                            searchFilters:{
-                                things:[results.things[0]._id,results.things[1]._id]
+                    }, function (err) {
+                        var bodyParams = {
+                            searchFilters: {
+                                things: [results.things[0]._id, results.things[1]._id]
                             }
                         };
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify(bodyParams)
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify(bodyParams)
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed with filters [by things]'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var searchresults = JSON.parse(body);
@@ -551,41 +562,38 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
-
     describe('POST /things/actions/searchDismissed', function () {
 
         it('must test API action searchDismissed  ordering results desc', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
-                        var bodyParams={
-                            searchFilters:{
-                            },
-                            options:{sortDesc:"name,description"}
+                    }, function (err) {
+                        var bodyParams = {
+                            searchFilters: {},
+                            options: {sortDesc: "name,description"}
                         };
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify(bodyParams)
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify(bodyParams)
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results desc'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var searchresults = JSON.parse(body);
@@ -607,41 +615,38 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
-
     describe('POST /things/actions/searchDismissed', function () {
 
         it('must test API action searchDismissed  ordering results asc', function (done) {
 
 
-            Things.findAll({}, null, null, function(err, results){
-                if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + err);
-                else{
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + err);
+                else {
 
                     results.things.length.should.be.eql(100);
-                    results.should.have.properties("things","_metadata");
-                    async.each(results.things, function(thing, callback) {
-                        Things.findByIdAndUpdate(thing._id,{dismissed:true},function(err,updateThing){
-                            if(err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + err);
-                            else{
+                    results.should.have.properties("things", "_metadata");
+                    async.each(results.things, function (thing, callback) {
+                        Things.findByIdAndUpdate(thing._id, {dismissed: true}, function (err, updateThing) {
+                            if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + err);
+                            else {
                                 updateThing.dismissed.should.be.true();
                                 callback();
                             }
                         });
 
-                    }, function(err) {
-                        var bodyParams={
-                            searchFilters:{
-                            },
-                            options:{sortAsc:"name,description"}
+                    }, function (err) {
+                        var bodyParams = {
+                            searchFilters: {},
+                            options: {sortAsc: "name,description"}
                         };
                         request.post({
                             url: APIURL + '/actions/searchDismissed',
-                            headers: {'content-type': 'application/json','Authorization': "Bearer " + webUiToken},
-                            body:JSON.stringify(bodyParams)
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify(bodyParams)
                         }, function (error, response, body) {
 
-                            if(error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + error.message);
+                            if (error) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + error.message);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var searchresults = JSON.parse(body);
@@ -655,6 +660,331 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                         });
                     });
 
+                }
+            });
+        });
+
+    });
+
+
+    describe('POST /things/:id/actions/disable', function () {
+
+        it('must test API action disable [thing without devices] ', function (done) {
+
+
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + err);
+                else {
+
+                    results.things.length.should.be.eql(100);
+                    results.should.have.properties("things", "_metadata");
+                    results.things[0].disabled.should.be.false();
+                    request.post({
+                        url: APIURL + '/' + results.things[0]._id + '/actions/disable',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + err);
+                        else {
+                            response.statusCode.should.be.equal(200);
+                            var disableesults = JSON.parse(body);
+                            disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                            disableesults.disabled.should.be.true();
+                        }
+                        request.post({
+                            url: APIURL + '/' + results.things[0]._id + '/actions/enable',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + err);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var disableesults = JSON.parse(body);
+                                disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                disableesults.disabled.should.be.false();
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+
+    });
+
+
+    describe('POST /things/:id/actions/disable', function () {
+
+        it('must test API action disable [thing with associated devices] ', function (done) {
+
+
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                else {
+
+                    results.things.length.should.be.eql(100);
+                    results.should.have.properties("things", "_metadata");
+                    results.things[0].disabled.should.be.false();
+                    var thingId = results.things[0]._id;
+
+                    Devices.findAll({}, null, null, function (err, results) {
+                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                        else {
+                            results.should.have.properties("devices");
+                            results.should.have.properties("_metadata");
+                            async.each([0, 1, 2, 3, 4], function (thingIndex, callback) {
+                                Devices.findByIdAndUpdate(results.devices[thingIndex]._id, {thingId: thingId}, function (err, updateDevice) {
+                                    if (err) consoleLogError.printErrorLog("POST /things/actions/searchDismissed: 'must test API action searchDismissed  ordering results asc'  -->" + err);
+                                    else {
+                                        updateDevice.thingId.should.be.eql(thingId);
+                                        callback();
+                                    }
+                                });
+
+                            }, function (err) {
+                                Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                    if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                    else {
+                                        results.should.have.properties("devices");
+                                        results.should.have.properties("_metadata");
+                                        results.devices.length.should.be.eql(5);
+                                        async.each(results.devices, function (deviceFound, callback) {
+                                            deviceFound.disabled.should.be.false();
+                                            callback();
+
+                                        }, function (err) {
+
+                                            request.post({
+                                                url: APIURL + '/' + thingId + '/actions/disable',
+                                                headers: {
+                                                    'content-type': 'application/json',
+                                                    'Authorization': "Bearer " + webUiToken
+                                                },
+                                            }, function (error, response, body) {
+
+                                                if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                else {
+                                                    response.statusCode.should.be.equal(200);
+                                                    var disableesults = JSON.parse(body);
+                                                    disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                    disableesults.disabled.should.be.true();
+
+                                                    Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                        else {
+                                                            results.should.have.properties("devices");
+                                                            results.should.have.properties("_metadata");
+                                                            results.devices.length.should.be.eql(5);
+                                                            async.each(results.devices, function (deviceFound, callback) {
+                                                                deviceFound.disabled.should.be.true();
+                                                                callback();
+
+                                                            }, function (err) {
+                                                                request.post({
+                                                                    url: APIURL + '/' + thingId + '/actions/enable',
+                                                                    headers: {
+                                                                        'content-type': 'application/json',
+                                                                        'Authorization': "Bearer " + webUiToken
+                                                                    },
+                                                                }, function (error, response, body) {
+
+                                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                                    else {
+                                                                        response.statusCode.should.be.equal(200);
+                                                                        var disableesults = JSON.parse(body);
+                                                                        disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                                        disableesults.disabled.should.be.false();
+                                                                    }
+                                                                    Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                                                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                                        else {
+                                                                            results.should.have.properties("devices");
+                                                                            results.should.have.properties("_metadata");
+                                                                            results.devices.length.should.be.eql(5);
+                                                                            async.each(results.devices, function (deviceFound, callback) {
+                                                                                deviceFound.disabled.should.be.false();
+                                                                                callback();
+
+                                                                            }, function (err) {
+                                                                                disabledDevices.findAll({}, null, null, function (err, disabledDevicesFound) {
+                                                                                    if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                                                    else {
+                                                                                       should(disabledDevicesFound.disabledDevices).be.empty();
+                                                                                       done();
+                                                                                    }
+                                                                                });
+                                                                            });
+                                                                        }
+                                                                    });
+                                                                });
+                                                            });
+                                                        }
+                                                    });
+                                                }
+                                            });
+
+                                        });
+                                    }
+                                });
+                            });
+                        }
+                    });
+
+                }
+            });
+        });
+
+    });
+
+
+
+    describe('POST /things/:id/actions/disable', function () {
+
+        it('must test API action disable [thing with associated devices - some already disabled] ', function (done) {
+
+
+            Things.findAll({}, null, null, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                else {
+
+                    results.things.length.should.be.eql(100);
+                    results.should.have.properties("things", "_metadata");
+                    results.things[0].disabled.should.be.false();
+                    var thingId = results.things[0]._id;
+
+                    Devices.findAll({}, null, null, function (err, results) {
+                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                        else {
+                            results.should.have.properties("devices");
+                            results.should.have.properties("_metadata");
+
+                            // associate device to thing
+                            async.each([0, 1, 2, 3, 4], function (thingIndex, callback) {
+                                Devices.findByIdAndUpdate(results.devices[thingIndex]._id, {thingId: thingId}, function (err, updateDevice) {
+                                    if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                    else {
+                                        updateDevice.thingId.should.be.eql(thingId);
+                                        callback();
+                                    }
+                                });
+
+                            }, function (err) {
+
+                                // associate device to thing but set already disabled (must be disabled also after enable)
+                                async.each([5, 6, 7, 8, 9], function (thingIndex, callback) {
+                                    Devices.findByIdAndUpdate(results.devices[thingIndex]._id, {thingId: thingId, disabled:true}, function (err, updateDevice) {
+                                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                        else {
+                                            updateDevice.thingId.should.be.eql(thingId);
+                                            updateDevice.disabled.should.be.true();
+                                            callback();
+                                        }
+                                    });
+
+                                }, function (err) {
+
+                                    Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                        else {
+                                            results.should.have.properties("devices");
+                                            results.should.have.properties("_metadata");
+                                            results.devices.length.should.be.eql(10);
+                                            var disabled=0;
+                                            var enabled=0;
+                                            async.each(results.devices, function (deviceFound, callback) {
+                                                if(deviceFound.disabled)
+                                                    disabled++;
+                                                else
+                                                    enabled++;
+
+                                                callback();
+
+                                            }, function (err) {
+                                                disabled.should.be.eql(5);
+                                                enabled.should.be.eql(5);
+                                                request.post({
+                                                    url: APIURL + '/' + thingId + '/actions/disable',
+                                                    headers: {
+                                                        'content-type': 'application/json',
+                                                        'Authorization': "Bearer " + webUiToken
+                                                    },
+                                                }, function (error, response, body) {
+
+                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                    else {
+                                                        response.statusCode.should.be.equal(200);
+                                                        var disableesults = JSON.parse(body);
+                                                        disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                        disableesults.disabled.should.be.true();
+
+                                                        Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                                            if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                            else {
+                                                                results.should.have.properties("devices");
+                                                                results.should.have.properties("_metadata");
+                                                                results.devices.length.should.be.eql(10);
+                                                                async.each(results.devices, function (deviceFound, callback) {
+                                                                    deviceFound.disabled.should.be.true();
+                                                                    callback();
+
+                                                                }, function (err) {
+                                                                    request.post({
+                                                                        url: APIURL + '/' + thingId + '/actions/enable',
+                                                                        headers: {
+                                                                            'content-type': 'application/json',
+                                                                            'Authorization': "Bearer " + webUiToken
+                                                                        },
+                                                                    }, function (error, response, body) {
+
+                                                                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                                        else {
+                                                                            response.statusCode.should.be.equal(200);
+                                                                            var disableesults = JSON.parse(body);
+                                                                            disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                                            disableesults.disabled.should.be.false();
+                                                                        }
+                                                                        Devices.findAll({thingId: thingId}, null, null, function (err, results) {
+                                                                            if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                                            else {
+                                                                                results.should.have.properties("devices");
+                                                                                results.should.have.properties("_metadata");
+                                                                                results.devices.length.should.be.eql(10);
+                                                                                disabled=0;
+                                                                                enabled=0;
+                                                                                async.each(results.devices, function (deviceFound, callback) {
+                                                                                    if(deviceFound.disabled)
+                                                                                        disabled++;
+                                                                                    else
+                                                                                        enabled++;
+                                                                                    callback();
+
+                                                                                }, function (err) {
+                                                                                    disabled.should.be.eql(5);
+                                                                                    enabled.should.be.eql(5);
+                                                                                    disabledDevices.findAll({}, null, null, function (err, disabledDevicesFound) {
+                                                                                        if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                                                        else {
+                                                                                            should(disabledDevicesFound.disabledDevices).be.empty();
+                                                                                            done();
+                                                                                        }
+                                                                                    });
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                    });
+                                                                });
+                                                            }
+                                                        });
+                                                    }
+                                                });
+
+                                            });
+                                        }
+                                    });
+                                });
+                            });
+                        }
+                    });
                 }
             });
         });
