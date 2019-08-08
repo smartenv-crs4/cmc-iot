@@ -22,6 +22,7 @@
 
 
 var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
+var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
 
 
 /* Create vendor */
@@ -57,12 +58,23 @@ module.exports.updateVendor = function(req, res, next) {
 }
 
 
-//TODO Gestire la cancellazione in presenza di Things collegati
 /* Delete vendors */
 module.exports.deleteVendor = function(req, res, next) {
     var id = req.params.id
-    vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
-        res.httpResponse(err, null, deletedVendor)
+    thingDriver.findAll({vendorId: id}, null, {totalCount: true}, function (err, results) {
+        if (err)
+            return next(err)
+        else {
+            if ((results._metadata.totalCount) > 0) { // there are Things associated with that Vendor, so you cannot delete the Vendor
+                res.httpResponse(err, 409, "Cannot delete the Vendor due to associated Thing(s)")
+            }
+            else { //Deleting that Vendor is safe since there aren't associated Things
+                vendorDriver.findByIdAndRemove(id, function(err, deletedVendor) {
+                    res.httpResponse(err, null, deletedVendor)
+                })
+            }
+        }
     })
+
 }
 
