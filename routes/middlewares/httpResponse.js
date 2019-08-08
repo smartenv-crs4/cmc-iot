@@ -23,6 +23,17 @@
 var errorHandler=require('../../routes/utility/mongooseError');
 
 
+
+function customResp(res,statusCode,body){
+    switch (statusCode) {
+        case 409:
+            res.boom.conflict(body);
+            break;
+        default:
+            res.status(statusCode).send(body);
+    }
+}
+
 /* Delete devices. */
 module.exports.httpResponse = function (req,res,next) {
 
@@ -49,8 +60,7 @@ module.exports.httpResponse = function (req,res,next) {
           }
           if (!body)
               status_code = 204;
-
-          res.status(status_code).send(body);
+        customResp(res,status_code,body);
       }
   };
 
