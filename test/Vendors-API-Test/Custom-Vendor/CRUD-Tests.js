@@ -22,10 +22,12 @@
 
 
 var Vendors = require('../../../DBEngineHandler/drivers/vendorDriver')
+var Thing = require('../../../DBEngineHandler/drivers/thingDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vendors"
-var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
+var APIURL_things = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things"
+var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
 
@@ -37,7 +39,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
 
     before(function(done) {
         this.timeout(5000)
-        commonFunctioTest.setAuthMsMicroservice(function(err) {
+        commonFunctionTest.setAuthMsMicroservice(function(err) {
             if (err) throw (err)
             webUiToken = conf.testConfig.myWebUITokenToSignUP
             done()
@@ -48,7 +50,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
         this.timeout(5000)
         Vendors.deleteMany({}, function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor CRUD-Tests.js - after - deleteMany ---> " + err)
-            commonFunctioTest.resetAuthMsStatus(function(err) {
+            commonFunctionTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("Vendor generalTests.js - after - resetAuthMsStatus ---> " + err)
                 done()
             })
@@ -77,7 +79,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
      ************************************************** CREATE TESTS **************************************************
      ***************************************************************************************************************** */
 
-    describe('POST /vendor', function() {
+    describe('POST /vendors', function() {
         it('must test vendor creation [create Vendor]', function(done) {
             var bodyParam = JSON.stringify({vendor: {name: "name", description: "description"}})
             var requestParams = {
@@ -103,7 +105,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
      ********************************************* READ TESTS (Get By ID)**********************************************
      ***************************************************************************************************************** */
 
-    describe('GET /vendor/:id', function() {
+    describe('GET /vendors/:id', function() {
         it('must test get vendor by Id', function(done) {
             var bodyParam = JSON.stringify({
                 vendor: {
@@ -146,7 +148,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
      ********************************************* UPDATE TESTS (PUT))**********************************************
      ***************************************************************************************************************** */
 
-    describe('PUT /vendor/:id', function() {
+    describe('PUT /vendors/:id', function() {
         it('must test update vendor by Id', function(done) {
             var bodyParam = JSON.stringify({
                 vendor: {
@@ -196,8 +198,8 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
      ************************************************** DELETE TESTS **************************************************
      ***************************************************************************************************************** */
 
-    describe('DELETE /vendor', function() {
-        it('must test vendor Delete', function(done) {
+    describe('DELETE /vendors', function() {
+        it('must test vendor Delete (without associated Things)', function(done) {
             var bodyParam = JSON.stringify({
                 vendor: {
                     name: "name",
@@ -238,6 +240,82 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                         }
                         done()
                     })
+                })
+            })
+        })
+    })
+
+
+    describe('DELETE /vendors', function() {
+        it('must test vendor Delete (with associated Things)', function(done) {
+            var bodyParam = JSON.stringify({
+                vendor: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create vendor
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                // Now let's prepare the body for the associated Thing POST request
+                var bodyThingParam = JSON.stringify({
+                    thing: {
+                        name: "name",
+                        description: "description",
+                        api: {url: "HTTP://127.0.0.1"},
+                        ownerId: Thing.ObjectId(),
+                        vendorId: results._id,
+                        siteId: Thing.ObjectId()
+                    }
+                })
+                var requestThingParams = {
+                    url: APIURL_things,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodyThingParam
+                }
+                // Create the associated Thing
+                request.post(requestThingParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /thing: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE vendor
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete (with associated Things) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the Vendor due to associated Thing(s)")
+                            }
+                            //Search vendor to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete (with associated Things) -->" + error.message)
+                                else {
+                                    var resultsUndeletedVendor = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedVendor.should.have.property("name")
+                                    resultsUndeletedVendor.should.have.property("description")
+                                }
+                                done()
+                            })
+                        })
+                    }
                 })
             })
         })
