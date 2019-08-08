@@ -204,7 +204,7 @@ module.exports.deleteThing = function (req, res, next) {
 
     deviceDriver.findAll({thingId: id}, null, {totalCount: true}, function (err, results) {
         if (err) {
-            return thingDriver.errorResponse(res, err);
+            return res.httpResponse(err,null,null);
         } else {
             if ((results._metadata.totalCount) > 0) { // there are associated device then set dismissed:true
 
@@ -222,7 +222,7 @@ module.exports.deleteThing = function (req, res, next) {
 
                     deviceUtility.deleteDevice(device._id,function(err,deletedDevice){
                         if(err){
-                            return thingDriver.errorResponse(res, err);
+                            return res.httpResponse(err,null,null);
                         }else{
                             if(deletedDevice && deletedDevice.dismissed ){
                                 dismiss=true;
