@@ -79,11 +79,8 @@ router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.valid
 
 
 
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-
 /* Read things. */
-router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
+router.get('/:id',[authorisationManager.checkToken], parseRequestMiddleware.parseFields, function(req, res, next) {
   thingsHandler.getThingById(req,res,next);
 });
 
@@ -91,7 +88,8 @@ router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
 /* GET things listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("things"), function(req, res, next) {
+//todo descrivere che per dismissd non si puo cercare ma bisogna usare la action
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndremoveSome(["dismissed"]),parseRequestMiddleware.parseIds("things"), function(req, res, next) {
   req.query.dismissed=false; // dismissed thing must be removed from query results
   thingsHandler.getThings(req,res,next);
 });

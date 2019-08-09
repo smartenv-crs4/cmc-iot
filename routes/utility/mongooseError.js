@@ -34,6 +34,14 @@ function badRequestError(res,err,message){
     res.boom.badRequest(message);
 }
 
+
+function handleOtherErrors(res,err){
+    if(err.message.indexOf("Projection cannot have a mix of inclusion and exclusion")>=0)
+        badRequestError(res,err);
+    else
+        serverError(res,err);
+}
+
 exports.handleError= function(res,err){
 
     switch(err.name) {
@@ -80,7 +88,7 @@ exports.handleError= function(res,err){
             badRequestError(res,err," Thrown when you pass a field not in schema and strict mode is set to throw");
             break;
         default:
-            serverError(res,err);
+            handleOtherErrors(res,err);
     }
 
 };

@@ -70,7 +70,7 @@ describe('Things API Test - [PAGINATION TESTS]', function () {
 
 
 
-    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL,"things",["description","name","ownerId","siteId","mobile","disabled","dismissed","vendorId"]);
+    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL,"things",["description","name","ownerId","siteId","mobile","disabled","vendorId"]);
 
 
 

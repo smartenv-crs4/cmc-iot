@@ -91,6 +91,43 @@ exports.parseFields = function (req, res, next) {
 
 };
 
+
+function removeList(fieldsToRemove){
+    var remove=[];
+    _.each(fieldsToRemove,function(value){
+        remove.push("-"+value);
+    });
+    return(remove.join(' '));
+}
+
+//Middleware to parse sort option from request
+//Adds sort to request
+exports.parseFieldsAndremoveSome = function(fieldsToRemove){
+    return(function (req, res, next) {
+
+
+        var fields = req.query.fields ? req.query.fields.split(",") : null;
+        if (fields) {
+            req.dbQueryFields = fields.join(' ');
+            console.log("//---------------------------------------");
+            console.log((~req.dbQueryFields.indexOf("-")));
+            if((~req.dbQueryFields.indexOf("-"))){
+                req.dbQueryFields+= " " + removeList(fieldsToRemove);
+            }else{
+                _.each(fieldsToRemove,function(value){
+                    req.dbQueryFields = req.dbQueryFields.replace(new RegExp("/^" + value),"");
+                });
+            }
+        }
+        else {
+            req.dbQueryFields = removeList(fieldsToRemove);
+        }
+        next();
+
+    });
+};
+
+
 //Middleware to parse pagination params from request URI
 //Adds dbPagination to request
 exports.parsePagination = function (req, res, next) {

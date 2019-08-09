@@ -169,6 +169,82 @@ describe('Things API Test - [CRUD-TESTS]', function () {
 
 
     /******************************************************************************************************************
+     ************************************************* READ TESTS *****************************************************
+     ***************************************************************************************************************** */
+
+
+
+    describe('GET /device', function(){
+
+        it('must test get thing filter by disabled(Boolean)', function(done){
+            var bodyParam=JSON.stringify({thing:{disabled:true, name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete thing
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /thing :'must test get thing filter by disabled(Boolean) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('vendorId');
+                    results.should.have.property('ownerId');
+                }
+
+                var geByIdRequestUrl=APIURL + "?disabled=true&access_token="+ webUiToken;
+                request.get(geByIdRequestUrl,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("GET /thing :'must test get thing filter by disabled(Boolean) -->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.property('_metadata');
+                        resultsById.should.have.property('things');
+                        resultsById.things[0].should.have.property('name');
+                        resultsById.things[0].should.have.property('description');
+                        resultsById.things[0].should.have.property('vendorId');
+                        resultsById.things[0].should.have.property('ownerId');
+                        resultsById.things[0].should.have.property('disabled');
+                        resultsById.things[0].disabled.should.be.true();
+                        resultsById.things.length.should.be.eql(1);
+                        resultsById.things[0]._id.should.be.eql(results._id);
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
+
+
+    describe('GET /things', function(){
+
+        it('must test no dismissed status in query results', function(done){
+
+            var geByIdRequestUrl=APIURL+ "?access_token="+ webUiToken;
+            request.get(geByIdRequestUrl,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /things :'must test no dismissed status in query results' -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(200);
+                    results.should.have.property('things');
+                    results.should.have.property('_metadata');
+                    results.things[0].should.have.properties("_id","name","description","ownerId", "vendorId","disabled");
+                    results.things[0].should.not.have.properties("dismissed");
+                }
+                done();
+            });
+
+        });
+    });
+
+
+
+    /******************************************************************************************************************
      ********************************************* UPDATE TESTS (PUT))**********************************************
      ***************************************************************************************************************** */
 
@@ -862,71 +938,6 @@ describe('Things API Test - [CRUD-TESTS]', function () {
 
 
 
-    // describe('DELETE /thing', function(){
-    //
-    //     it('must test thing Delete (with observation)', function(done){
-    //
-    //         var bodyParam=JSON.stringify({thing:{name:"name", description: "description",thingId:Things.ObjectId(), typeId:Things.ObjectId()}});
-    //         var requestParams={
-    //             url:APIURL,
-    //             headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
-    //             body:bodyParam
-    //         };
-    //         // create Thing
-    //         request.post(requestParams,function(error, response, body){
-    //             if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with observation) -->" + error.message);
-    //             else{
-    //                 var results = JSON.parse(body);
-    //                 response.statusCode.should.be.equal(201);
-    //                 results.should.have.property('name');
-    //                 results.should.have.property('description');
-    //                 results.should.have.property('thingId');
-    //                 results.should.have.property('typeId');
-    //                 results.dismissed.should.be.false();
-    //             }
-    //
-    //
-    //             // create Observation
-    //             Observation.create({thingId:results._id},function(err,observation){
-    //
-    //                 // DELETE Thing
-    //                 var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
-    //                 request.del(geByIdRequestUrl,function(error, response, body){
-    //                     if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with observation) -->" + error.message);
-    //                     else{
-    //                         var resultsDeleteById = JSON.parse(body);
-    //                         response.statusCode.should.be.equal(200);
-    //                         resultsDeleteById.should.have.property('name');
-    //                         resultsDeleteById.should.have.property('description');
-    //                         resultsDeleteById.should.have.property('thingId');
-    //                         resultsDeleteById.should.have.property('typeId');
-    //                         resultsDeleteById._id.should.be.eql(results._id);
-    //                         resultsDeleteById.dismissed.should.be.true();
-    //                     }
-    //
-    //                     //Search Thing to confirm delete
-    //                     var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
-    //                     request.get(geByIdRequestUrl,function(error, response, body){
-    //                         if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with observation) -->" + error.message);
-    //                         else{
-    //                             var resultsFindById = JSON.parse(body);
-    //                             response.statusCode.should.be.equal(200);
-    //                             resultsFindById.should.have.property('name');
-    //                             resultsFindById.should.have.property('description');
-    //                             resultsFindById.should.have.property('thingId');
-    //                             resultsFindById.should.have.property('typeId');
-    //                             resultsFindById._id.should.be.eql(results._id);
-    //                             resultsFindById.dismissed.should.be.true();
-    //                         }
-    //                         Observation.findOneAndRemove(observation._id,null,function(err,removedObs){
-    //                             should(err).be.null();
-    //                             done();
-    //                         });
-    //                     });
-    //                 });
-    //             });
-    //         });
-    //     });
-    // });
+
 
 });
