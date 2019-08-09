@@ -43,7 +43,7 @@ var dismssedMiddlewared=[
 router.post('/actions/searchDismissed',dismssedMiddlewared,function(req, res, next) {
   req.query.dismissed=true; // dismissed device must be a query filter
   req.statusCode=200; // to redefine http status code response
-  devicesHandler.getThings(req,res,next);
+  devicesHandler.getDevices(req,res,next);
 });
 
 /* Create devices */

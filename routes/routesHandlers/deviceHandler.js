@@ -291,7 +291,7 @@ module.exports.postCreateDevice = function (req, res, next) {
  * @apiSampleRequest off
  */
 // TODO notificare tramite redis???
-// TODO disabled false si puo fare solo se thing è enabled
+// TODO disabled false(enble a device) si puo fare solo se thing è enabled
 module.exports.updateDevice = function (req, res, next) {
     deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["dismissed"] ,function (err, results) {
         res.httpResponse(err,null,results);
@@ -393,11 +393,10 @@ module.exports.getDeviceById = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
-
-// TODO non si puo cercrre per dismissed
+// TODO descrivere che dismissed non è un prametro di ricerca di usare laction per cercare i dsmissed
 module.exports.getDevices = function (req, res, next) {
     deviceDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
-        res.httpResponse(err,null,results);
+        res.httpResponse(err,req.statusCode,results);
     });
 };
 

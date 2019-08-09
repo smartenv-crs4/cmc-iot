@@ -23,15 +23,12 @@
 
 var should = require('should/should');
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
-var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
-var disabledDevices = require('../../../DBEngineHandler/drivers/disabledDeviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/devices";
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../Utility/errorLogs');
 var async = require('async');
-var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
 var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
@@ -66,13 +63,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         deviceDocuments.createDocuments(100, function (err, newDeviceId) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Devices.create ---> " + err);
             deviceId = newDeviceId;
-            deviceDocuments.createDocuments(100, function (err, newDeviceId) {
-                if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Device.create ---> " + err);
-                disabledDevices.deleteMany({},function(err){
-                    if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Device.create ---> " + err);
-                    done();
-                });
-            });
+           done();
         });
     });
 
@@ -80,10 +71,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     afterEach(function (done) {
         Devices.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            Devices.deleteMany({}, function (err, elm) {
-                if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
-                done();
-            });
+          done();
         });
     });
 
@@ -394,7 +382,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('devices');
                                 results.devices.length.should.be.eql(conf.pagination.limit);
                                 results.devices[0].should.not.have.properties("description");
-                                results.devices[0].should.have.properties("dismissed", "disabled", "ownerId", "vendorId", "name");
+                                results.devices[0].should.have.properties("dismissed", "disabled", "typeId", "thingId", "name");
                             }
                             done();
                         });
