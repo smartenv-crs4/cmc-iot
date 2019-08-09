@@ -29,6 +29,22 @@ var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
 
+//actions
+
+// /* get dismissed things */
+var dismssedMiddlewared=[
+  authorisationManager.checkToken,
+  parseRequestMiddleware.parseBodyQueries,
+  parseRequestMiddleware.parseFields,
+  parseRequestMiddleware.parseOptions,
+  mongosecurity.parseForOperators,
+  parseRequestMiddleware.parseIds("devices")
+];
+router.post('/actions/searchDismissed',dismssedMiddlewared,function(req, res, next) {
+  req.query.dismissed=true; // dismissed device must be a query filter
+  req.statusCode=200; // to redefine http status code response
+  devicesHandler.getThings(req,res,next);
+});
 
 /* Create devices */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
@@ -49,11 +65,8 @@ router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.valid
 
 
 
-/*Moduli di parsing delle query*/
-router.use(parseRequestMiddleware.parseFields);
-
 /* Read devices. */
-router.get('/:id',[authorisationManager.checkToken], function(req, res, next) {
+router.get('/:id',[authorisationManager.checkToken],parseRequestMiddleware.parseFields, function(req, res, next) {
   devicesHandler.getDeviceById(req,res,next);
 });
 
@@ -61,7 +74,8 @@ router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
 /* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndremoveSome(["dismissed"]),parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
+  req.query.dismissed=false; // dismissed devices must be removed from query results
   devicesHandler.getDevices(req,res,next);
 });
 

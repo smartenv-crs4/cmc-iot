@@ -155,6 +155,27 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     });
 
 
+    describe('GET /devices', function(){
+
+        it('must test no dismissed status in query results', function(done){
+
+            var geByIdRequestUrl=APIURL+ "?access_token="+ webUiToken;
+            request.get(geByIdRequestUrl,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /devices :'must test no dismissed status in query results' -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(200);
+                    results.should.have.property('devices');
+                    results.should.have.property('_metadata');
+                    results.devices[0].should.have.properties("_id","name","description","thingId", "typeId","disabled");
+                    results.devices[0].should.not.have.properties("dismissed");
+                }
+                done();
+            });
+
+        });
+    });
+
     /******************************************************************************************************************
      ********************************************* READ TESTS (Get By ID)**********************************************
      ***************************************************************************************************************** */

@@ -109,8 +109,6 @@ exports.parseFieldsAndremoveSome = function(fieldsToRemove){
         var fields = req.query.fields ? req.query.fields.split(",") : null;
         if (fields) {
             req.dbQueryFields = fields.join(' ');
-            console.log("//---------------------------------------");
-            console.log((~req.dbQueryFields.indexOf("-")));
             if((~req.dbQueryFields.indexOf("-"))){
                 req.dbQueryFields+= " " + removeList(fieldsToRemove);
             }else{
