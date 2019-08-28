@@ -29,7 +29,7 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
 /**
  * @apiDefine NotFound
  * @apiError {Object} ResourceNotFound[404] The resource was not found.<BR>
- * <b>response.body.StatusCode</b> contains an error status code.<BR>
+ * <b>response.body.StatusCode</b> contains the error status code.<BR>
  * <b>response.body.error</b> contains an error name.<BR>
  * <b>request.body.message</b> contains an error message specifying the error.<BR>
  *

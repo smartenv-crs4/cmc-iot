@@ -22,9 +22,11 @@
 
 
 var Sites = require('../../../DBEngineHandler/drivers/siteDriver')
+var Thing = require('../../../DBEngineHandler/drivers/thingDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/sites"
+var APIURL_things = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var siteDocuments = require('../../SetTestenv/createSitesDocuments')
@@ -274,7 +276,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
      ***************************************************************************************************************** */
 
     describe('DELETE /sites', function() {
-        it('must test site Delete', function(done) {
+        it('must test site Delete (without associated entities)', function(done) {
             var bodyParam = JSON.stringify({
                 site: {
                     name: "name",
@@ -290,7 +292,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
             }
             // create Site
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete -->" + error.message)
+                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (without associated entities) -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
@@ -304,7 +306,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                 // DELETE Site
                 var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                 request.del(getByIdRequestUrl, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (without associated entities) -->" + error.message)
                     else {
                         var resultsDeleteById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
@@ -319,12 +321,183 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     //Search Site to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (without associated entities) -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }
                         done()
                     })
+                })
+            })
+        })
+    })
+
+
+    describe('DELETE /sites', function() {
+        it('must test site Delete (with associated Things)', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point", coordinates: [1, 1]},
+                    locatedInSiteId: Sites.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // create Site
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Things) -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                    results.should.have.property('location')
+                    results.location.should.have.property('type')
+                    results.location.should.have.property('coordinates')
+                    results.should.have.property('locatedInSiteId')
+                }
+                // Now let's prepare the body for the associated Thing POST request
+                var bodyThingParam = JSON.stringify({
+                    thing: {
+                        name: "name",
+                        description: "description",
+                        api: {url: "HTTP://127.0.0.1"},
+                        ownerId: Thing.ObjectId(),
+                        vendorId: Thing.ObjectId(),
+                        siteId: results._id
+                    }
+                })
+                var requestThingParams = {
+                    url: APIURL_things,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodyThingParam
+                }
+                // Create the associated Thing
+                request.post(requestThingParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /things: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE Site
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Things) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the Site due to associated Thing(s)")
+                            }
+                            //Search Site to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Things) -->" + error.message)
+                                else {
+                                    var resultsUndeletedSite = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedSite.should.have.property("name")
+                                    resultsUndeletedSite.should.have.property("description")
+                                    resultsUndeletedSite.should.have.property('location')
+                                    resultsUndeletedSite.location.should.have.property('type')
+                                    resultsUndeletedSite.location.should.have.property('coordinates')
+                                    resultsUndeletedSite.should.have.property('locatedInSiteId')
+                                }
+                                done()
+                            })
+                        })
+                    }
+                })
+            })
+        })
+    })
+
+
+    describe('DELETE /sites', function() {
+        it('must test site Delete (with associated Sites)', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point", coordinates: [1, 1]},
+                    locatedInSiteId: Sites.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // create Site
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Sites) -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                    results.should.have.property('location')
+                    results.location.should.have.property('type')
+                    results.location.should.have.property('coordinates')
+                    results.should.have.property('locatedInSiteId')
+                }
+                // Now let's prepare the body for the associated Site POST request
+                var bodySiteParam = JSON.stringify({
+                    site: {
+                        name: "name",
+                        description: "description",
+                        location: {type: "Point", coordinates: [1, 1]},
+                        locatedInSiteId: results._id
+                    }
+                })
+                var requestSiteParams = {
+                    url: APIURL,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodySiteParam
+                }
+                // Create the associated Site
+                request.post(requestSiteParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /site: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE Site
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Sites) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the Site due to associated Site(s)")
+                            }
+                            //Search Site to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Sites) -->" + error.message)
+                                else {
+                                    var resultsUndeletedSite = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedSite.should.have.property("name")
+                                    resultsUndeletedSite.should.have.property("description")
+                                    resultsUndeletedSite.should.have.property("description")
+                                    resultsUndeletedSite.should.have.property('location')
+                                    resultsUndeletedSite.location.should.have.property('type')
+                                    resultsUndeletedSite.location.should.have.property('coordinates')
+                                    resultsUndeletedSite.should.have.property('locatedInSiteId')
+                                }
+                                done()
+                            })
+                        })
+                    }
                 })
             })
         })

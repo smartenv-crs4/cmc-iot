@@ -75,6 +75,4 @@ module.exports.deleteVendor = function(req, res, next) {
             }
         }
     })
-
 }
-

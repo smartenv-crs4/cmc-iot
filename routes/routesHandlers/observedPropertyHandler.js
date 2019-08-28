@@ -22,6 +22,8 @@
 
 
 var observedPropertyDriver = require('../../DBEngineHandler/drivers/observedPropertyDriver')
+var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver')
+var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
 
 
 /* Create ObservedProperty */
@@ -57,13 +59,30 @@ module.exports.updateObservedProperty = function(req, res, next) {
 }
 
 
-//TODO Gestire la cancellazione in presenza di DeviceTypes e Units collegati
-
 /* Delete ObservedProperties */
 module.exports.deleteObservedProperty = function(req, res, next) {
     var id = req.params.id
-    observedPropertyDriver.findByIdAndRemove(id, function(err, deletedObservedProperty) {
-        res.httpResponse(err, null, deletedObservedProperty)
+    deviceTypeDriver.findAll({observedPropertyId: id}, null, {totalCount: true}, function(err, results) {
+        if (err)
+            return next(err)
+        else {
+            if ((results._metadata.totalCount) > 0) { // there are DeviceTypes associated with that ObservedProperty, so you cannot delete the ObservedProperty
+                res.httpResponse(err, 409, "Cannot delete the ObservedProperty due to associated DeviceType(s)")
+            } else { //Deleting that ObservedProperty could be safe since there aren't associated DeviceTypes. What about associated Units?
+                unitDriver.findAll({observedPropertyId: id}, null, {totalCount: true}, function(err, results) {
+                    if (err)
+                        return next(err)
+                    else {
+                        if ((results._metadata.totalCount) > 0) { // there are Units associated with that ObservedProperty, so you cannot delete the ObservedProperty
+                            res.httpResponse(err, 409, "Cannot delete the ObservedProperty due to associated Unit(s)")
+                        } else { //Deleting that ObservedProperty is safe since there aren't associated Units
+                            observedPropertyDriver.findByIdAndRemove(id, function(err, deletedObservedProperty) {
+                                res.httpResponse(err, null, deletedObservedProperty)
+                            })
+                        }
+                    }
+                })
+            }
+        }
     })
 }
-
