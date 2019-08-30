@@ -508,7 +508,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                         device.should.have.property('typeId');
 
                         // create Observation
-                        Observation.create({deviceId:device._id},function(err,observation){
+                        Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:device._id,unitId: Observation.ObjectId()},function(err,observation){
                             if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with one device and with observation) -->" + error.message);
                             else {
                                 // DELETE Thing
@@ -563,7 +563,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                             findBiIdDev.should.have.property('typeId');
                                             findBiIdDev.dismissed.should.be.true();
                                             findBiIdDev.disabled.should.be.false();
-                                            Observation.findOneAndRemove(observation._id,null,function(err,removedObs){
+                                            Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                                 should(err).be.null();
                                                 done();
                                             });
@@ -725,7 +725,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                 device2.dismissed.should.be.false();
 
                                 // create Observation
-                                Observation.create({deviceId:device1._id},function(err,observation){
+                                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:device1._id,unitId: Observation.ObjectId()},function(err,observation){
                                     if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with one device1 and with observation) -->" + error.message);
                                     else {
                                         // DELETE Thing
@@ -781,7 +781,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                         Device.findById(device2._id, null, function (err, findBiIdDev2) {
                                                             should(err).be.null();
                                                             should(findBiIdDev2).be.null();
-                                                            Observation.findOneAndRemove(observation._id,null,function(err,removedObs){
+                                                            Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                                                 should(err).be.null();
                                                                 done();
                                                             });
@@ -849,10 +849,10 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                 device2.dismissed.should.be.false();
 
                                 // create Observation
-                                Observation.create({deviceId:device1._id},function(err,observation){
+                                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:device1._id,unitId: Observation.ObjectId()},function(err,observation){
                                     if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with one device1 and with observation) -->" + error.message);
                                     else {
-                                        Observation.create({deviceId:device2._id},function(err,observation2){
+                                        Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:device2._id,unitId: Observation.ObjectId()},function(err,observation2){
                                             if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (with one device1 and with observation) -->" + error.message);
                                             else {
                                                 // DELETE Thing
@@ -912,9 +912,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                                     findBiIdDev2.should.have.property('typeId');
                                                                     findBiIdDev2.dismissed.should.be.true();
                                                                     findBiIdDev2.disabled.should.be.false();;
-                                                                    Observation.findOneAndRemove(observation._id,null,function(err,removedObs){
+                                                                    Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                                                         should(err).be.null();
-                                                                        Observation.findOneAndRemove(observation2._id,null,function(err,removedObs){
+                                                                        Observation.findByIdAndRemove(observation2._id,null,function(err, removedObs){
                                                                             should(err).be.null();
                                                                             done();
                                                                         });

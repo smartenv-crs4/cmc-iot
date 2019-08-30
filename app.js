@@ -37,6 +37,7 @@ var unitsRouter = require('./routes/units');
 var vendorsRouter = require('./routes/vendors');
 var sitesRouter = require('./routes/sites');
 var observedPropertiesRouter = require('./routes/observedProperties');
+var observationsRouter = require('./routes/observations');
 
 var app = express();
 
@@ -64,6 +65,7 @@ app.use('/units', unitsRouter)
 app.use('/vendors', vendorsRouter);
 app.use('/sites', sitesRouter);
 app.use('/observedProperties', observedPropertiesRouter);
+app.use('/observations', observationsRouter);
 
 
 // catch 404 and forward to error handler

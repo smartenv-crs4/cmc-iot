@@ -389,7 +389,7 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                                 var resultsDeleteById = JSON.parse(body)
                                 response.statusCode.should.be.equal(409) //HTTP Conflict
                                 resultsDeleteById.should.have.property("message")
-                                resultsDeleteById.message.should.be.equal("Cannot delete the Vendor due to associated Observation(s)")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the Unit due to associated Observation(s)")
                             }
                             //Search Unit to confirm that the it hasn't been deleted
                             var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
