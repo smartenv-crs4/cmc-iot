@@ -102,26 +102,37 @@ function removeList(fieldsToRemove){
 
 //Middleware to parse sort option from request
 //Adds sort to request
-exports.parseFieldsAndremoveSome = function(fieldsToRemove){
+exports.parseFieldsAndRemoveSome = function(fieldsToRemove,exceptForPermission){
     return(function (req, res, next) {
 
-
-        var fields = req.query.fields ? req.query.fields.split(",") : null;
-        if (fields) {
-            req.dbQueryFields = fields.join(' ');
-            if((~req.dbQueryFields.indexOf("-"))){
-                req.dbQueryFields+= " " + removeList(fieldsToRemove);
+        var excludeSome=true;
+        if(exceptForPermission){
+            if(req.acl) {
+                if (_.intersection(req.acl,exceptForPermission).length != 0)
+                    excludeSome = false;
             }else{
-                _.each(fieldsToRemove,function(value){
-                    req.dbQueryFields = req.dbQueryFields.replace(new RegExp("/^" + value),"");
-                });
+                return res.httpResponse(new Error("Error In parseFieldsAndRemoveSome middleware due to no acl field in request"));
             }
         }
-        else {
-            req.dbQueryFields = removeList(fieldsToRemove);
-        }
-        next();
 
+            var fields = req.query.fields ? req.query.fields.split(",") : null;
+            if (fields) {
+                req.dbQueryFields = fields.join(' ');
+                if ((~req.dbQueryFields.indexOf("-"))) {
+                    if(excludeSome)
+                        req.dbQueryFields += " " + removeList(fieldsToRemove);
+                } else {
+                    _.each(fieldsToRemove, function (value) {
+                        req.dbQueryFields = req.dbQueryFields.replace(new RegExp("/^" + value), "");
+                    });
+                }
+            } else {
+                if(excludeSome)
+                    req.dbQueryFields = removeList(fieldsToRemove);
+                else
+                    req.dbQueryFields = null
+            }
+        next();
     });
 };
 
