@@ -28,7 +28,7 @@ var observationsDriver = require('../../../DBEngineHandler/drivers/observationDr
 /* Delete devices. */
 module.exports.deleteDevice = function (id,callback) {
 
-    observationsDriver.find({deviceId: id}, null, {totalCount: true}, function (err, results) {
+    observationsDriver.findAll({deviceId: id}, null, {totalCount: true}, function (err, results) {
         if (err) {
             return callback(err);
         } else {

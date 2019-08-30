@@ -20,24 +20,35 @@
  ############################################################################
  */
 
-var mongoose = require('mongoose');
-var findAllFn = require('./metadata').findAll;
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
 
-var observation= conf.customSchema.observationSchema || {
-    deviceId:{type:mongoose.Types.ObjectId,required:true,index:true}
-};
+var mongoose = require('mongoose')
+var findAllFn = require('./metadata').findAll
+var Schema = mongoose.Schema
+var conf = require('propertiesmanager').conf
+
+var observation = conf.customSchema.observationSchema || {
+    timestamp: {type: Number, index: true, required: true},
+    value: {type: Number, index: true, required: true},
+    location: {
+        type: {type: String, enum: ['Point'], required: true},
+        coordinates: {type: [Number], required: true}
+    },
+    deviceId: {type: mongoose.ObjectId, required: true, index: true},
+    unitId: {type: mongoose.ObjectId, required: true, index: true}
+}
 
 
-var observationSchema = new Schema(observation, {strict: "throw"});
+var observationSchema = new Schema(observation, {strict: "throw"})
+
 
 // Static method to retrieve resource WITH metadata
-observationSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return findAllFn(this, 'observations', conditions, fields, options, callback);
-};
+observationSchema.statics.findAll = function(conditions, fields, options, callback) {
+    return findAllFn(this, 'observations', conditions, fields, options, callback)
+}
 
-var Observation= mongoose.model('observation', observationSchema);
 
-module.exports.ObservationSchema = observationSchema;
-module.exports.Observation = Observation;
+var Observation = mongoose.model('observation', observationSchema)
+
+
+module.exports.ObservationSchema = observationSchema
+module.exports.Observation = Observation

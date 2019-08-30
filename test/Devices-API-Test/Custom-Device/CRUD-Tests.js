@@ -364,7 +364,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
 
 
                 // create Observation
-                Observation.create({deviceId:results._id},function(err,observation){
+                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: Observation.ObjectId()},function(err,observation){
 
                     // DELETE Device
                     var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
@@ -395,7 +395,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                                 resultsFindById._id.should.be.eql(results._id);
                                 resultsFindById.dismissed.should.be.true();
                             }
-                            Observation.findOneAndRemove(observation._id,null,function(err,removedObs){
+                            Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                 should(err).be.null();
                                 done();
                             });
