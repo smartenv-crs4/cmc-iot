@@ -99,6 +99,20 @@ exports.checkToken = function(req, res, next) {
 };
 
 
+// Todo: when available must be sync with ACL Microservice. It check if user Can Red and get All other Authorization verb (Write, Update etc etc) for this resource
+exports.ensureCanGetResourceAndReturnAllOtherPermissions = function(req,res,next){
+
+    // Only for test waiting for ACL microservice
+    if(req.query.disableAdmin)
+        req.acl=["read"];
+    else
+        req.acl=["read","admin"];
+
+    next();
+};
+
+
+
 
 // exports.ensureUserIsAdminOrSelf = function(req,res,next){
 //
