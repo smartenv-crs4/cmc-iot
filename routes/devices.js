@@ -74,7 +74,7 @@ router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
 /* GET devices listing. */
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndremoveSome(["dismissed"]),parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed"]),parseRequestMiddleware.parseIds("devices"), function(req, res, next) {
   req.query.dismissed=false; // dismissed devices must be removed from query results
   devicesHandler.getDevices(req,res,next);
 });

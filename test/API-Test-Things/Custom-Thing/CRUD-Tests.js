@@ -30,6 +30,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/thing
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var thingDocuments=require('../../SetTestenv/createThingsDocuments');
+var should = require('should');
 
 var webUiToken;
 var thingId;
@@ -168,6 +169,44 @@ describe('Things API Test - [CRUD-TESTS]', function () {
     });
 
 
+
+    describe('GET /thing/:id', function(){
+
+        it('must test get thing by Id (remove direct Url and dismissed if not authorised)', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Thing
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /thing/:id :'must test get thing by Id (remove direct Url and dismissed if not authorised) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.properties('name','description','api','direct','ownerId','vendorId','siteId','dismissed','disabled','mobile');
+                }
+               // todo remove disableAdmin=true when acl mucroservice is On. Used only for testing
+                var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken + "&disableAdmin=true";
+                request.get(geByIdRequestUrl,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("GET /thing/:id :'must test get thing by Id (remove direct Url and dismissed if not authorised)-->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.properties('name','description','api','ownerId','vendorId','siteId','disabled','mobile');
+                        resultsById.should.not.have.properties('direct','dismissed');
+                        resultsById._id.should.be.eql(results._id);
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
+
+
     /******************************************************************************************************************
      ************************************************* READ TESTS *****************************************************
      ***************************************************************************************************************** */
@@ -242,6 +281,27 @@ describe('Things API Test - [CRUD-TESTS]', function () {
         });
     });
 
+
+    describe('GET /things', function(){
+
+        it('must test direct url not available in query results', function(done){
+
+            var geByIdRequestUrl=APIURL+ "?access_token="+ webUiToken;
+            request.get(geByIdRequestUrl,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /things :'must test direct url not available in query results' -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(200);
+                    results.should.have.property('things');
+                    results.should.have.property('_metadata');
+                    results.things[0].should.have.properties("_id","name","description","ownerId", "vendorId","disabled");
+                    results.things[0].should.not.have.properties("dismissed","direct");
+                }
+                done();
+            });
+
+        });
+    });
 
 
     /******************************************************************************************************************

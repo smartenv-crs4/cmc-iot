@@ -101,6 +101,7 @@ module.exports.getThingById = function (req, res, next) {
 
 /* GET things listing. */
 // TODO descrivere che dismissed non è un prametro di ricerca di usare laction per cercare i dsmissed
+//todo descrivere che per dismissd non si puo cercare ma bisogna usare la action
 module.exports.getThings = function (req, res, next) {
     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
         res.httpResponse(err,req.statusCode,results);

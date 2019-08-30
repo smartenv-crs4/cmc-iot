@@ -78,9 +78,8 @@ router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.valid
 });
 
 
-
 /* Read things. */
-router.get('/:id',[authorisationManager.checkToken], parseRequestMiddleware.parseFields, function(req, res, next) {
+router.get('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions], parseRequestMiddleware.parseFieldsAndRemoveSome(["direct","dismissed"],["admin"]), function(req, res, next) {
   thingsHandler.getThingById(req,res,next);
 });
 
@@ -88,8 +87,7 @@ router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
 /* GET things listing. */
-//todo descrivere che per dismissd non si puo cercare ma bisogna usare la action
-router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndremoveSome(["dismissed"]),parseRequestMiddleware.parseIds("things"), function(req, res, next) {
+router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed","direct"]),parseRequestMiddleware.parseIds("things"), function(req, res, next) {
   req.query.dismissed=false; // dismissed thing must be removed from query results
   thingsHandler.getThings(req,res,next);
 });
