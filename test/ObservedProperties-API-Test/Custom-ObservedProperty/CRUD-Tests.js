@@ -25,6 +25,8 @@ var ObservedProperties = require('../../../DBEngineHandler/drivers/observedPrope
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observedProperties"
+var APIURL_deviceTypes = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
+var APIURL_units = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/units"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var observedPropertyDocuments = require('../../SetTestenv/createObservedPropertiesDocuments')
@@ -197,7 +199,7 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
      ***************************************************************************************************************** */
 
     describe('DELETE /observedProperty', function() {
-        it('must test observedProperty Delete', function(done) {
+        it('must test observedProperty Delete (without associated entities)', function(done) {
             var bodyParam = JSON.stringify({
                 observedProperty: {
                     name: "name",
@@ -232,7 +234,7 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
                     //Search observedProperty to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /observedProperty: 'must test observedProperty observedProperty -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /observedProperty: 'must test observedProperty Delete -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }
@@ -243,5 +245,152 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
         })
     })
 
+
+    describe('DELETE /observedProperties', function() {
+        it('must test observedProperty Delete (with associated DeviceTypes)', function(done) {
+            var bodyParam = JSON.stringify({
+                observedProperty: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create observedProperty
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                // Now let's prepare the body for the associated DeviceType POST request
+                var bodyDeviceTypeParam = JSON.stringify({
+                    deviceType: {
+                        name: "name",
+                        description: "description",
+                        observedPropertyId: results._id
+                    }
+                })
+                var requestDeviceTypeParams = {
+                    url: APIURL_deviceTypes,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodyDeviceTypeParam
+                }
+                // Create the associated DeviceType
+                request.post(requestDeviceTypeParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /deviceTypes: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE observedProperty
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the ObservedProperty due to associated DeviceType(s)")
+                            }
+                            //Search observedProperty to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+                                else {
+                                    var resultsUndeletedDeviceType = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedDeviceType.should.have.property("name")
+                                    resultsUndeletedDeviceType.should.have.property("description")
+                                }
+                                done()
+                            })
+                        })
+                    }
+                })
+            })
+        })
+    })
+
+
+    describe('DELETE /observedProperties', function() {
+        it('must test observedProperty Delete (with associated Units)', function(done) {
+            var bodyParam = JSON.stringify({
+                observedProperty: {
+                    name: "name",
+                    description: "description"
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // Create observedProperty
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('description')
+                }
+                // Now let's prepare the body for the associated Unit POST request
+                var bodyUnitParam = JSON.stringify({
+                    unit: {
+                        name: "name",
+                        symbol: "symbol",
+                        minValue: 0,
+                        maxValue: 100,
+                        observedPropertyId: results._id
+                    }
+                })
+                var requestUnitParams = {
+                    url: APIURL_units,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodyUnitParam
+                }
+                // Create the associated Unit
+                request.post(requestUnitParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /units: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE observedProperty
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated Units) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the ObservedProperty due to associated Unit(s)")
+                            }
+                            //Search observedProperty to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated Units) -->" + error.message)
+                                else {
+                                    var resultsUndeletedDeviceType = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedDeviceType.should.have.property("name")
+                                    resultsUndeletedDeviceType.should.have.property("description")
+                                }
+                                done()
+                            })
+                        })
+                    }
+                })
+            })
+        })
+    })
 
 })

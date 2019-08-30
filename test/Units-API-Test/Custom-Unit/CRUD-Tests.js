@@ -22,9 +22,11 @@
 
 
 var Units = require('../../../DBEngineHandler/drivers/unitDriver')
+var Observation = require('../../../DBEngineHandler/drivers/observationDriver')
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/units"
+var APIURL_observations = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observations"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var unitDocuments = require('../../SetTestenv/createUnitsDocuments')
@@ -272,7 +274,7 @@ describe('Units API Test - [GENERAL TESTS]', function() {
      ***************************************************************************************************************** */
 
     describe('DELETE /units', function() {
-        it('must test unit Delete', function(done) {
+        it('must test unit Delete (without associated Observations)', function(done) {
             var bodyParam = JSON.stringify({
                 unit: {
                     name: "name",
@@ -289,7 +291,7 @@ describe('Units API Test - [GENERAL TESTS]', function() {
             }
             // create Unit
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
+                if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (without associated Observations) -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
@@ -302,7 +304,7 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                 // DELETE Unit
                 var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                 request.del(getByIdRequestUrl, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (without associated Observations) -->" + error.message)
                     else {
                         var resultsDeleteById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
@@ -316,12 +318,95 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                     //Search Unit to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /unit: 'must test unit Delete -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (without associated Observations) -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }
                         done()
                     })
+                })
+            })
+        })
+    })
+
+
+    describe('DELETE /units', function() {
+        it('must test unit Delete (with associated Observations)', function(done) {
+            var bodyParam = JSON.stringify({
+                unit: {
+                    name: "name",
+                    symbol: "symbol",
+                    minValue: 0,
+                    maxValue: 100,
+                    observedPropertyId: Units.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            // create Unit
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(201)
+                    results.should.have.property('name')
+                    results.should.have.property('symbol')
+                    results.should.have.property('minValue')
+                    results.should.have.property('maxValue')
+                    results.should.have.property('observedPropertyId')
+                }
+                // Now let's prepare the body for the associated Observation POST request
+                var bodyObservationParam = JSON.stringify({
+                    observation: {
+                        timestamp: 0,
+                        value: 0,
+                        location: {type: "Point", coordinates: [1, 1]},
+                        deviceId: Observation.ObjectId(),
+                        unitId: results._id
+                    }
+                })
+                var requestObservationParams = {
+                    url: APIURL_observations,
+                    headers: {
+                        'content-type': 'application/json',
+                        'Authorization': "Bearer " + conf.testConfig.adminToken
+                    },
+                    body: bodyObservationParam
+                }
+                // Create the associated Observation
+                request.post(requestObservationParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("POST /observations: " + error.message)
+                    else {
+                        response.statusCode.should.be.equal(201)
+                        // DELETE Unit
+                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                        request.del(getByIdRequestUrl, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                            else {
+                                var resultsDeleteById = JSON.parse(body)
+                                response.statusCode.should.be.equal(409) //HTTP Conflict
+                                resultsDeleteById.should.have.property("message")
+                                resultsDeleteById.message.should.be.equal("Cannot delete the Vendor due to associated Observation(s)")
+                            }
+                            //Search Unit to confirm that the it hasn't been deleted
+                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                            request.get(geByIdRequestUrl, function(error, response, body) {
+                                if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                                else {
+                                    var resultsUndeletedUnit = JSON.parse(body)
+                                    response.statusCode.should.be.equal(200)
+                                    resultsUndeletedUnit.should.have.property("name")
+                                    resultsUndeletedUnit.should.have.property("symbol")
+                                    resultsUndeletedUnit.should.have.property("minValue")
+                                    resultsUndeletedUnit.should.have.property("maxValue")
+                                }
+                                done()
+                            })
+                        })
+                    }
                 })
             })
         })

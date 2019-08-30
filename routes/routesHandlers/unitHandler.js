@@ -22,6 +22,7 @@
 
 
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
+var observationDriver = require('../../DBEngineHandler/drivers/observationDriver')
 
 
 /* Create unit */
@@ -57,11 +58,20 @@ module.exports.updateUnit = function(req, res, next) {
 }
 
 
-//TODO Gestire la cancellazione in presenza di Observations collegate
 /* Delete unit */
 module.exports.deleteUnit = function(req, res, next) {
     var id = req.params.id
-    unitDriver.findByIdAndRemove(id, function(err, deletedUnit) {
-        res.httpResponse(err,null,deletedUnit);
+    observationDriver.findAll({unitId: id}, null, {totalCount: true}, function (err, results) {
+        if (err)
+            return next(err)
+        else {
+            if ((results._metadata.totalCount) > 0) { // there are Observation associated with that Unit, so you cannot delete the Unit
+                res.httpResponse(err, 409, "Cannot delete the Unit due to associated Observation(s)")
+            } else { //Deleting that Unit is safe since there aren't associated Observations
+                unitDriver.findByIdAndRemove(id, function(err, deletedUnit) {
+                    res.httpResponse(err, null, deletedUnit);
+                })
+            }
+        }
     })
 }

@@ -213,7 +213,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
             }
             // Create vendor
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (without associated Things) -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
@@ -223,7 +223,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                 // DELETE vendor
                 var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                 request.del(getByIdRequestUrl, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                    if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (without associated Things) -->" + error.message)
                     else {
                         var resultsDeleteById = JSON.parse(body)
                         response.statusCode.should.be.equal(200)
@@ -234,7 +234,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                     //Search vendor to confirm delete
                     var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                     request.get(geByIdRequestUrl, function(error, response, body) {
-                        if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor vendor -->" + error.message)
+                        if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor vendor (without associated Things) -->" + error.message)
                         else {
                             response.statusCode.should.be.equal(204)
                         }
@@ -261,7 +261,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
             }
             // Create vendor
             request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete -->" + error.message)
+                if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (with associated Things) -->" + error.message)
                 else {
                     var results = JSON.parse(body)
                     response.statusCode.should.be.equal(201)
@@ -289,13 +289,13 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                 }
                 // Create the associated Thing
                 request.post(requestThingParams, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("POST /thing: " + error.message)
+                    if (error) consoleLogError.printErrorLog("POST /things: " + error.message)
                     else {
                         response.statusCode.should.be.equal(201)
                         // DELETE vendor
                         var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                         request.del(getByIdRequestUrl, function(error, response, body) {
-                            if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete (with associated Things) -->" + error.message)
+                            if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (with associated Things) -->" + error.message)
                             else {
                                 var resultsDeleteById = JSON.parse(body)
                                 response.statusCode.should.be.equal(409) //HTTP Conflict
@@ -305,7 +305,7 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                             //Search vendor to confirm that the it hasn't been deleted
                             var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                             request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error) consoleLogError.printErrorLog("DELETE /vendor: 'must test vendor Delete (with associated Things) -->" + error.message)
+                                if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (with associated Things) -->" + error.message)
                                 else {
                                     var resultsUndeletedVendor = JSON.parse(body)
                                     response.statusCode.should.be.equal(200)

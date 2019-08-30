@@ -22,6 +22,7 @@
 
 
 var siteDriver = require('../../DBEngineHandler/drivers/siteDriver')
+var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
 
 
 /* Create site */
@@ -57,11 +58,30 @@ module.exports.updateSite = function(req, res, next) {
 }
 
 
-//TODO Gestire la cancellazione in presenza di Things collegati
 /* Delete sites */
 module.exports.deleteSite = function(req, res, next) {
     var id = req.params.id
-    siteDriver.findByIdAndRemove(id, function(err, deletedSite) {
-        res.httpResponse(err, null, deletedSite)
+    thingDriver.findAll({siteId: id}, null, {totalCount: true}, function(err, results) {
+        if (err)
+            return next(err)
+        else {
+            if ((results._metadata.totalCount) > 0) { // there are Things associated with that Site, so you cannot delete the Site
+                res.httpResponse(err, 409, "Cannot delete the Site due to associated Thing(s)")
+            } else { //Deleting that Site could be safe since there aren't associated Things. What about associated Sites?
+                siteDriver.findAll({locatedInSiteId: id}, null, {totalCount: true}, function(err, results) {
+                    if (err)
+                        return next(err)
+                    else {
+                        if ((results._metadata.totalCount) > 0) { // there are Sites associated with that Site, so you cannot delete the Site
+                            res.httpResponse(err, 409, "Cannot delete the Site due to associated Site(s)")
+                        } else { //Deleting that Site is safe since there aren't associated Sites
+                            siteDriver.findByIdAndRemove(id, function(err, deletedSite) {
+                                res.httpResponse(err, null, deletedSite)
+                            })
+                        }
+                    }
+                })
+            }
+        }
     })
 }
