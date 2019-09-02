@@ -22,17 +22,17 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
+var ApiActions = require('../../../DBEngineHandler/drivers/apiActionDriver');
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/apiActions" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
-var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
+var apiActionDocuments=require('../../SetTestenv/createApiActionsDocuments');
 
 var webUiToken;
-var deviceId;
+var apiActionId;
 
 
-describe('Devices API Test - [PAGINATION TESTS]', function () {
+describe('ApiActions API Test - [PAGINATION TESTS]', function () {
 
     before(function (done) {
         commonFunctioTest.setAuthMsMicroservice(function(err){
@@ -43,10 +43,10 @@ describe('Devices API Test - [PAGINATION TESTS]', function () {
     });
 
     after(function (done) {
-        Devices.deleteMany({}, function (err,elm) {
-            if (err) consoleLogError.printErrorLog("Device paginationTests.js - after - deleteMany ---> " + err);
+        ApiActions.deleteMany({}, function (err,elm) {
+            if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
-                if (err) consoleLogError.printErrorLog("Device paginationTests.js - after - resetAuthMsStatus ---> " + err);
+                if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - after - resetAuthMsStatus ---> " + err);
                 done();
             });
         });
@@ -56,24 +56,24 @@ describe('Devices API Test - [PAGINATION TESTS]', function () {
 
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100,function(err,newDeviceId){
-            if (err) consoleLogError.printErrorLog("Device paginationTests.js - beforeEach - Devices.create ---> " + err);
-            deviceId=newDeviceId;
+        apiActionDocuments.createDocuments(100,function(err,newApiActionId){
+            if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - beforeEach - ApiActions.create ---> " + err);
+            apiActionId=newApiActionId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
-            if (err) consoleLogError.printErrorLog("Device paginationTests.js - afterEach - deleteMany ---> " + err);
+        ApiActions.deleteMany({}, function (err, elm) {
+            if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - afterEach - deleteMany ---> " + err);
             done();
         });
     });
 
 
 
-    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL,"devices",["description","name","thingId","typeId"]);
+    require('../../API_Compliant-Templates/pagination').paginationTests(APIURL,"apiActions",["actionName","deviceTypeId","method","header","bodyPrototype"]);
 
 
 
@@ -82,7 +82,7 @@ describe('Devices API Test - [PAGINATION TESTS]', function () {
 
     UNCOMMENT to define other CUSTOM tests
 
-    describe('test Type : eg. POST /Devices', function(){
+    describe('test Type : eg. POST /ApiActions', function(){
 
         it('must test ...', function(done){
            done();

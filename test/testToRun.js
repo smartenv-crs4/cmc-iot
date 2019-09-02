@@ -29,6 +29,7 @@ require('./Models-Test/vendorModel');
 require('./Models-Test/unitModel');
 require('./Models-Test/siteModel');
 require('./Models-Test/observedPropertyModel');
+require('./Models-Test/apiActionModel');
 
 //Middlewares
 require('./Middlewares-Test/decodeTokenMiddleware');
@@ -36,11 +37,12 @@ require('./Middlewares-Test/paginationFilter');
 require('./Middlewares-Test/searchFilter');
 
 //API
-require('./Devices-API-Test/devices-api');
+require('./API-Test-Devices/devices-api');
 require('./API-Test-Things/things-api');
-require('./DeviceTypes-API-Test/deviceTypes-api');
-require('./Vendors-API-Test/vendors-api');
-require('./Units-API-Test/units-api');
-require('./Sites-API-Test/sites-api');
-require('./ObservedProperties-API-Test/observedProperties-api');
+require('./API-Test-DeviceTypes/deviceTypes-api');
+require('./API-Test-Vendors/vendors-api');
+require('./API-Test-Units/units-api');
+require('./API-Test-Sites/sites-api');
+require('./API-Test-ObservedProperties/observedProperties-api');
+require('./API-Test-ApiActions/apiActions-api');
 

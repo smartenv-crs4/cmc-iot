@@ -20,49 +20,34 @@
  ############################################################################
  */
 
-
+var mongoose = require('mongoose');
+var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
-var Devices=require('../../../DBEngineHandler/drivers/deviceDriver');
-
-require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"devices",Devices.ObjectId());
+var extendedFunction = require('./metadata');
 
 
-/*
-
-UNCOMMENT to define other CUSTOM tests
-
-
-describe('Test Title eg. Devices API Tests', function () {
-
-    before(function (done) {
-       done();
-    });
-
-    after(function (done) {
-        done();
-    });
+var apiAction= conf.customSchema.apiActionSchema || {
+    actionName:{type:String,required:true},
+    method:{type:String,required:true, enum: ["GET","POST","PUT","DELETE"],default:"GET"},
+    header:{type:Object,required:true, default:{"Content-Type": "application/json" , "Accept":"application/json"}},
+    bodyPrototype:{type:Object, default:null},
+    deviceTypeId:{type:mongoose.ObjectId, required:true}
+};
 
 
+var apiActionSchema = new Schema(apiAction, {strict: "throw"});
 
-    beforeEach(function (done) {
-      done();
-    });
+// Static method to retrieve resource WITH metadata
+apiActionSchema.statics.findAll = function (conditions, fields, options, callback) {
+    return extendedFunction.findAll(this, 'apiActions', conditions, fields, options, callback);
+};
 
+// Static method to retrieve resource WITH metadata
+apiActionSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
+    return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
+};
 
-    afterEach(function (done) {
-       done();
-    });
+var ApiAction = mongoose.model('apiAction', apiActionSchema);
 
-
-    describe('test Type : eg. POST /Devices', function(){
-
-        it('must test ...', function(done){
-           done();
-
-        });
-    });
-
-});
- */
-
+module.exports.ApiActionSchema = apiActionSchema;
+module.exports.ApiAction = ApiAction;

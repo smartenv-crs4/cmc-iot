@@ -27,6 +27,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/apiAc
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var apiActionDocuments=require('../../SetTestenv/createApiActionsDocuments');
+var should=require('should');
 
 var webUiToken;
 
@@ -103,7 +104,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
     describe('POST /apiAction', function(){
 
         it('must test apiAction creation [data validation error due to required fields missing]', function(done){
-            var bodyParam=JSON.stringify({apiAction:{name:"name", description: "description"}});
+            var bodyParam=JSON.stringify({apiAction:{method: "POST"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -117,7 +118,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("apiAction validation failed: typeId: Path `typeId` is required., thingId: Path `thingId` is required.");
+                    results.message.should.be.equal("apiAction validation failed: deviceTypeId: Path `deviceTypeId` is required., actionName: Path `actionName` is required.");
                 }
                 done();
             });
@@ -127,28 +128,56 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
 
     describe('POST /apiAction', function(){
 
-        it('must test apiAction creation [data validation error due to invalid field typeId]', function(done){
-            var bodyParam=JSON.stringify({apiAction:{name:"name", description: "description",thingId:ApiActions.ObjectId(), typeId:"typeId"}});
+        it('must test apiAction creation [data validation error due to invalid field deviceTypeId]', function(done){
+            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", deviceTypeId:"typeId"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("POST /apiAction: 'must test apiAction creation [data validation error due to invalid field typeId] -->" + error.message);
+                if(error) consoleLogError.printErrorLog("POST /apiAction: 'must test apiAction creation [data validation error due to invalid field deviceTypeId] -->" + error.message);
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(400);
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("apiAction validation failed: typeId: Cast to ObjectID failed for value \"typeId\" at path \"typeId\"");
+                    results.message.should.be.equal("apiAction validation failed: deviceTypeId: Cast to ObjectID failed for value \"typeId\" at path \"deviceTypeId\"");
                 }
                 done();
             });
 
         });
     });
+
+
+
+    describe('POST /apiAction', function(){
+
+        it('must test apiAction creation [data validation error due to invalid value for method field]', function(done){
+            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", deviceTypeId:ApiActions.ObjectId(), method:"casual"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /apiAction: 'must test apiAction creation [data validation error due to invalid field deviceTypeId] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("apiAction validation failed: method: `casual` is not a valid enum value for path `method`.");
+                }
+                done();
+            });
+
+        });
+    });
+
 
 
     /******************************************************************************************************************
@@ -190,7 +219,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
         it('must test apiAction update [data validation error due to invalid field typeId]', function(done){
             ApiActions.findOne({}, null, function(err, apiAction){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({apiAction:{name:"name", description: "description",thingId:ApiActions.ObjectId(), typeId:"typeId"}});
+                var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", deviceTypeId:"typeId"}});
                 var requestParams={
                     url:APIURL+"/" + apiAction._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
@@ -204,7 +233,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"typeId\" at path \"typeId\"");
+                        results.message.should.be.eql("Cast to ObjectId failed for value \"typeId\" at path \"deviceTypeId\"");
                     }
                     done();
                 });
@@ -215,10 +244,10 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
 
     describe('PUT /apiAction', function(){
 
-        it('must test apiAction update [data validation error due to no Thingmodifiable field dismissed]', function(done){
+        it('must test apiAction update [method have a not vaid value]', function(done){
             ApiActions.findOne({}, null, function(err, apiAction){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({apiAction:{name:"name", description: "description",thingId:ApiActions.ObjectId(), dismissed:true}});
+                var bodyParam=JSON.stringify({apiAction:{method:"casual"}});
                 var requestParams={
                     url:APIURL+"/" + apiAction._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
@@ -232,7 +261,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore");
+                        results.message.should.be.eql("Validation failed: method: `casual` is not a valid enum value for path `method`.");
                     }
                     done();
                 });

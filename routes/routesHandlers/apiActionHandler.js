@@ -21,47 +21,40 @@
  */
 
 
-var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
-
-require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"devices","name");
+var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
 
 
-/*
-
-UNCOMMENT to define other CUSTOM tests
-
-
-describe('Test Title eg. Devices API Tests', function () {
-
-    before(function (done) {
-       done();
+module.exports.postCreateApiAction = function (req, res, next) {
+    apiActionDriver.create(req.body.apiAction, function (err, results) {
+        res.httpResponse(err,null,results);
     });
+};
 
-    after(function (done) {
-        done();
+
+module.exports.updateApiAction = function (req, res, next) {
+    apiActionDriver.findByIdAndUpdate(req.params.id, req.body.apiAction,function (err, results) {
+        res.httpResponse(err,null,results);
     });
+};
 
 
+module.exports.getApiActionById = function (req, res, next) {
+    var id = req.params.id;
+    apiActionDriver.findById(id, req.dbQueryFields, function (err, results) {
+        res.httpResponse(err,null,results);
+    })
+};
 
-    beforeEach(function (done) {
-      done();
+
+module.exports.getApiActions = function (req, res, next) {
+    apiActionDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
+        res.httpResponse(err,req.statusCode,results);
     });
+};
 
-
-    afterEach(function (done) {
-       done();
+module.exports.deleteApiAction = function (req, res, next) {
+    var id = req.params.id;
+    apiActionDriver.findByIdAndRemove(id,function(err,deletedApiAction){
+        res.httpResponse(err,null,deletedApiAction);
     });
-
-
-    describe('test Type : eg. POST /Devices', function(){
-
-        it('must test ...', function(done){
-           done();
-
-        });
-    });
-
-});
- */
-
+};

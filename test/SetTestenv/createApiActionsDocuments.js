@@ -20,47 +20,34 @@
  ############################################################################
  */
 
-var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
+var _ = require('underscore')._;
+var async = require('async');
+var ApiAction = require('../../DBEngineHandler/drivers/apiActionDriver');
 
 
+module.exports.createDocuments=function(numbers,callback){
 
-require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL,"devices");
+    var range = _.range(numbers);
+    var apiActionId;
+    async.each(range, function(e,cb){
 
-/*
-
-UNCOMMENT to define other CUSTOM tests
-
-
-describe('Test Title eg. Devices API Tests', function () {
-
-    before(function (done) {
-       done();
-    });
-
-    after(function (done) {
-        done();
-    });
-
-
-
-    beforeEach(function (done) {
-      done();
-    });
-
-
-    afterEach(function (done) {
-       done();
-    });
-
-
-    describe('test Type : eg. POST /Devices', function(){
-
-        it('must test ...', function(done){
-           done();
-
+        // method set to GET by default
+        // header set to {"Content-Type": "application/json" , "Accept":"application/json"} by default
+        ApiAction.create({
+            actionName:"name" + e,
+            bodyPrototype:{ field:e},
+            deviceTypeId:ApiAction.ObjectId(),
+            
+        },function(err,newApiAction){
+            if (err) throw err;
+            if(e===1) apiActionId=newApiAction._id;
+            cb();
         });
+
+    }, function(err){
+        callback(err,apiActionId);
     });
 
-});
- */
+};
+
+

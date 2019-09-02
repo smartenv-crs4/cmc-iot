@@ -150,7 +150,7 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
     describe('PUT /apiAction/:id', function(){
 
         it('must test update apiAction by Id', function(done){
-            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", description: "description",thingId:ApiActions.ObjectId(), typeId:ApiActions.ObjectId()}});
+            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", deviceTypeId:ApiActions.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -163,10 +163,7 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(201);
-                    results.should.have.property('actionName');
-                    results.should.have.property('description');
-                    results.should.have.property('thingId');
-                    results.should.have.property('typeId');
+                    results.should.have.properties('actionName','bodyPrototype','deviceTypeId','method','header');
                 }
 
 
@@ -182,10 +179,7 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
                     else{
                         var resultsById = JSON.parse(body);
                         response.statusCode.should.be.equal(200);
-                        resultsById.should.have.property('actionName');
-                        resultsById.should.have.property('description');
-                        resultsById.should.have.property('thingId');
-                        resultsById.should.have.property('typeId');
+                        resultsById.should.have.properties('actionName','bodyPrototype','deviceTypeId','method','header');
                         resultsById._id.should.be.eql(results._id);
                         resultsById.actionName.should.be.eql(actionNameUpdated);
                     }
@@ -206,9 +200,9 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
 
     describe('DELETE /apiAction', function(){
 
-        it('must test apiAction Delete (without observation)', function(done){
+        it('must test apiAction Delete', function(done){
 
-            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", description: "description",thingId:ApiActions.ObjectId(), typeId:ApiActions.ObjectId()}});
+            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", deviceTypeId:ApiActions.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -216,114 +210,36 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
             };
             // create ApiAction
             request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (without observation) -->" + error.message);
+                if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete -->" + error.message);
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(201);
-                    results.should.have.property('actionName');
-                    results.should.have.property('description');
-                    results.should.have.property('thingId');
-                    results.should.have.property('typeId');
-                    results.dismissed.should.be.false();
+                    results.should.have.properties('actionName','bodyPrototype','deviceTypeId','method','header');
                 }
 
                 // DELETE ApiAction
                 var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
                 request.del(geByIdRequestUrl,function(error, response, body){
-                    if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (without observation) -->" + error.message);
+                    if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete -->" + error.message);
                     else{
                         var resultsDeleteById = JSON.parse(body);
                         response.statusCode.should.be.equal(200);
-                        resultsDeleteById.should.have.property('actionName');
-                        resultsDeleteById.should.have.property('description');
-                        resultsDeleteById.should.have.property('thingId');
-                        resultsDeleteById.should.have.property('typeId');
+                        resultsDeleteById.should.have.properties('actionName','bodyPrototype','deviceTypeId','method','header');
                         resultsDeleteById._id.should.be.eql(results._id);
-                        resultsDeleteById.dismissed.should.be.false();
                     }
 
                     //Search ApiAction to confirm delete
                     var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
                     request.get(geByIdRequestUrl,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (without observation) -->" + error.message);
+                        if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete -->" + error.message);
                         else{
                             response.statusCode.should.be.equal(204);
                         }
                         done();
                     });
                 });
-
-
             });
 
-        });
-    });
-
-
-    describe('DELETE /apiAction', function(){
-
-        it('must test apiAction Delete (with observation)', function(done){
-
-            var bodyParam=JSON.stringify({apiAction:{actionName:"actionName", description: "description",thingId:ApiActions.ObjectId(), typeId:ApiActions.ObjectId()}});
-            var requestParams={
-                url:APIURL,
-                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
-                body:bodyParam
-            };
-            // create ApiAction
-            request.post(requestParams,function(error, response, body){
-                if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (with observation) -->" + error.message);
-                else{
-                    var results = JSON.parse(body);
-                    response.statusCode.should.be.equal(201);
-                    results.should.have.property('actionName');
-                    results.should.have.property('description');
-                    results.should.have.property('thingId');
-                    results.should.have.property('typeId');
-                    results.dismissed.should.be.false();
-                }
-
-
-                // create Observation
-                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},apiActionId:results._id,unitId: Observation.ObjectId()},function(err,observation){
-
-                    // DELETE ApiAction
-                    var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
-                    request.del(geByIdRequestUrl,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (with observation) -->" + error.message);
-                        else{
-                            var resultsDeleteById = JSON.parse(body);
-                            response.statusCode.should.be.equal(200);
-                            resultsDeleteById.should.have.property('actionName');
-                            resultsDeleteById.should.have.property('description');
-                            resultsDeleteById.should.have.property('thingId');
-                            resultsDeleteById.should.have.property('typeId');
-                            resultsDeleteById._id.should.be.eql(results._id);
-                            resultsDeleteById.dismissed.should.be.true();
-                        }
-
-                        //Search ApiAction to confirm delete
-                        var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
-                        request.get(geByIdRequestUrl,function(error, response, body){
-                            if(error) consoleLogError.printErrorLog("DELETE /apiAction: 'must test apiAction Delete (with observation) -->" + error.message);
-                            else{
-                                var resultsFindById = JSON.parse(body);
-                                response.statusCode.should.be.equal(200);
-                                resultsFindById.should.have.property('actionName');
-                                resultsFindById.should.have.property('description');
-                                resultsFindById.should.have.property('thingId');
-                                resultsFindById.should.have.property('typeId');
-                                resultsFindById._id.should.be.eql(results._id);
-                                resultsFindById.dismissed.should.be.true();
-                            }
-                            Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
-                                should(err).be.null();
-                                done();
-                            });
-                        });
-                    });
-                });
-            });
         });
     });
 

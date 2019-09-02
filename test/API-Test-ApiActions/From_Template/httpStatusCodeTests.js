@@ -25,7 +25,7 @@ var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/apiActions" ;
 var ApiActions=require('../../../DBEngineHandler/drivers/apiActionDriver');
 
-require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"apiActions",ApiActions.ObjectId());
+require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"apiActions",ApiActions.ObjectId(),"actionName");
 
 
 /*

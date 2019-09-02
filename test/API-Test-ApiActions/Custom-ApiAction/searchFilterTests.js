@@ -81,14 +81,14 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /apiActions', function () {
 
-        it('must test API compliant to field selection: fields projection [name, description]', function (done) {
+        it('must test API compliant to field selection: fields projection [actionName, method]', function (done) {
 
             request.get({
-                url: APIURL + '?fields=name,description',
+                url: APIURL + '?fields=actionName,method',
                 headers: {'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection: fields projection [name, description]' -->" + error.message);
+                if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection: fields projection [actionName, method]' -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
@@ -97,10 +97,10 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                     results.should.have.property('apiActions');
                     results._metadata.totalCount.should.be.equal(false);
                     results.apiActions.length.should.be.equal(conf.pagination.limit);
-                    results.apiActions[0].should.have.properties("name");
-                    results.apiActions[0].should.have.properties("description");
+                    results.apiActions[0].should.have.properties("actionName");
+                    results.apiActions[0].should.have.properties("method");
                     should(results.apiActions[0].thingId).be.eql(undefined);
-                    should(results.apiActions[0].typeId).be.eql(undefined);
+                    should(results.apiActions[0].deviceTypeId).be.eql(undefined);
                 }
                 done();
             });
@@ -112,7 +112,7 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /apiActions', function () {
 
-        it('must test API compliant to field selection by ID: fields projection [name, description]', function (done) {
+        it('must test API compliant to field selection by ID: fields projection [actionName, method]', function (done) {
 
 
             ApiActions.findAll({}, null, null, function(err, results){
@@ -121,18 +121,18 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                 else{
                     var id=results.apiActions[0]._id;
                     request.get({
-                        url: APIURL + "/" + id+"?fields=name,description",
+                        url: APIURL + "/" + id+"?fields=actionName,method",
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
-                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection by ID: fields projection [name, description]' -->" + error.message);
+                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection by ID: fields projection [actionName, method]' -->" + error.message);
                         else {
                             var results = JSON.parse(body);
-                            results.should.have.properties("name");
-                            results.should.have.properties("description");
+                            results.should.have.properties("actionName");
+                            results.should.have.properties("method");
                             id.should.be.eql(ApiActions.ObjectId(results._id));
                             should(results.thingId).be.eql(undefined);
-                            should(results.typeId).be.eql(undefined);
+                            should(results.deviceTypeId).be.eql(undefined);
                         }
                         done();
                     });
@@ -161,10 +161,10 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                     results.should.have.property('apiActions');
                     results._metadata.totalCount.should.be.equal(false);
                     results.apiActions.length.should.be.equal(conf.pagination.limit);
-                    results.apiActions[0].should.have.properties("name");
-                    results.apiActions[0].should.have.properties("description");
+                    results.apiActions[0].should.have.properties("actionName");
+                    results.apiActions[0].should.have.properties("method");
                     should(results.apiActions[0].thingId).be.eql(undefined);
-                    results.apiActions[0].should.have.properties("typeId");
+                    results.apiActions[0].should.have.properties("deviceTypeId");
                 }
                 done();
             });
@@ -176,14 +176,14 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /apiActions', function () {
 
-        it('must test API compliant to field selection: fields projection must not include  thingId and name [-thingId -name]', function (done) {
+        it('must test API compliant to field selection: fields projection must not include  thingId and actionName [-thingId -actionName]', function (done) {
 
             request.get({
-                url: APIURL + '?fields=-thingId,-name',
+                url: APIURL + '?fields=-thingId,-actionName',
                 headers: {'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection: fields projection must not include  thingId and name [-thingId -name]' -->" + error.message);
+                if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to field selection: fields projection must not include  thingId and actionName [-thingId -actionName]' -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
@@ -192,10 +192,10 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                     results.should.have.property('apiActions');
                     results._metadata.totalCount.should.be.equal(false);
                     results.apiActions.length.should.be.equal(conf.pagination.limit);
-                    should(results.apiActions[0].name).be.eql(undefined);
-                    results.apiActions[0].should.have.properties("description");
+                    should(results.apiActions[0].actionName).be.eql(undefined);
+                    results.apiActions[0].should.have.properties("method");
                     should(results.apiActions[0].thingId).be.eql(undefined);
-                    results.apiActions[0].should.have.properties("typeId");
+                    results.apiActions[0].should.have.properties("deviceTypeId");
                 }
                 done();
             });
@@ -325,22 +325,22 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /apiActions', function () {
 
-        it('must test API compliant to filter by field as list comma separated ---> name="name1,name2"', function (done) {
+        it('must test API compliant to filter by field as list comma separated ---> actionName="actionName1,actionName2"', function (done) {
 
 
             ApiAction.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
-                    var name=results.apiActions[0].name + "," + results.apiActions[1].name;
+                    var actionName=results.apiActions[0].actionName + "," + results.apiActions[1].actionName;
 
 
                     request.get({
-                        url: APIURL + '?name='+name,
+                        url: APIURL + '?actionName='+actionName,
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
-                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to filter by field as list comma separated -- name='name1,name2'  -->" + error.message);
+                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to filter by field as list comma separated -- actionName='actionName1,actionName2'  -->" + error.message);
                         else {
                             response.statusCode.should.be.equal(200);
                             var results = JSON.parse(body);
@@ -348,8 +348,8 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('apiActions');
                             results._metadata.totalCount.should.be.equal(false);
                             results.apiActions.length.should.be.equal(2);
-                            name.indexOf(results.apiActions[0].name).should.be.greaterThanOrEqual(0);
-                            name.indexOf(results.apiActions[1].name).should.be.greaterThanOrEqual(0);
+                            actionName.indexOf(results.apiActions[0].actionName).should.be.greaterThanOrEqual(0);
+                            actionName.indexOf(results.apiActions[1].actionName).should.be.greaterThanOrEqual(0);
 
                         }
                         done();
@@ -364,23 +364,23 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     describe('GET /apiActions', function () {
 
-        it('must test API compliant to filter by multiple field as array or list comma separated ---> name=["name1","name2"]description="desc1,desc2]', function (done) {
+        it('must test API compliant to filter by multiple field as array or list comma separated ---> actionName=["actionName1","actionName2"]method="desc1,desc2]', function (done) {
 
 
             ApiAction.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
-                    var name=[results.apiActions[0].name,results.apiActions[1].name];
-                    var description=results.apiActions[0].description + "," + results.apiActions[1].description;
+                    var actionName=[results.apiActions[0].actionName,results.apiActions[1].actionName];
+                    var method=results.apiActions[0].method + "," + results.apiActions[1].method;
 
 
                     request.get({
-                        url: APIURL + '?name=' + name[0] + "&name=" + name[1] + "&description="+description,
+                        url: APIURL + '?actionName=' + actionName[0] + "&actionName=" + actionName[1] + "&method="+method,
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
-                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to filter by multiple field as array or list comma separated --- name=['name1','name2'] description='desc1,desc2]'  -->" + error.message);
+                        if(error) consoleLogError.printErrorLog("GET /apiActions: 'must test API compliant to filter by multiple field as array or list comma separated --- actionName=['actionName1','actionName2'] method='desc1,desc2]'  -->" + error.message);
                         else {
                             response.statusCode.should.be.equal(200);
                             var results = JSON.parse(body);
@@ -388,10 +388,10 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('apiActions');
                             results._metadata.totalCount.should.be.equal(false);
                             results.apiActions.length.should.be.equal(2);
-                            results.apiActions[0].name.should.be.equalOneOf([results.apiActions[0].name , results.apiActions[1].name ]);
-                            results.apiActions[1].name.should.be.equalOneOf([results.apiActions[0].name , results.apiActions[1].name ]);
-                            description.indexOf(results.apiActions[0].description).should.be.greaterThanOrEqual(0);
-                            description.indexOf(results.apiActions[1].description).should.be.greaterThanOrEqual(0);
+                            results.apiActions[0].actionName.should.be.equalOneOf([results.apiActions[0].actionName , results.apiActions[1].actionName ]);
+                            results.apiActions[1].actionName.should.be.equalOneOf([results.apiActions[0].actionName , results.apiActions[1].actionName ]);
+                            method.indexOf(results.apiActions[0].method).should.be.greaterThanOrEqual(0);
+                            method.indexOf(results.apiActions[1].method).should.be.greaterThanOrEqual(0);
 
                         }
                         done();
@@ -415,7 +415,7 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                 else{
 
                     request.get({
-                        url: APIURL + '?sortDesc=name,description',
+                        url: APIURL + '?sortDesc=actionName,method',
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
@@ -427,9 +427,9 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('apiActions');
                             results._metadata.totalCount.should.be.equal(false);
                             results.apiActions.length.should.be.equal(50);
-                            results.apiActions[0].name.should.be.greaterThan(results.apiActions[1].name);
-                            results.apiActions[1].name.should.be.greaterThan(results.apiActions[2].name);
-                            results.apiActions[2].name.should.be.greaterThan(results.apiActions[3].name);
+                            results.apiActions[0].actionName.should.be.greaterThan(results.apiActions[1].actionName);
+                            results.apiActions[1].actionName.should.be.greaterThan(results.apiActions[2].actionName);
+                            results.apiActions[2].actionName.should.be.greaterThan(results.apiActions[3].actionName);
                         }
                         done();
                     });
@@ -452,7 +452,7 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                 else{
 
                     request.get({
-                        url: APIURL + '?sortAsc=name,description',
+                        url: APIURL + '?sortAsc=actionName,method',
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
@@ -464,9 +464,9 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('apiActions');
                             results._metadata.totalCount.should.be.equal(false);
                             results.apiActions.length.should.be.equal(50);
-                            results.apiActions[3].name.should.be.greaterThan(results.apiActions[2].name);
-                            results.apiActions[2].name.should.be.greaterThan(results.apiActions[1].name);
-                            results.apiActions[1].name.should.be.greaterThan(results.apiActions[0].name);
+                            results.apiActions[3].actionName.should.be.greaterThan(results.apiActions[2].actionName);
+                            results.apiActions[2].actionName.should.be.greaterThan(results.apiActions[1].actionName);
+                            results.apiActions[1].actionName.should.be.greaterThan(results.apiActions[0].actionName);
                         }
                         done();
                     });
@@ -491,7 +491,7 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
 
                     request.get({
-                        url: APIURL + '?apiActions='+apiActions+"&fields=name,thingId",
+                        url: APIURL + '?apiActions='+apiActions+"&fields=actionName,method",
                         headers: {'Authorization': "Bearer " + webUiToken}
                     }, function (error, response, body) {
 
@@ -507,8 +507,10 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
                             apiActions.should.containEql(results.apiActions[1]._id);
                             apiActions.indexOf(results.apiActions[0]._id).should.be.greaterThanOrEqual(0);
                             apiActions.indexOf(results.apiActions[1]._id).should.be.greaterThanOrEqual(0);
-                            results.apiActions[0].should.have.properties(["name","thingId"]);
-                            results.apiActions[0].should.not.have.properties(["description","typeId"]);
+                            results.apiActions[0].should.have.properties(["actionName","method"]);
+                            results.apiActions[0].should.not.have.property("bodyPrototype");
+                            results.apiActions[0].should.not.have.property("deviceTypeId");
+
                         }
                         done();
                     });

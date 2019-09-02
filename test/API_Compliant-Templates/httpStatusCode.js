@@ -25,12 +25,13 @@ var conf = require('propertiesmanager').conf;
 var request = require('request');
 var commonFunctioTest=require("../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../Utility/errorLogs');
+var should=require('should');
 var webUiToken;
 
 
 
 
-exports.httpStatusCode = function (APIURL,route,id) {
+exports.httpStatusCode = function (APIURL,route,id,fieldToUpdate) {
 
 
     describe("HTTP status code Compliant Test '/" + route + "' [FROM TEMPLATE]", function () {
@@ -87,7 +88,12 @@ exports.httpStatusCode = function (APIURL,route,id) {
                 //cannot stringify because must resolve entityName value
                 //JSON.stringify({entityName:{name:"name"}, access_token:webUiToken});
                 var bodyParam = {};
-                bodyParam[entityName] = {name:"name"};
+                if(fieldToUpdate){
+                    bodyParam[entityName] = {};
+                    bodyParam[entityName][fieldToUpdate]="updateTo";
+                }else {
+                    bodyParam[entityName] = {name: "name"};
+                }
                 bodyParam["access_token"] = webUiToken;
 
                 requestParams={

@@ -70,7 +70,8 @@
       "observationSchema": null,
       "observedPropertySchema": null,
       "thingSchema": null,
-      "siteSchema": null
+      "siteSchema": null,
+      "apiActionSchema": null
     },
     "cmcIoTThingsOwner": {
       "name": "Cmc-IoT dismissed Things owner",
@@ -110,7 +111,8 @@
       "observationSchema": null,
       "observedPropertySchema": null,
       "thingSchema": null,
-      "siteSchema": null
+      "siteSchema": null,
+      "apiActionSchema": null
     },
     "testConfig":{
       "usertokens":["UserType1"],

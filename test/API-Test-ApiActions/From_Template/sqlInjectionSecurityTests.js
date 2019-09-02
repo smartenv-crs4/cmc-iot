@@ -24,7 +24,7 @@
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/apiActions" ;
 
-require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"apiActions","name");
+require('../../API_Compliant-Templates/sqlInjectionSecurity').sqlInjectionSecurity(APIURL,"apiActions","actionName");
 
 
 /*
