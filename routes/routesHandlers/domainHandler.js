@@ -21,30 +21,40 @@
  */
 
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
-require('./Models-Test/apiActionModel');
-require('./Models-Test/domainModel');
+var domainDriver = require('../../DBEngineHandler/drivers/domainDriver');
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./API-Test-Devices/devices-api');
-require('./API-Test-Things/things-api');
-require('./API-Test-DeviceTypes/deviceTypes-api');
-require('./API-Test-Vendors/vendors-api');
-require('./API-Test-Units/units-api');
-require('./API-Test-Sites/sites-api');
-require('./API-Test-ObservedProperties/observedProperties-api');
-require('./API-Test-ApiActions/apiActions-api');
-require('./API-Test-Domains/domains-api');
+module.exports.postCreateDomain = function (req, res, next) {
+    domainDriver.create(req.body.domain, function (err, results) {
+        res.httpResponse(err,null,results);
+    });
+};
 
+
+module.exports.updateDomain = function (req, res, next) {
+    domainDriver.findByIdAndUpdate(req.params.id, req.body.domain,function (err, results) {
+        res.httpResponse(err,null,results);
+    });
+};
+
+
+module.exports.getDomainById = function (req, res, next) {
+    var id = req.params.id;
+    domainDriver.findById(id, req.dbQueryFields, function (err, results) {
+        res.httpResponse(err,null,results);
+    })
+};
+
+
+module.exports.getDomains = function (req, res, next) {
+    domainDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
+        res.httpResponse(err,req.statusCode,results);
+    });
+};
+
+module.exports.deleteDomain = function (req, res, next) {
+    var id = req.params.id;
+    domainDriver.findByIdAndRemove(id,function(err,deletedDomain){
+        res.httpResponse(err,null,deletedDomain);
+    });
+};

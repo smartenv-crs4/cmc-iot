@@ -39,6 +39,7 @@ var sitesRouter = require('./routes/sites');
 var observedPropertiesRouter = require('./routes/observedProperties');
 var observationsRouter = require('./routes/observations');
 var apiActionsRouter = require('./routes/apiActions');
+var domainsRouter = require('./routes/domains');
 
 var app = express();
 
@@ -68,6 +69,7 @@ app.use('/sites', sitesRouter);
 app.use('/observedProperties', observedPropertiesRouter);
 app.use('/observations', observationsRouter);
 app.use('/apiActions', apiActionsRouter);
+app.use('/domains', domainsRouter);
 
 
 // catch 404 and forward to error handler

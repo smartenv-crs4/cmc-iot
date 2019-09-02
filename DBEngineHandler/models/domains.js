@@ -20,31 +20,32 @@
  ############################################################################
  */
 
+var mongoose = require('mongoose');
+var extendedFunction = require('./metadata');
+var Schema = mongoose.Schema;
+var conf = require('propertiesmanager').conf;
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
-require('./Models-Test/apiActionModel');
-require('./Models-Test/domainModel');
+var domains= conf.customSchema.domainSchema || {
+    name:{type:String,required:true},
+    description:{type:String,required:true},   
+};
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./API-Test-Devices/devices-api');
-require('./API-Test-Things/things-api');
-require('./API-Test-DeviceTypes/deviceTypes-api');
-require('./API-Test-Vendors/vendors-api');
-require('./API-Test-Units/units-api');
-require('./API-Test-Sites/sites-api');
-require('./API-Test-ObservedProperties/observedProperties-api');
-require('./API-Test-ApiActions/apiActions-api');
-require('./API-Test-Domains/domains-api');
+var domainSchema = new Schema(domains, {strict: "throw"});
 
+// Static method to retrieve resource WITH metadata
+domainSchema.statics.findAll = function (conditions, fields, options, callback) {
+    return extendedFunction.findAll(this, 'domains', conditions, fields, options, callback);
+};
+
+
+// Static method to retrieve resource WITH metadata
+domainSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
+    return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
+
+};
+
+var Domain = mongoose.model('domain', domainSchema);
+
+module.exports.DomainSchema = domainSchema;
+module.exports.Domain = Domain;

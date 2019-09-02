@@ -20,31 +20,47 @@
  ############################################################################
  */
 
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/domains" ;
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
-require('./Models-Test/apiActionModel');
-require('./Models-Test/domainModel');
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
 
-//API
-require('./API-Test-Devices/devices-api');
-require('./API-Test-Things/things-api');
-require('./API-Test-DeviceTypes/deviceTypes-api');
-require('./API-Test-Vendors/vendors-api');
-require('./API-Test-Units/units-api');
-require('./API-Test-Sites/sites-api');
-require('./API-Test-ObservedProperties/observedProperties-api');
-require('./API-Test-ApiActions/apiActions-api');
-require('./API-Test-Domains/domains-api');
+require('../../API_Compliant-Templates/access_tokenAuthentication').accessTokenCompliant(APIURL,"domains");
 
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Domains API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Domains', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */

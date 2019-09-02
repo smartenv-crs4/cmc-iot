@@ -20,31 +20,30 @@
  ############################################################################
  */
 
+var _ = require('underscore')._;
+var async = require('async');
+var Domain = require('../../DBEngineHandler/drivers/domainDriver');
 
-//Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
-require('./Models-Test/apiActionModel');
-require('./Models-Test/domainModel');
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
+module.exports.createDocuments=function(numbers,callback){
 
-//API
-require('./API-Test-Devices/devices-api');
-require('./API-Test-Things/things-api');
-require('./API-Test-DeviceTypes/deviceTypes-api');
-require('./API-Test-Vendors/vendors-api');
-require('./API-Test-Units/units-api');
-require('./API-Test-Sites/sites-api');
-require('./API-Test-ObservedProperties/observedProperties-api');
-require('./API-Test-ApiActions/apiActions-api');
-require('./API-Test-Domains/domains-api');
+    var range = _.range(numbers);
+    var domainId;
+    async.each(range, function(e,cb){
+
+        Domain.create({
+            name:"name" + e,
+            description:"description" +e
+        },function(err,newDomain){
+            if (err) throw err;
+            if(e===1) domainId=newDomain._id;
+            cb();
+        });
+
+    }, function(err){
+        callback(err,domainId);
+    });
+
+};
+
 
