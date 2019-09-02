@@ -66,7 +66,7 @@ module.exports.findById = function(id, projection, options, callback) {
 
 /* findOne Vendor and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    vendors.findByIdAndUpdate(id, newFields, {new: true}, callback)
+    vendors.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
 }
 
 

@@ -66,7 +66,7 @@ module.exports.findById = function(id, projection, options, callback) {
 
 /* findOne ObservedProperty and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    observedProperties.findByIdAndUpdate(id, newFields, {new: true}, callback)
+    observedProperties.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
 }
 
 

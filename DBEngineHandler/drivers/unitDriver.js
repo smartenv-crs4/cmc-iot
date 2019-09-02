@@ -66,7 +66,7 @@ module.exports.findById = function(id, projection, options, callback) {
 
 /* findOne Unit and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    units.findByIdAndUpdate(id, newFields, {new: true}, callback)
+    units.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
 }
 
 

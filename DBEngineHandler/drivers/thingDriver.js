@@ -60,13 +60,13 @@ module.exports.findById = function(id,projection,options,callback){
 
 /* findOne Device. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    things.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true},callback);
+    things.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
 };
 
 
 /* Update Thing by Id. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    things.findByIdAndUpdate(id,newFields,{new:true},callback);
+    things.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
 };
 
 

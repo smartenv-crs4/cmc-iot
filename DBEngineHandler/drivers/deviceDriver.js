@@ -67,14 +67,14 @@ module.exports.findById = function(id,projection,options,callback){
 
 /* findOne Device. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    devices.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true},callback);
+    devices.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
 };
 
 
 
 /* findOne Device. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    devices.findByIdAndUpdate(id,newFields,{new:true},callback);
+    devices.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
 };
 
 

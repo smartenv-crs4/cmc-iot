@@ -66,7 +66,7 @@ module.exports.findById = function(id, projection, options, callback) {
 
 /* findOne DeviceType and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    deviceTypes.findByIdAndUpdate(id, newFields, {new: true}, callback)
+    deviceTypes.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
 }
 
 
