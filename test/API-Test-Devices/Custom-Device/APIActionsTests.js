@@ -335,7 +335,10 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('devices');
                                 results.devices.length.should.be.eql(conf.pagination.limit);
                                 results.devices[0].should.have.properties("name", "description");
-                                results.devices[0].should.not.have.properties("dismissed", "disabled", "ownerId", "vendorId");
+                                results.devices[0].should.not.have.property("vendorId");
+                                results.devices[0].should.not.have.property("ownerId");
+                                results.devices[0].should.not.have.property("disabled");
+                                results.devices[0].should.not.have.property("dismissed");
                             }
                             done();
                         });
@@ -381,7 +384,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('_metadata');
                                 results.should.have.property('devices');
                                 results.devices.length.should.be.eql(conf.pagination.limit);
-                                results.devices[0].should.not.have.properties("description");
+                                results.devices[0].should.not.have.property("description");
                                 results.devices[0].should.have.properties("dismissed", "disabled", "typeId", "thingId", "name");
                             }
                             done();

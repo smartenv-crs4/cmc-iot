@@ -168,7 +168,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('devices');
                     results.should.have.property('_metadata');
                     results.devices[0].should.have.properties("_id","name","description","thingId", "typeId","disabled");
-                    results.devices[0].should.not.have.properties("dismissed");
+                    results.devices[0].should.not.have.property("dismissed");
                 }
                 done();
             });

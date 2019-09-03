@@ -508,7 +508,8 @@ describe('Devices API Test - [SEARCH FILTERS]', function () {
                             devices.indexOf(results.devices[0]._id).should.be.greaterThanOrEqual(0);
                             devices.indexOf(results.devices[1]._id).should.be.greaterThanOrEqual(0);
                             results.devices[0].should.have.properties(["name","thingId"]);
-                            results.devices[0].should.not.have.properties(["description","typeId"]);
+                            results.devices[0].should.not.have.property(["typeId"]);
+                            results.devices[0].should.not.have.property(["description"]);
                         }
                         done();
                     });

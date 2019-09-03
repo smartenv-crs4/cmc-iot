@@ -385,9 +385,9 @@ describe('Units API Test - [SEARCH FILTERS]', function() {
                             units.indexOf(results.units[0]._id).should.be.greaterThanOrEqual(0)
                             units.indexOf(results.units[1]._id).should.be.greaterThanOrEqual(0)
                             results.units[0].should.have.properties(["name", "observedPropertyId"])
-                            results.units[0].should.not.have.properties(["symbol"])
-                            results.units[0].should.not.have.properties(["minValue"])
-                            results.units[0].should.not.have.properties(["maxValue"])
+                            results.units[0].should.not.have.property(["symbol"])
+                            results.units[0].should.not.have.property(["minValue"])
+                            results.units[0].should.not.have.property(["maxValue"])
                         }
                         done()
                     })

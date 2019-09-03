@@ -91,7 +91,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
                     results._metadata.totalCount.should.be.equal(false)
                     results.vendors.length.should.be.equal(conf.pagination.limit)
                     results.vendors[0].should.have.properties("name")
-                    results.vendors[0].should.not.have.properties("description")
+                    results.vendors[0].should.not.have.property("description")
                     should(results.vendors[0].description).be.eql(undefined)
                 }
                 done()

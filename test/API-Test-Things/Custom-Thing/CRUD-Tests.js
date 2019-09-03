@@ -196,7 +196,8 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                         var resultsById = JSON.parse(body);
                         response.statusCode.should.be.equal(200);
                         resultsById.should.have.properties('name','description','api','ownerId','vendorId','siteId','disabled','mobile');
-                        resultsById.should.not.have.properties('direct','dismissed');
+                        resultsById.should.not.have.property('direct');
+                        resultsById.should.not.have.property('dismissed');
                         resultsById._id.should.be.eql(results._id);
                     }
                     done();
@@ -273,7 +274,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('things');
                     results.should.have.property('_metadata');
                     results.things[0].should.have.properties("_id","name","description","ownerId", "vendorId","disabled");
-                    results.things[0].should.not.have.properties("dismissed");
+                    results.things[0].should.not.have.property("dismissed");
                 }
                 done();
             });
@@ -295,7 +296,8 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('things');
                     results.should.have.property('_metadata');
                     results.things[0].should.have.properties("_id","name","description","ownerId", "vendorId","disabled");
-                    results.things[0].should.not.have.properties("dismissed","direct");
+                    results.things[0].should.not.have.property("direct");
+                    results.things[0].should.not.have.property("dismissed");
                 }
                 done();
             });

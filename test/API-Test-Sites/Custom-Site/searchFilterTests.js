@@ -383,7 +383,7 @@ describe('Sites API Test - [SEARCH FILTERS]', function() {
                             sites.indexOf(results.sites[0]._id).should.be.greaterThanOrEqual(0)
                             sites.indexOf(results.sites[1]._id).should.be.greaterThanOrEqual(0)
                             results.sites[0].should.have.properties(["name", "location", "locatedInSiteId"])
-                            results.sites[0].should.not.have.properties(["description"])
+                            results.sites[0].should.not.have.property(["description"])
                         }
                         done()
                     })

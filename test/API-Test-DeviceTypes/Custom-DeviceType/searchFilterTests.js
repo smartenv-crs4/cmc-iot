@@ -379,7 +379,7 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
                             deviceTypes.indexOf(results.deviceTypes[0]._id).should.be.greaterThanOrEqual(0)
                             deviceTypes.indexOf(results.deviceTypes[1]._id).should.be.greaterThanOrEqual(0)
                             results.deviceTypes[0].should.have.properties(["name", "observedPropertyId"])
-                            results.deviceTypes[0].should.not.have.properties(["description"])
+                            results.deviceTypes[0].should.not.have.property(["description"])
                         }
                         done()
                     })

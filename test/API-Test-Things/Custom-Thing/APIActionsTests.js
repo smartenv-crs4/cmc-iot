@@ -347,7 +347,10 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('things');
                                 results.things.length.should.be.eql(conf.pagination.limit);
                                 results.things[0].should.have.properties("name", "description");
-                                results.things[0].should.not.have.properties("dismissed", "disabled", "ownerId", "vendorId");
+                                results.things[0].should.not.have.property("dismissed");
+                                results.things[0].should.not.have.property( "disabled");
+                                results.things[0].should.not.have.property("ownerId");
+                                results.things[0].should.not.have.property("vendorId");
                             }
                             done();
                         });
@@ -393,7 +396,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('_metadata');
                                 results.should.have.property('things');
                                 results.things.length.should.be.eql(conf.pagination.limit);
-                                results.things[0].should.not.have.properties("description");
+                                results.things[0].should.not.have.property("description");
                                 results.things[0].should.have.properties("dismissed", "disabled", "ownerId", "vendorId", "name");
                             }
                             done();

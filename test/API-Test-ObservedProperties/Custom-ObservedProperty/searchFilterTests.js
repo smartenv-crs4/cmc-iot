@@ -91,7 +91,7 @@ describe('ObservedProperties API Test - [SEARCH FILTERS]', function() {
                     results._metadata.totalCount.should.be.equal(false)
                     results.observedProperties.length.should.be.equal(conf.pagination.limit)
                     results.observedProperties[0].should.have.properties("name")
-                    results.observedProperties[0].should.not.have.properties("description")
+                    results.observedProperties[0].should.not.have.property("description")
                     should(results.observedProperties[0].description).be.eql(undefined)
                 }
                 done()

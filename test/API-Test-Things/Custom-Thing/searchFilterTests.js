@@ -508,7 +508,8 @@ describe('Things API Test - [SEARCH FILTERS]', function () {
                             things.indexOf(results.things[0]._id).should.be.greaterThanOrEqual(0);
                             things.indexOf(results.things[1]._id).should.be.greaterThanOrEqual(0);
                             results.things[0].should.have.properties(["name","ownerId"]);
-                            results.things[0].should.not.have.properties(["description","siteId"]);
+                            results.things[0].should.not.have.property("siteId");
+                            results.things[0].should.not.have.property("description");
                         }
                         done();
                     });
