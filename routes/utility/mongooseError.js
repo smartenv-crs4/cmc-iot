@@ -35,6 +35,13 @@ function badRequestError(res,err,message){
 }
 
 
+function conflictError(res,err,message){
+    message=err.message || message || "The request could not be processed because of conflict in the current state of the resource";
+    errorLog.printErrorLog("mongooseError.js " + message);
+    res.boom.conflict(message);
+}
+
+
 function handleOtherErrors(res,err){
     if(err.message.indexOf("Projection cannot have a mix of inclusion and exclusion")>=0)
         badRequestError(res,err);
@@ -86,6 +93,9 @@ exports.handleError= function(res,err){
             break;
         case "StrictModeError":
             badRequestError(res,err," Thrown when you pass a field not in schema and strict mode is set to throw");
+            break;
+        case "ConflictError":
+            conflictError(res,err," Thrown The request could not be processed because of conflict in the current state of the resource");
             break;
         default:
             handleOtherErrors(res,err);

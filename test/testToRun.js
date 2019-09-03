@@ -22,16 +22,17 @@
 
 
 //Model
-require('./Models-Test/deviceModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/observedPropertyModel');
 require('./Models-Test/apiActionModel');
-require('./Models-Test/domainModel');
+require('./Models-Test/deviceModel');
 require('./Models-Test/deviceType_DomainModel');
+require('./Models-Test/deviceTypeModel');
+require('./Models-Test/domainModel');
+require('./Models-Test/observedPropertyModel');
+require('./Models-Test/siteModel');
+require('./Models-Test/thingModel');
+require('./Models-Test/unitModel');
+require('./Models-Test/vendorModel');
+
 
 //Middlewares
 require('./Middlewares-Test/decodeTokenMiddleware');

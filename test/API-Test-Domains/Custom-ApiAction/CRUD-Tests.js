@@ -22,7 +22,7 @@
 
 
 var Domains = require('../../../DBEngineHandler/drivers/domainDriver');
-var Observation = require('../../../DBEngineHandler/drivers/observationDriver');
+var deviceType_domain = require('../../../DBEngineHandler/drivers/deviceType_domainDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/domains" ;
@@ -237,6 +237,62 @@ describe('Domains API Test - [CRUD-TESTS]', function () {
                         }
                         done();
                     });
+                });
+            });
+
+        });
+    });
+
+
+    describe('DELETE /domain', function(){
+
+        it('must test domain Delete Conflict due to associated deviceType(s)', function(done){
+
+            var bodyParam=JSON.stringify({domain:{name:"name", description:"description"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            // create Domain
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("DELETE /domain: 'must test domain Delete Conflict due to associated deviceType(s) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.properties('name','description');
+                }
+
+                deviceType_domain.create({deviceTypeId:deviceType_domain.ObjectId(),domainId:results._id},function (error,deviceTypeDomainItem) {
+                    if(error) consoleLogError.printErrorLog("DELETE /domain: 'must test domain Delete Conflict due to associated deviceType(s) -->" + error.message);
+                    else{
+                        // DELETE Domain
+                        var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                        request.del(geByIdRequestUrl,function(error, response, body){
+                            if(error) consoleLogError.printErrorLog("DELETE /domain: 'must test domain Delete Conflict due to associated deviceType(s) -->" + error.message);
+                            else{
+                                var resultsDeleteById = JSON.parse(body);
+                                response.statusCode.should.be.equal(409);
+                                resultsDeleteById.should.have.properties('error','statusCode','message');
+                                resultsDeleteById.message.should.be.eql("Cannot delete the domain due to associated deviceType(s)")
+                            }
+
+                            //Search Domain to confirm not deletion
+                            var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                            request.get(geByIdRequestUrl,function(error, response, body){
+                                if(error) consoleLogError.printErrorLog("DELETE /domain: 'must test domain Delete Conflict due to associated deviceType(s) -->" + error.message);
+                                else{
+                                    response.statusCode.should.be.equal(200);
+                                    results.should.have.properties('name','description');
+                                    deviceType_domain.deleteMany({domainId:results._id},function(error){
+                                        if(error) consoleLogError.printErrorLog("DELETE /domain: 'must test domain Delete Conflict due to associated deviceType(s) -->" + error.message);
+                                        done();
+                                    })
+                                }
+
+                            });
+                        });
+                    }
                 });
             });
 

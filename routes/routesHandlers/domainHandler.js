@@ -22,6 +22,7 @@
 
 
 var domainDriver = require('../../DBEngineHandler/drivers/domainDriver');
+var deviceType_domainDriver = require('../../DBEngineHandler/drivers/deviceType_domainDriver');
 
 
 module.exports.postCreateDomain = function (req, res, next) {
@@ -54,7 +55,19 @@ module.exports.getDomains = function (req, res, next) {
 
 module.exports.deleteDomain = function (req, res, next) {
     var id = req.params.id;
-    domainDriver.findByIdAndRemove(id,function(err,deletedDomain){
-        res.httpResponse(err,null,deletedDomain);
+    deviceType_domainDriver.findOne({domainId:id},function(err,deviceTypeDomain){
+        if(err) return res.httpResponse(err,null,null);
+
+        if(deviceTypeDomain){
+            err=new Error("Cannot delete the domain due to associated deviceType(s)");
+            err.name="ConflictError";
+            res.httpResponse(err,null,null);
+        }else{
+            domainDriver.findByIdAndRemove(id,function(err,deletedDomain){
+                res.httpResponse(err,null,deletedDomain);
+            });
+        }
+
     });
+
 };

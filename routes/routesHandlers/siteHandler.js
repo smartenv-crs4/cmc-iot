@@ -70,7 +70,7 @@ module.exports.deleteSite = function(req, res, next) {
             } else { //Deleting that Site could be safe since there aren't associated Things. What about associated Sites?
                 siteDriver.findAll({locatedInSiteId: id}, null, {totalCount: true}, function(err, results) {
                     if (err)
-                        return next(err)
+                        return res.httpResponse(err,null,null);
                     else {
                         if ((results._metadata.totalCount) > 0) { // there are Sites associated with that Site, so you cannot delete the Site
                             res.httpResponse(err, 409, "Cannot delete the Site due to associated Site(s)")
