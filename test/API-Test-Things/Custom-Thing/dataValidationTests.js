@@ -259,7 +259,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore");
+                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore. If exist you should use an action to do it");
                     }
                     done();
                 });
@@ -287,7 +287,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("The field 'disabled' is in Schema but cannot be changed anymore");
+                        results.message.should.be.eql("The field 'disabled' is in Schema but cannot be changed anymore. If exist you should use an action to do it");
                     }
                     done();
                 });

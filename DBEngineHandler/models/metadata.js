@@ -100,7 +100,7 @@ exports.findByIdAndUpdateStrictMode = function findByIdAndUpdateStrictMode(model
         for(const field in unUpdatableFields) {
 
             if(newFields[unUpdatableFields[field]]) {
-                var error= new Error("The field '" + unUpdatableFields[field] + "' is in Schema but cannot be changed anymore");
+                var error= new Error("The field '" + unUpdatableFields[field] + "' is in Schema but cannot be changed anymore. If exist you should use an action to do it");
                 error.name="ValidatorError";
                 throw(error);
             }

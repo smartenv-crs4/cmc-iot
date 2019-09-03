@@ -215,7 +215,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
     describe('PUT /device', function(){
 
-        it('must test device update [data validation error due to no Thingmodifiable field dismissed]', function(done){
+        it('must test device update [data validation error due to no device modifiable field dismissed]', function(done){
             Devices.findOne({}, null, function(err, device){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), dismissed:true}});
@@ -232,7 +232,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore");
+                        results.message.should.be.eql("The field 'dismissed' is in Schema but cannot be changed anymore. If exist you should use an action to do it");
                     }
                     done();
                 });
@@ -240,6 +240,33 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
         });
     });
 
+
+    describe('PUT /device', function(){
+
+        it('must test device update [data validation error due to disabled field cannot be updated]', function(done){
+            Devices.findOne({}, null, function(err, device){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), disabled:true}});
+                var requestParams={
+                    url:APIURL+"/" + device._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /device: 'must test device update [data validation error due to disabled field cannot be updated] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.eql("The field 'disabled' is in Schema but cannot be changed anymore. If exist you should use an action to do it");
+                    }
+                    done();
+                });
+            });
+        });
+    });
 
 
 
