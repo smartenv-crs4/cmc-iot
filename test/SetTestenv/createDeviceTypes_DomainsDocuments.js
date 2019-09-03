@@ -20,32 +20,30 @@
  ############################################################################
  */
 
-var mongoose = require('mongoose');
-var extendedFunction = require('./metadata');
-var Schema = mongoose.Schema;
-var conf = require('propertiesmanager').conf;
 
-var domains= conf.customSchema.domainSchema || {
-    name:{type:String,required:true},
-    description:{type:String,required:true},   
-};
+var _ = require('underscore')._
+var async = require('async')
+var DeviceType_DomainType = require('../../DBEngineHandler/drivers/deviceType_domainDriver')
 
 
-var domainSchema = new Schema(domains, {strict: "throw"});
+module.exports.createDocuments = function(numbers, callback) {
 
-// Static method to retrieve resource WITH metadata
-domainSchema.statics.findAll = function (conditions, fields, options, callback) {
-    return extendedFunction.findAll(this, 'domains', conditions, fields, options, callback);
-};
+    var range = _.range(numbers)
+    var deviceType_domainTypeId
+
+    async.each(range, function(e, cb) {
+        DeviceType_DomainType.create({
+            deviceTypeId:DeviceType_DomainType.ObjectId(),
+            domainId: DeviceType_DomainType.ObjectId()
+        }, function(err, newDeviceType_DomainType) {
+            if (err) throw err
+            if (e === 1) deviceType_domainTypeId = newDeviceType_DomainType._id
+            cb()
+        })
+    }, function(err) {
+        callback(err, deviceType_domainTypeId)
+    })
+
+}
 
 
-// Static method to retrieve resource WITH metadata
-domainSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
-    return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
-
-};
-
-var Domain = mongoose.model('domain', domainSchema);
-
-module.exports.DomainSchema = domainSchema;
-module.exports.Domain = Domain;

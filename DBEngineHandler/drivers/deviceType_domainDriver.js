@@ -21,82 +21,82 @@
  */
 
 
-var domains=require('../models/domains').Domain;
+var deviceType_domains=require('../models/deviceType_domains').DeviceType_Domain;
 var observations=require('../models/observations').Observation;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 
 
-/* GET domains listing. */
+/* GET deviceType_domains listing. */
 module.exports.findAll = function(conditions, fields, options, callback){
-    domains.findAll(conditions,fields,options,function(err,results){
+    deviceType_domains.findAll(conditions,fields,options,function(err,results){
         callback(err,results);
     });
 };
 
 
-/* Create Domain. */
-module.exports.create = function(domain, callback){
-    domains.create(domain,callback);
+/* Create DeviceType_Domain. */
+module.exports.create = function(deviceType_domain, callback){
+    deviceType_domains.create(deviceType_domain,callback);
 };
 
 
-/* delete Domains. */
+/* delete DeviceType_Domains. */
 module.exports.deleteMany = function(conditions,options,callback){
-    domains.deleteMany(conditions,options,function(err){
+    deviceType_domains.deleteMany(conditions,options,function(err){
         callback(err);
     });
 };
 
 
-/* findOne Domain. */
+/* findOne DeviceType_Domain. */
 module.exports.findOne = function(conditions,projection,options,callback){
-    domains.findOne(conditions,projection,options,function(err,results){
+    deviceType_domains.findOne(conditions,projection,options,function(err,results){
         callback(err,results);
     });
 };
 
 
-/* findOne Domain. */
+/* findOne DeviceType_Domain. */
 module.exports.findById = function(id,projection,options,callback){
-    domains.findById(id,projection,options,callback);
+    deviceType_domains.findById(id,projection,options,callback);
 };
 
 
 
 
-/* findOne Domain. */
+/* findOne DeviceType_Domain. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    domains.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
+    deviceType_domains.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
 };
 
 
 
-/* findOne Domain. */
+/* findOne DeviceType_Domain. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    domains.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
+    deviceType_domains.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
 };
 
 
 
 
-/* findOne Domain. */
+/* findOne DeviceType_Domain. */
 module.exports.findByIdAndRemove = function(id,callback){
-    domains.findByIdAndRemove(id,callback);
+    deviceType_domains.findByIdAndRemove(id,callback);
 };
 
 
 
 
 
-/* GET/SET Domain ObjectId. */
+/* GET/SET DeviceType_Domain ObjectId. */
 module.exports.ObjectId = function(ObjectId){
     return(mongoose.Types.ObjectId(ObjectId));
 };
 
 
 
-/* Create Domain. */
+/* Create DeviceType_Domain. */
 module.exports.errorResponse = function(res,err){
     mongooseError.handleError(res,err)
 };
