@@ -59,9 +59,9 @@ module.exports.deleteDomain = function (req, res, next) {
         if(err) return res.httpResponse(err,null,null);
 
         if(deviceTypeDomain){
-            err=new Error("Cannot delete the domain due to associated deviceType(s)");
-            err.name="ConflictError";
-            res.httpResponse(err,null,null);
+            var error=new Error("Cannot delete the domain due to associated deviceType(s)");
+            error.name="ConflictError";
+            res.httpResponse(error,null,null);
         }else{
             domainDriver.findByIdAndRemove(id,function(err,deletedDomain){
                 res.httpResponse(err,null,deletedDomain);

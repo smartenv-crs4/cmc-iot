@@ -46,6 +46,18 @@ router.post('/actions/searchDismissed',dismssedMiddlewared,function(req, res, ne
   devicesHandler.getDevices(req,res,next);
 });
 
+
+router.post('/:id/actions/disable',[authorisationManager.checkToken],function(req, res, next) {
+  req.disableDevice=true;
+  devicesHandler.disableEnableDevice(req,res,next);
+});
+
+router.post('/:id/actions/enable',[authorisationManager.checkToken],function(req, res, next) {
+  req.disableDevice=false;
+  devicesHandler.disableEnableDevice(req,res,next);
+});
+
+
 /* Create devices */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
   devicesHandler.postCreateDevice(req,res,next);

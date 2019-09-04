@@ -29,6 +29,9 @@ function customResp(res,statusCode,body){
         case 409:
             res.boom.conflict(body);
             break;
+        case 400:
+            res.boom.badRequest(body);
+            break;
         default:
             res.status(statusCode).send(body);
     }

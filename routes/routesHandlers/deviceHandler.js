@@ -21,6 +21,7 @@
  */
 
 
+var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 
@@ -291,11 +292,59 @@ module.exports.postCreateDevice = function (req, res, next) {
  * @apiSampleRequest off
  */
 // TODO notificare tramite redis???
-// TODO disabled false(enble a device) si puo fare solo se thing è enabled
 module.exports.updateDevice = function (req, res, next) {
-    deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["dismissed"] ,function (err, results) {
+    deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"] ,function (err, results) {
         res.httpResponse(err,null,results);
     });
+};
+
+
+
+function enableDisableDeviceById(id,action,res){
+    deviceDriver.findByIdAndUpdate(id,{disabled:action}, function (err, updatedDevice) {
+        res.httpResponse(err,200,updatedDevice);
+    });
+}
+
+
+module.exports.disableEnableDevice = function (req, res, next) {
+    if(req.disableDevice==undefined){
+        const err = new Error("req.disableDevice==undefined. It must be true to disable or false to enable");
+        err.name="GeneralError";
+        res.httpResponse(err,null,null);
+    }else{
+        var id=req.params.id;
+        if(req.disableDevice){ // disable
+            enableDisableDeviceById(id,true,res);
+        }else{  //enable
+
+            //  Get device info to capture associated thing id then
+            //  -  Get associated thing  then
+            //       - if thing is disabled then device cannot be enabled
+            //       - if thing is not disabled then enable device
+
+            deviceDriver.findById(id,"thingId",function(err,device){
+                if (err) {
+                    return res.httpResponse(err,null,null);
+                } else {
+                    thingDriver.findById(device.thingId,"disabled",function(err,thing){
+                        if (err) {
+                            return res.httpResponse(err,null,null);
+                        } else {
+                            if(thing && thing.disabled){
+                                res.httpResponse(null,400,"Cannot enable device due to associated thing is not enabled");
+                            }else{
+                                if(!thing){
+                                    res.httpResponse(null,409,"Cannot enable device due to associated thing is not available");
+                                }else
+                                    enableDisableDeviceById(id,false,res);
+                            }
+                        }
+                    });
+                }
+            });
+        }
+    }
 };
 
 
