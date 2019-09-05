@@ -1,37 +1,34 @@
-[comment]: # (TODO rimuovi cport e metti link di CMC)
-For more info about the project, please visit the [CRS4 SMART ENVIRONMENTS AND TECHNOLOGIES official website](http://www.crs4.it)
+For more info about the project, please visit the [GitHub project page](https://github.com/smartenv-crs4/cmc)
 
-Security & Authentication
--------------------------
-All API endpoints use **HTTPS** protocol.
-
-All API endpoints **require authentication**.
-
-
-
-Thus, you MUST obtain an API token and use it in HTTP header, as in:
-
-    Authentication: Bearer <API_TOKEN>
-
-or appending a URL parameter as in:
-
-    /users?access_token=<API_TOKEN>
-
-or appending in body request as in:
-
-        {access_token=<API_TOKEN>}
+**Important!** All parameters described in the API documentation refers to default schema models. If you redefine one or more 
+schema models, you must update all API parameters according to your custom schema model(s).
 
 ***
 
+Security & Authentication
+-------------------------
+All API endpoints use the **HTTPS** protocol and require authentication.
 
-All parameters described in API documentation refers to default defined schema models. If you redefine one or more 
-schema models, ypu must realign all API parameters to you redefined schema models.
+Thus, you MUST obtain an API token and use it in the HTTP header:
+
+    Authentication: Bearer <API_TOKEN>
+
+or append it as URL parameter:
+
+    /devices?access_token=<API_TOKEN>
+
+or append it in the request body:
+
+    {access_token=<API_TOKEN>}
+
+
+***
 
 Pagination
 -------------------------
 
-All `GET /resource_name` endpoints providing a listing functionality, use `skip=value&limit=value` to returns paginated responses.
-Pagination information is always provided using the following format:
+All `GET /resource_name` endpoints, which return a list, use `skip=value&limit=value` parameters to return a paginated response.
+Pagination is set using the following format:
 
     ...
     "_metadata":{
@@ -40,24 +37,37 @@ Pagination information is always provided using the following format:
                     "totalCount":1500
     }
 
+`totalCount` is disabled by default. If you need it, you must specify it in the request appending `&totalCount=true`, i.e. `skip=value&limit=value&totalCount=true`   
 
-
-totalCount is set to disabled(false) by default. If you need it, you must specify it in the request by set `skip=value&limit=value&totalCount=true`   
+***
 
 Field projection
 -------------------------
 
-All `GET` endpoints providing a fields projection functionality, use `fields=field_name_1,field_name_2` to returns responses with fields projection.
-Fields projection names must be a string comma separated. 
-To remove a field from results use the `-fieldname` syntax eg. `fields=-field_name`
+All `GET /resource_name` endpoints providing a field projection functionality, use `fields=field_name_1,field_name_2` to return responses with fields projection.
+Fields projection names must be comma separated strings. 
+To remove a field from results, use the `-fieldname` syntax, e.g. `fields=-field_name`
+
+***
 
 Ordering results
 -------------------------
 
-All `GET /resource` endpoints providing order functionality, use `sortAsc=field_name_1&sortDesc=field_name_2` to returns responses with ordered results.
-sortAsc order by specified fields ascending values.
-sortDesc order by specified fields descending values.
+All `GET /resource_name` endpoints providing ordering functionality, use `sortAsc=field_name_1&sortDesc=field_name_2` to return the ordered results. <br>
+`sortAsc` orders by ascending values of the specified fields. <br>
+`sortDesc` orders by descending values of the specified fields.
 
+***
+
+Error responses
+-----------------------
+All error responses are structured as follows:
+
+`response.body.StatusCode` contains the error status code <br>
+`response.body.error` contains the error name <br>
+`request.body.message` contains the error message
+
+***
 
 Access_Token to try API
 -----------------------
@@ -86,4 +96,3 @@ Access_Token to try API
     <td class="tg-baqh">eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVz<br>ZWQgZm8gbXMiLCJ0eXBlIjoidXNlcm1zLWRlbW8iLCJlbmFibGVkIjp0cnVlLCJleHAiOjE4MDYyMjgyOTE0NTR9.<br>YWku3TNMUqBpVzPKvj99o34gHRlPZiG51YWiqY1WTc8</td>
   </tr>  
 </table>
-
