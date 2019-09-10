@@ -35,7 +35,7 @@ module.exports.createDocuments=function(numbers,callback) {
             description: "description" +e
         },function(err, newVendor){
             if (err) throw err;
-            if(e===1) vendorId = newVendor._id;
+            if(e===0) vendorId = newVendor._id;
             cb();
         });
     }, function(err){

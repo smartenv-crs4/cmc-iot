@@ -29,8 +29,30 @@ var deviceTypesHandler = require('./routesHandlers/deviceTypeHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 
+// --------  <Actions> -----------
+
+router.post('/:id/actions/addDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
+    deviceTypesHandler.addDomains(req,res,next);
+});
+
+router.post('/:id/actions/removeDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
+    deviceTypesHandler.removeDomains(req,res,next);
+});
+
+router.post('/:id/actions/setDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
+    deviceTypesHandler.setDomains(req,res,next);
+});
+
+router.post('/:id/actions/getDomains',[authorisationManager.checkToken],function(req, res, next) {
+    deviceTypesHandler.getDomains(req,res,next);
+});
+
+
+// --------  </Actions> -----------
+
+
 /* Create deviceType */
-router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType"]), function(req, res, next) {
+router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType","domains"]), function(req, res, next) {
     deviceTypesHandler.postCreateDeviceType(req, res, next)
 })
 
@@ -65,4 +87,4 @@ router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseI
 })
 
 
-module.exports = router
+module.exports = router;

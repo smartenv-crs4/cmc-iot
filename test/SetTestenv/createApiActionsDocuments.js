@@ -23,31 +23,53 @@
 var _ = require('underscore')._;
 var async = require('async');
 var ApiAction = require('../../DBEngineHandler/drivers/apiActionDriver');
+var deviceTypeDocuments = require('./createDeviceTypesDocuments');
 
 
 module.exports.createDocuments=function(numbers,callback){
 
-    var range = _.range(numbers);
-    var apiActionId;
-    async.each(range, function(e,cb){
+    deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId){
+        if(!err){
+            var range = _.range(numbers);
+            var apiActionId;
+            async.each(range, function(e,cb){
 
-        // method set to GET by default
-        // header set to {"Content-Type": "application/json" , "Accept":"application/json"} by default
-        ApiAction.create({
-            actionName:"name" + e,
-            bodyPrototype:{ field:e},
-            deviceTypeId:ApiAction.ObjectId(),
-            
-        },function(err,newApiAction){
-            if (err) throw err;
-            if(e===1) apiActionId=newApiAction._id;
-            cb();
-        });
+                // method set to GET by default
+                // header set to {"Content-Type": "application/json" , "Accept":"application/json"} by default
+                ApiAction.create({
+                    actionName:"name" + e,
+                    bodyPrototype:{ field:e},
+                    deviceTypeId:deviceTypeId,
 
-    }, function(err){
-        callback(err,apiActionId);
+                },function(err,newApiAction){
+                    if (err) throw err;
+                    if(e===0) apiActionId=newApiAction._id;
+                    cb();
+                });
+
+            }, function(err){
+                callback(err,apiActionId,deviceTypeId);
+            });
+
+        } else{
+            callback(err);
+        }
     });
-
 };
+
+
+module.exports.deleteDocuments=function(callback){
+
+    deviceTypeDocuments.deleteDocuments(function (err) {
+       if(!err){
+           ApiAction.deleteMany({},function(err){
+               callback(err);
+           })
+       }else{
+           callback(err);
+       }
+    });
+};
+
 
 

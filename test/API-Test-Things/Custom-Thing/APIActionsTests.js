@@ -687,7 +687,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     }, function (error, response, body) {
 
-                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + err);
+                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + error);
                         else {
                             response.statusCode.should.be.equal(200);
                             var disableesults = JSON.parse(body);
@@ -699,7 +699,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                             headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         }, function (error, response, body) {
 
-                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + err);
+                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices]'  -->" + error);
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var disableesults = JSON.parse(body);
@@ -765,7 +765,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                 },
                                             }, function (error, response, body) {
 
-                                                if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + error);
                                                 else {
                                                     response.statusCode.should.be.equal(200);
                                                     var disableesults = JSON.parse(body);
@@ -791,7 +791,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                                     },
                                                                 }, function (error, response, body) {
 
-                                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + err);
+                                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device]'  -->" + error);
                                                                     else {
                                                                         response.statusCode.should.be.equal(200);
                                                                         var disableesults = JSON.parse(body);
@@ -913,7 +913,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                     },
                                                 }, function (error, response, body) {
 
-                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                    if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + error);
                                                     else {
                                                         response.statusCode.should.be.equal(200);
                                                         var disableesults = JSON.parse(body);
@@ -939,7 +939,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                                         },
                                                                     }, function (error, response, body) {
 
-                                                                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + err);
+                                                                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing with associated device - some already disabled]'  -->" + error);
                                                                         else {
                                                                             response.statusCode.should.be.equal(200);
                                                                             var disableesults = JSON.parse(body);
@@ -980,7 +980,6 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                         });
                                                     }
                                                 });
-
                                             });
                                         }
                                     });

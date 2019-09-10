@@ -21,13 +21,19 @@
  */
 
 
-var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
+var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver');
+var DeviceTypesDomainsDriver = require('../../../DBEngineHandler/drivers/deviceType_domainDriver');
+var ApiActionsDriver = require('../../../DBEngineHandler/drivers/apiActionDriver');
+var DomainDriver = require('../../../DBEngineHandler/drivers/domainDriver');
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
-var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments')
+var deviceTypeDocuments = require('../../SetTestenv/createDeviceTypesDocuments');
+var domainsDocuments = require('../../SetTestenv/createDomainsDocuments');
+var apiActionsDocuments = require('../../SetTestenv/createApiActionsDocuments');
+var should=require('should');
 
 var webUiToken
 var deviceTypeId
@@ -80,31 +86,41 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
 
     describe('POST /deviceType', function() {
         it('must test deviceType creation [create DeviceType]', function(done) {
+            var domainsID=[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()];
             var bodyParam = JSON.stringify({
                 deviceType: {
                     name: "name",
                     description: "description",
                     observedPropertyId: DeviceTypes.ObjectId()
-                }
-            })
+                },
+                domains:domainsID
+            });
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                 body: bodyParam
-            }
+            };
             request.post(requestParams, function(error, response, body) {
                 if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [create DeviceType] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
-                    response.statusCode.should.be.equal(201)
-                    results.should.have.property('name')
-                    results.should.have.property('description')
-                    results.should.have.property('observedPropertyId')
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('observedPropertyId');
+
+                    DeviceTypesDomainsDriver.findAll({deviceTypeId:results._id},null,null,function(error,devicetypeDomainItems){
+                        if (error) consoleLogError.printErrorLog("POST /deviceType: 'must test deviceType creation [create DeviceType] -->" + error.message);
+                        else{
+                            devicetypeDomainItems.deviceType_domains.length.should.be.eql(2);
+                            domainsID.should.containEql(devicetypeDomainItems.deviceType_domains[0].domainId);
+                            done();
+                        }
+                    });
                 }
-                done()
             })
         })
-    })
+    });
 
 
     /******************************************************************************************************************
@@ -118,7 +134,8 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
                     name: "name",
                     description: "description",
                     observedPropertyId: DeviceTypes.ObjectId()
-                }
+                },
+                domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]
             })
             var requestParams = {
                 url: APIURL,
@@ -160,7 +177,8 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
                     name: "name",
                     description: "description",
                     observedPropertyId: DeviceTypes.ObjectId()
-                }
+                },
+                domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]
             })
             var requestParams = {
                 url: APIURL,
@@ -205,7 +223,8 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
                     name: "name",
                     description: "description",
                     observedPropertyId: DeviceTypes.ObjectId()
-                }
+                },
+                domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]
             })
             var requestParams = {
                 url: APIURL,
@@ -258,7 +277,8 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
                     name: "name",
                     description: "description",
                     observedPropertyId: DeviceTypes.ObjectId()
-                }
+                },
+                domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]
             })
             var requestParams = {
                 url: APIURL,
@@ -299,6 +319,108 @@ describe('DeviceTypes API Test - [CRUD-TESTS]', function() {
                 })
             })
         })
-    })
+    });
 
-})
+
+    describe('DELETE /deviceType', function() {
+        it('must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations]', function(done) {
+
+
+            // Create Api Action
+            apiActionsDocuments.createDocuments(1,function(error,apiActionsId,associatedDeviceTypeId){
+                if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                else {
+                    // Create Domain
+                    domainsDocuments.createDocuments(1,function(error,domainId){
+                        if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                        else {
+                            // Create deviceType_domain
+                            DeviceTypesDomainsDriver.create({deviceTypeId:associatedDeviceTypeId,domainId:domainId},function(error,deviceTypeDomainItem){
+                                if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                else {
+                                    deviceTypeDomainItem.should.not.be.eql(null);
+                                    deviceTypeDomainItem.should.have.properties(["deviceTypeId","domainId"]);
+                                    deviceTypeDomainItem.domainId.should.be.eql(domainId);
+                                    deviceTypeDomainItem.deviceTypeId.should.be.eql(associatedDeviceTypeId);
+
+                                    ApiActionsDriver.findAll({deviceTypeId:associatedDeviceTypeId},null,null,function(error,apiActions){
+                                        if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                        else {
+                                            apiActions.should.have.property("apiActions");
+                                            apiActions.apiActions.length.should.be.eql(1);
+                                            apiActions.apiActions[0].deviceTypeId.should.be.eql(associatedDeviceTypeId);
+                                            DeviceTypesDomainsDriver.findAll({deviceTypeId:associatedDeviceTypeId},null,null,function(error,deviceTypeDomainItems){
+                                                if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                else {
+                                                    deviceTypeDomainItems.should.have.property("deviceType_domains");
+                                                    deviceTypeDomainItems.deviceType_domains.length.should.be.eql(1);
+                                                    deviceTypeDomainItems.deviceType_domains[0].deviceTypeId.should.be.eql(associatedDeviceTypeId);
+                                                    DeviceTypes.findAll({_id:associatedDeviceTypeId},null,null,function(error,apiActions){
+                                                        if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                        else {
+                                                            apiActions.should.have.property("deviceTypes");
+                                                            apiActions.deviceTypes.length.should.be.eql(1);
+                                                            apiActions.deviceTypes[0]._id.should.be.eql(associatedDeviceTypeId);
+
+                                                            // DELETE DeviceType
+                                                            var getByIdRequestUrl = APIURL + "/" + associatedDeviceTypeId + "?access_token=" + webUiToken
+                                                            request.del(getByIdRequestUrl, function(error, response, body) {
+                                                                if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                                else {
+                                                                    var resultsDeleteById = JSON.parse(body);
+                                                                    response.statusCode.should.be.equal(200);
+                                                                    resultsDeleteById.should.have.property('name');
+                                                                    resultsDeleteById.should.have.property('description');
+                                                                    resultsDeleteById.should.have.property('observedPropertyId');
+                                                                    DeviceTypes.ObjectId(resultsDeleteById._id).should.be.eql(associatedDeviceTypeId);
+                                                                }
+                                                                //Search DeviceType to confirm delete
+                                                                var geByIdRequestUrl = APIURL + "/" + associatedDeviceTypeId + "?access_token=" + webUiToken
+                                                                request.get(geByIdRequestUrl, function(error, response, body) {
+                                                                    if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                                    else {
+                                                                        response.statusCode.should.be.equal(204);
+                                                                        ApiActionsDriver.findAll({deviceTypeId:associatedDeviceTypeId},null,null,function(error,apiActions){
+                                                                            if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                                            else {
+                                                                                apiActions.should.have.property("apiActions");
+                                                                                apiActions.apiActions.length.should.be.eql(0);
+                                                                                DeviceTypesDomainsDriver.findAll({deviceTypeId:associatedDeviceTypeId},null,null,function(error,deviceTypeDomainItems){
+                                                                                    if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                                                    else {
+                                                                                        deviceTypeDomainItems.should.have.property("deviceType_domains");
+                                                                                        deviceTypeDomainItems.deviceType_domains.length.should.be.eql(0);
+                                                                                        DeviceTypes.findAll({_id:associatedDeviceTypeId},null,null,function(error,apiActions){
+                                                                                            if (error) consoleLogError.printErrorLog("DELETE /deviceType: 'must test deviceType Delete [delete associated apiActions and deviceTypeDomain associations -->" + error.message)
+                                                                                            else {
+                                                                                                apiActions.should.have.property("deviceTypes");
+                                                                                                apiActions.deviceTypes.length.should.be.eql(0);
+                                                                                                apiActionsDocuments.deleteDocuments(function(err){
+                                                                                                   domainsDocuments.deleteDocuments(function(err){
+                                                                                                       done();
+                                                                                                   }) ;
+                                                                                                });
+                                                                                            }
+                                                                                        });
+                                                                                    }
+                                                                                });
+                                                                            }
+                                                                        });
+                                                                    }
+                                                                })
+                                                            })
+                                                        }
+                                                    });
+                                                }
+                                            });
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        })
+    })
+});

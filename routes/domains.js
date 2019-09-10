@@ -28,6 +28,14 @@ var domainsHandler=require('./routesHandlers/domainHandler');
 var mongoSecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
+
+// ----------- <Actions> -----------
+router.post('/:id/actions/getDeviceTypes',[authorisationManager.checkToken],function(req, res, next) {
+  domainsHandler.getDeviceTypes(req,res,next);
+});
+// ----------- </Actions> -----------
+
+
 /* Create domains */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domain"]), function(req, res, next) {
   domainsHandler.postCreateDomain(req,res,next);

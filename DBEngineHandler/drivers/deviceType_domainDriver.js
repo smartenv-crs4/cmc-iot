@@ -35,6 +35,11 @@ module.exports.findAll = function(conditions, fields, options, callback){
 };
 
 
+/* delete DeviceType_Domains. */
+module.exports.aggregate = function(pipeline,callback){
+    deviceType_domains.aggregate(pipeline,callback);
+};
+
 /* Create DeviceType_Domain. */
 module.exports.create = function(deviceType_domain, callback){
     deviceType_domains.create(deviceType_domain,callback);
@@ -52,6 +57,14 @@ module.exports.deleteMany = function(conditions,options,callback){
 /* findOne DeviceType_Domain. */
 module.exports.findOne = function(conditions,projection,options,callback){
     deviceType_domains.findOne(conditions,projection,options,function(err,results){
+        callback(err,results);
+    });
+};
+
+
+/* findOne DeviceType_Domain. */
+module.exports.findOneAndRemove = function(conditions,options,callback){
+    deviceType_domains.findOneAndRemove(conditions,options,function(err,results){
         callback(err,results);
     });
 };

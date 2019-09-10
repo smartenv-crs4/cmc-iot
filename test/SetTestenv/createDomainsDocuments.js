@@ -36,7 +36,7 @@ module.exports.createDocuments=function(numbers,callback){
             description:"description" +e
         },function(err,newDomain){
             if (err) throw err;
-            if(e===1) domainId=newDomain._id;
+            if(e===0) domainId=newDomain._id;
             cb();
         });
 
@@ -45,5 +45,15 @@ module.exports.createDocuments=function(numbers,callback){
     });
 
 };
+
+
+
+module.exports.deleteDocuments=function(callback){
+
+    Domain.deleteMany({},function(err){
+        callback(err);
+    });
+};
+
 
 

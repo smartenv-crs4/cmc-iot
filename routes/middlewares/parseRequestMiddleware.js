@@ -187,12 +187,13 @@ exports.validateBody = function (mandatoryFields) {
 
     return(
         function (req,res,next){
+
             if (!req.body || _.isEmpty(req.body)){
                 return res.boom.badRequest('body missing');
             }else{
                 var noMandatoryFields="";
                 mandatoryFields.forEach(function(value,index){
-                    if(!req.body[value]) noMandatoryFields+=value+", ";
+                    if(!req.body[value] || _.isEmpty(req.body[value])) noMandatoryFields+=value+", ";
                 });
 
                 if(noMandatoryFields.length>0){

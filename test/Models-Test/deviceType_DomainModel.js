@@ -308,4 +308,24 @@ describe('DeviceType_Domains Model Test', function () {
         });
     });
 
+
+    describe('Create DeviceType_Domain()', function () {
+
+        it('must test unique domainId,deviceTypeId', function (done) {
+            var id=DeviceType_Domain.ObjectId();
+            DeviceType_Domain.create({deviceTypeId:id,domainId:id},function(err,data){
+                should(err).be.null();
+                data.deviceTypeId.should.be.eql(id);
+                data.domainId.should.be.eql(id);
+                DeviceType_Domain.create({deviceTypeId:id,domainId:id},function(err,data){
+                    should(err).be.not.null();
+                    err.message.indexOf("duplicate key error index").should.be.greaterThanOrEqual(0);
+                    done();
+                });
+            });
+        });
+    });
+
+
+
 });

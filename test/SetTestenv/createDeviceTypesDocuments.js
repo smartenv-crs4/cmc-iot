@@ -38,13 +38,22 @@ module.exports.createDocuments = function(numbers, callback) {
             observedPropertyId: DeviceType.ObjectId()
         }, function(err, newDeviceType) {
             if (err) throw err
-            if (e === 1) deviceTypeId = newDeviceType._id
+            if (e === 0) deviceTypeId = newDeviceType._id
             cb()
         })
     }, function(err) {
         callback(err, deviceTypeId)
     })
 
+}
+
+
+
+module.exports.deleteDocuments = function(callback) {
+
+    DeviceType.deleteMany({},function(err){
+       callback(err);
+    });
 }
 
 

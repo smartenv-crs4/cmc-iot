@@ -29,6 +29,21 @@ var _ = require('underscore')._;
 
 exports.findAll = function findAll(model, entityName, conditions, fields, options, callback) {
 
+    //todo impementre come sotto se non vengono passati tutti i parametri
+
+    // if(!callback){
+    //     if(!options){
+    //         callback=fields;
+    //         fields=fields || "";
+    //         options=null;
+    //     }else{
+    //         callback=options;
+    //         options=null;
+    //     }
+    // }
+
+
+
     var opt = options || {};
 
     if(opt.limit==-1) {

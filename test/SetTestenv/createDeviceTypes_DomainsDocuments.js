@@ -23,27 +23,65 @@
 
 var _ = require('underscore')._
 var async = require('async')
-var DeviceType_DomainType = require('../../DBEngineHandler/drivers/deviceType_domainDriver')
+var DeviceType_DomainType = require('../../DBEngineHandler/drivers/deviceType_domainDriver');
+var domainDocuments = require('./createDomainsDocuments');
+var deviceTypeDocuments = require('./createDeviceTypesDocuments');
 
 
 module.exports.createDocuments = function(numbers, callback) {
 
-    var range = _.range(numbers)
-    var deviceType_domainTypeId
+    // Create Domain
+    domainDocuments.createDocuments(1,function(err,domainId){
+       if(!err){
+           // Create DeviceType
+           deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId){
+               if(!err){
+                   var range = _.range(numbers)
+                   var deviceType_domainTypeId
 
-    async.each(range, function(e, cb) {
-        DeviceType_DomainType.create({
-            deviceTypeId:DeviceType_DomainType.ObjectId(),
-            domainId: DeviceType_DomainType.ObjectId()
-        }, function(err, newDeviceType_DomainType) {
-            if (err) throw err
-            if (e === 1) deviceType_domainTypeId = newDeviceType_DomainType._id
-            cb()
-        })
-    }, function(err) {
-        callback(err, deviceType_domainTypeId)
-    })
+                   async.each(range, function(e, cb) {
+                       DeviceType_DomainType.create({
+                           deviceTypeId:DeviceType_DomainType.ObjectId(),
+                           domainId: DeviceType_DomainType.ObjectId()
+                       }, function(err, newDeviceType_DomainType) {
+                           if (err) throw err
+                           if (e === 0) deviceType_domainTypeId = newDeviceType_DomainType._id;
+                           cb()
+                       })
+                   }, function(err) {
+                       callback(err, deviceType_domainTypeId,domainId,deviceType_domainTypeId);
+                   })
 
-}
+               } else{
+                   callback(err);
+               }
+           });
+       } else{
+           callback(err);
+       }
+    });
+};
 
 
+module.exports.deleteDocuments=function(callback){
+
+
+    DeviceType_DomainType.deleteMany({},function(err){
+        if(!err){
+            domainDocuments.deleteDocuments(function (err) {
+                if(!err){
+                    deviceTypeDocuments.deleteDocuments(function (err) {
+                        callback(err);
+                    });
+                }else{
+                    callback(err);
+                }
+            });
+        }else{
+            callback(err);
+        }
+
+    });
+
+
+};

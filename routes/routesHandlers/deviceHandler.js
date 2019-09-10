@@ -172,8 +172,6 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
 
 
 
-
-
 /**
  * @api {post} /devices Create a new device
  * @apiVersion 1.0.0

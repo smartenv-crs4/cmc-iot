@@ -21,14 +21,112 @@
  */
 
 
-var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver')
+var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver');
+var apiActionsDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
+var deviceTypeDomainDriver = require('../../DBEngineHandler/drivers/deviceType_domainDriver');
+var async=require("async");
+
+
+
+
+function addDomainHandler(id,req,res,next){
+    var results=[];
+    async.each(req.body.domains, function(domainId, callback) {
+
+        deviceTypeDomainDriver.create({deviceTypeId:id,domainId:domainId},function(err,deviceTypeDomainItem){
+            results.push(deviceTypeDomainItem);
+            callback(err);
+        });
+
+    }, function(err) {
+        res.httpResponse(err, 200, results);
+    });
+};
+
+module.exports.addDomains = function (req, res, next) {
+    var id = req.params.id;
+    addDomainHandler(id,req,res,next);
+};
+
+
+module.exports.removeDomains = function (req, res, next) {
+    var id = req.params.id;
+    var results=[];
+    async.each(req.body.domains, function(domainId, callback) {
+
+        deviceTypeDomainDriver.findOneAndRemove({deviceTypeId:id,domainId:domainId},function(err,deviceTypeDomainItem){
+            if(deviceTypeDomainItem) results.push(deviceTypeDomainItem);
+            callback(err);
+        });
+
+    }, function(err) {
+        results=results.length===0 ? null : results;
+        res.httpResponse(err, 200, results);
+    });
+};
+
+
+
+module.exports.setDomains = function (req, res, next) {
+    var id = req.params.id;
+    deviceTypeDomainDriver.deleteMany({deviceTypeId:id},function (err) {
+       if(!err){
+           addDomainHandler(id,req,res,next);
+       } else{
+           res.httpResponse(err,null,null);
+       }
+    });
+};
+
+
+module.exports.getDomains = function (req, res, next) {
+    var id = req.params.id;
+
+
+    deviceTypeDomainDriver.aggregate([
+        {
+            $match: {deviceTypeId:deviceTypeDriver.ObjectId(id)}
+        },
+        {
+            $lookup:{
+                from: 'domains',
+                localField: 'domainId',
+                foreignField: '_id',
+                as: 'domain'
+            }
+
+        },
+        { $unwind : "$domain" }
+
+    ],function (err, results) {
+        var domanins=[];
+        results.forEach(function (value){
+            domanins.push(value.domain);
+        });
+        domanins=domanins.length===0 ? null : domanins;
+        res.httpResponse(err,200,domanins);
+    });
+};
 
 
 /* Create deviceType */
 module.exports.postCreateDeviceType = function(req, res, next) {
     deviceTypeDriver.create(req.body.deviceType, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
+        if(err) return(res.httpResponse(err, null, null));
+        else {
+            var domains=req.body.domains;
+            async.each(domains, function(domainId, callback) {
+
+                deviceTypeDomainDriver.create({deviceTypeId:results._id,domainId:domainId},function(err,deviceTypeDomainItem){
+                    callback(err);
+                });
+
+            }, function(err) {
+                res.httpResponse(err, null, results);
+            });
+
+        }
+    });
 }
 
 
@@ -57,11 +155,28 @@ module.exports.updateDeviceType = function(req, res, next) {
 }
 
 
-//TODO Gestire la cancellazione in presenza di Api Actions collegate
+
 /* Delete deviceTypes */
 module.exports.deleteDeviceType = function(req, res, next) {
-    var id = req.params.id
-    deviceTypeDriver.findByIdAndRemove(id, function(err, deletedDeviceType) {
-        res.httpResponse(err, null, deletedDeviceType)
-    })
-}
+    var id = req.params.id;
+
+    //delete associated apiActions
+    apiActionsDriver.deleteMany({deviceTypeId:id},function(err){
+        if(!err){
+            //delete associated apiActions
+            deviceTypeDomainDriver.deleteMany({deviceTypeId:id},function(err){
+                if(!err){
+                    deviceTypeDriver.findByIdAndRemove(id, function(err, deletedDeviceType) {
+                        res.httpResponse(err, null, deletedDeviceType)
+                    })
+                }else{
+                    res.httpResponse(err, null, null);
+                }
+            });
+        }else{
+            res.httpResponse(err, null, null);
+        }
+    });
+
+
+};

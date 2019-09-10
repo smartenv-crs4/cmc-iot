@@ -27,11 +27,14 @@ var conf = require('propertiesmanager').conf;
 
 var deviceType_domains= conf.customSchema.deviceType_domainSchema || {
     domainId:{type:mongoose.ObjectId, index: true,required:true},
-    deviceTypeId:{type:mongoose.ObjectId, index: true,required:true},
+    deviceTypeId:{type:mongoose.ObjectId, index: true,required:true}
 };
 
 
+
 var deviceType_domainSchema = new Schema(deviceType_domains, {strict: "throw"});
+
+deviceType_domainSchema.index({ domainId: 1, deviceTypeId: 1 }, { unique: true });
 
 // Static method to retrieve resource WITH metadata
 deviceType_domainSchema.statics.findAll = function (conditions, fields, options, callback) {

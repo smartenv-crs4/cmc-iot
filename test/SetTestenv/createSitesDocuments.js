@@ -39,7 +39,7 @@ module.exports.createDocuments = function(numbers, callback) {
             locatedInSiteId: Site.ObjectId()
         }, function(err, newSite) {
             if (err) throw err
-            if (e === 1) siteId = newSite._id
+            if (e === 0) siteId = newSite._id
             cb()
         })
     }, function(err) {

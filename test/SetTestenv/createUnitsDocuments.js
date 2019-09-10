@@ -41,7 +41,7 @@ module.exports.createDocuments = function(numbers, callback) {
                 observedPropertyId: Unit.ObjectId()
             }, function(err, newUnit) {
                 if (err) throw err
-                if (e === 1) unitId = newUnit._id
+                if (e === 0) unitId = newUnit._id
                 cb()
             })
         }, function(err) {

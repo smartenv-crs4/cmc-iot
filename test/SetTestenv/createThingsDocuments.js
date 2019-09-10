@@ -43,7 +43,7 @@ module.exports.createDocuments=function(numbers,callback){
                 direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
             }, function (err, newThing) {
                 if (err) throw err;
-                if (e === 1) thingId = newThing._id;
+                if (e === 0) thingId = newThing._id;
                 cb();
             });
 

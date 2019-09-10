@@ -274,8 +274,9 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
                         name: "name",
                         description: "description",
                         observedPropertyId: results._id
-                    }
-                })
+                    },
+                    domains:[results._id]
+                });
                 var requestDeviceTypeParams = {
                     url: APIURL_deviceTypes,
                     headers: {
@@ -286,9 +287,9 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
                 }
                 // Create the associated DeviceType
                 request.post(requestDeviceTypeParams, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("POST /deviceTypes: " + error.message)
+                    if (error) consoleLogError.printErrorLog("POST /deviceTypes: " + error.message);
                     else {
-                        response.statusCode.should.be.equal(201)
+                        response.statusCode.should.be.equal(201);
                         // DELETE observedProperty
                         var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                         request.del(getByIdRequestUrl, function(error, response, body) {

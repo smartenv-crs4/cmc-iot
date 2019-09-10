@@ -21,7 +21,8 @@
  */
 
 
-var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver')
+var DeviceTypes = require('../../../DBEngineHandler/drivers/deviceTypeDriver');
+var DeviceTypesDomainsDriver = require('../../../DBEngineHandler/drivers/deviceType_domainDriver');
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/deviceTypes"
@@ -73,7 +74,7 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
     describe('POST /deviceType', function() {
         it('must test deviceType creation [no valid deviceType field - field is not in the schema]', function(done) {
-            var bodyParam = JSON.stringify({deviceType: {noschemaField: "invalid"}})
+            var bodyParam = JSON.stringify({deviceType: {noschemaField: "invalid"},domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]});
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
@@ -97,7 +98,7 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
 
     describe('POST /deviceType', function() {
         it('must test deviceType creation [data validation error due to required fields missing]', function(done) {
-            var bodyParam = JSON.stringify({deviceType: {name: "name", description: "description"}})
+            var bodyParam = JSON.stringify({deviceType: {name: "name", description: "description"},domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
@@ -126,7 +127,8 @@ describe('DeviceTypes API Test - [DATA VALIDATION]', function () {
                     name: "name",
                     description: "description",
                     observedPropertyId: "observedPropertyId"
-                }
+                },
+                domains:[DeviceTypesDomainsDriver.ObjectId(),DeviceTypesDomainsDriver.ObjectId()]
             })
             var requestParams = {
                 url: APIURL,

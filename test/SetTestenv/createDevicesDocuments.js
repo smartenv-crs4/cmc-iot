@@ -38,7 +38,7 @@ module.exports.createDocuments=function(numbers,callback){
             typeId:Device.ObjectId()
         },function(err,newDevice){
             if (err) throw err;
-            if(e===1) deviceId=newDevice._id;
+            if(e===0) deviceId=newDevice._id;
             cb();
         });
 

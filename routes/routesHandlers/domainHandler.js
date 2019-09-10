@@ -71,3 +71,33 @@ module.exports.deleteDomain = function (req, res, next) {
     });
 
 };
+
+
+
+module.exports.getDeviceTypes = function (req, res, next) {
+    var id = req.params.id;
+
+    deviceType_domainDriver.aggregate([
+        {
+            $match: {domainId:domainDriver.ObjectId(id)}
+        },
+        {
+            $lookup:{
+                from: 'devicetypes',
+                localField: 'deviceTypeId',
+                foreignField: '_id',
+                as: 'deviceType'
+            }
+
+        },
+        { $unwind : "$deviceType" }
+
+    ],function (err, results) {
+        var deviceTypes=[];
+        results.forEach(function (value){
+            deviceTypes.push(value.deviceType);
+        });
+        deviceTypes=deviceTypes.length===0 ? null : deviceTypes;
+        res.httpResponse(err,200,deviceTypes);
+    });
+};

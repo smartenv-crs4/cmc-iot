@@ -21,9 +21,10 @@
  */
 
 
-require('./Custom-ApiAction/CRUD-Tests');
-require('./Custom-ApiAction/searchFilterTests');
-require('./Custom-ApiAction/dataValidationTests');
+require('./Custom-Domain/CRUD-Tests');
+require('./Custom-Domain/searchFilterTests');
+require('./Custom-Domain/dataValidationTests');
+require('./Custom-Domain/APIActionsTests');
 require('./From_Template/accessTokenSecurityTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');
