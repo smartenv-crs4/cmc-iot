@@ -9,26 +9,27 @@ Security & Authentication
 -------------------------
 All API endpoints use the **HTTPS** protocol and require authentication.
 
-Thus, you MUST obtain an API token and use it in the HTTP header:
+Thus, you MUST obtain an API token and use it in the HTTP `Authorization` header:
 
-    Authentication: Bearer <API_TOKEN>
+    Authorization: Bearer <API_TOKEN>
 
 or append it as URL parameter:
 
     /devices?access_token=<API_TOKEN>
 
-or append it in the request body:
+or append it in the request body (when a body is accepted):
 
     {access_token=<API_TOKEN>}
 
+When the token is set as URL parameter, the same token sent in `Authorization` header must be `undefined`, and vice versa.
 
 ***
 
 Pagination
 -------------------------
 
-All `GET /resource_name` endpoints, which return a list, use `skip=value&limit=value` parameters to return a paginated response.
-Pagination is set using the following format:
+All `GET /resource_name` endpoints, which return a list, use `skip=value&limit=value` URL parameters to return a paginated response.
+Pagination settings are returned in the following format:
 
     ...
     "_metadata":{
@@ -37,25 +38,39 @@ Pagination is set using the following format:
                     "totalCount":1500
     }
 
-`totalCount` is disabled by default. If you need it, you must specify it in the request appending `&totalCount=true`, i.e. `skip=value&limit=value&totalCount=true`   
+`totalCount` is disabled by default. If you need it, you must specify it in the request appending `&totalCount=true`, i.e. `skip=value&limit=value&totalCount=true` <br>
+When `skip` and `limit` values are not provided, default values set in `default.json` are used. <br>
+Other endpoints returning a list of objects (such as search actions) provide a different way to set result pagination, which will be described in the endpoint documentation.
 
 ***
 
+Search
+-------------------------
+
+All `GET /resource_name` endpoints,  which return a list, use `resource_name=resource_id_1,resource_id_2` parameters to return a list filtered by resource id. <br>
+Search strings can be a string (e.g. `devices=123456`), a string array (e.g. `devices=12345&devices=54321`) or a list of comma separated strings (e.g. `things=12345,54321`) <br>
+Searches can be performed in the same fashion filtering by a field, e.g. a string or a boolean (`name=MyDev`, `disabled=true`). <br>
+Other endpoints returning a list of objects (such as search actions) provide a different way to perform searches, which will be described in the endpoint documentation.
+***
+ 
 Field projection
 -------------------------
 
-All `GET /resource_name` endpoints providing a field projection functionality, use `fields=field_name_1,field_name_2` to return responses with fields projection.
+All `GET /resource_name` endpoints providing a field projection functionality, use `fields=field_name_1,field_name_2` parameters to return responses with fields projection.
 Fields projection names must be comma separated strings. 
-To remove a field from results, use the `-fieldname` syntax, e.g. `fields=-field_name`
+To remove a field from results, use the `-fieldname` syntax, e.g. `fields=-field_name` <br>
+Other endpoints returning a list of objects (such as search actions) provide a different way to set result projection, which will be described in the endpoint documentation.
 
 ***
 
 Ordering results
 -------------------------
 
-All `GET /resource_name` endpoints providing ordering functionality, use `sortAsc=field_name_1&sortDesc=field_name_2` to return the ordered results. <br>
+All `GET /resource_name` endpoints providing ordering functionality, use `sortAsc=field_name_1&sortDesc=field_name_2` parameters to return the ordered results. 
+If you have more than one ordering field, they must be comma separated strings, i.e. `sortAsc=field_name_1,field_name_2`. <br>
 `sortAsc` orders by ascending values of the specified fields. <br>
-`sortDesc` orders by descending values of the specified fields.
+`sortDesc` orders by descending values of the specified fields. <br>
+Other endpoints returning a list of objects (such as search actions) provide a different way to set result ordering, which will be described in the endpoint documentation.
 
 ***
 
