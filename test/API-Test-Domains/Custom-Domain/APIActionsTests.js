@@ -176,7 +176,6 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                             });
                         }
                     });
-
                 });
             });
         });

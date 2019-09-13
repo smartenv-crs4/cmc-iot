@@ -34,6 +34,7 @@ var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var deviceId;
+var associatedThingId;
 
 
 describe('Devices API Test - [ACTIONS TESTS]', function () {
@@ -61,9 +62,10 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100, function (err, newDeviceId) {
+        deviceDocuments.createDocuments(100, function (err, newDeviceId,dvTypeId,obsId,thingId) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Devices.create ---> " + err);
             deviceId = newDeviceId;
+            associatedThingId=thingId;
            done();
         });
     });
@@ -794,52 +796,56 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
         it('must test API action disable/enable [device by unavailable thing] ', function (done) {
 
-            Devices.findAll({}, null, null, function (err, results) {
+            Things.findByIdAndRemove(associatedThingId,function(err,deletedThing){
                 if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + err);
                 else {
-
-                    results.devices.length.should.be.eql(100);
-                    results.should.have.properties("devices", "_metadata");
-                    results.devices[0].disabled.should.be.false();
-
-                    request.post({
-                        url: APIURL + '/' + results.devices[0]._id + '/actions/disable',
-                        headers: {
-                            'content-type': 'application/json',
-                            'Authorization': "Bearer " + webUiToken
-                        },
-                    }, function (error, response, body) {
-
-                        if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + error);
+                    Devices.findAll({}, null, null, function (err, results) {
+                        if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + err);
                         else {
-                            response.statusCode.should.be.equal(200);
-                            var disableResults = JSON.parse(body);
-                            disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
-                            disableResults.disabled.should.be.true();
+
+                            results.devices.length.should.be.eql(100);
+                            results.should.have.properties("devices", "_metadata");
+                            results.devices[0].disabled.should.be.false();
+
+                            request.post({
+                                url: APIURL + '/' + results.devices[0]._id + '/actions/disable',
+                                headers: {
+                                    'content-type': 'application/json',
+                                    'Authorization': "Bearer " + webUiToken
+                                },
+                            }, function (error, response, body) {
+
+                                if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + error);
+                                else {
+                                    response.statusCode.should.be.equal(200);
+                                    var disableResults = JSON.parse(body);
+                                    disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                    disableResults.disabled.should.be.true();
+                                }
+                                request.post({
+                                    url: APIURL + '/' + results.devices[0]._id + '/actions/enable',
+                                    headers: {
+                                        'content-type': 'application/json',
+                                        'Authorization': "Bearer " + webUiToken
+                                    },
+                                }, function (error, response, body) {
+
+                                    if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + error);
+                                    else {
+                                        response.statusCode.should.be.equal(409);
+                                        var disableResults = JSON.parse(body);
+                                        disableResults.should.have.properties('error', 'statusCode', 'message');
+                                        disableResults.message.should.be.eql("Cannot enable device due to associated thing is not available");
+                                    }
+                                    done();
+
+                                });
+                            });
                         }
-                        request.post({
-                            url: APIURL + '/' + results.devices[0]._id + '/actions/enable',
-                            headers: {
-                                'content-type': 'application/json',
-                                'Authorization': "Bearer " + webUiToken
-                            },
-                        }, function (error, response, body) {
-
-                            if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by unavailable thing]'  -->" + error);
-                            else {
-                                response.statusCode.should.be.equal(409);
-                                var disableResults = JSON.parse(body);
-                                disableResults.should.have.properties('error', 'statusCode', 'message');
-                                disableResults.message.should.be.eql("Cannot enable device due to associated thing is not available");
-                            }
-                           done();
-
-                        });
                     });
                 }
             });
         });
-
     });
     
 

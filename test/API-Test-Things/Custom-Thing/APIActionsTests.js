@@ -63,7 +63,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
 
     beforeEach(function (done) {
 
-        thingDocuments.createDocuments(100, function (err, newThingId) {
+        // 99 + 1(by Devices =100
+        thingDocuments.createDocuments(99, function (err, newThingId) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Things.create ---> " + err);
             thingId = newThingId;
             deviceDocuments.createDocuments(100, function (err, newThingId) {
@@ -602,9 +603,9 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                 var searchresults = JSON.parse(body);
                                 searchresults.should.have.property('_metadata');
                                 searchresults.should.have.property('things');
-                                searchresults.things[0].name.should.be.greaterThan(searchresults.things[1].name);
-                                searchresults.things[1].name.should.be.greaterThan(searchresults.things[2].name);
-                                searchresults.things[2].name.should.be.greaterThan(searchresults.things[3].name);
+                                searchresults.things[0].name.should.be.greaterThanOrEqual(searchresults.things[1].name);
+                                searchresults.things[1].name.should.be.greaterThanOrEqual(searchresults.things[2].name);
+                                searchresults.things[2].name.should.be.greaterThanOrEqual(searchresults.things[3].name);
 
                             }
                             done();
@@ -655,9 +656,9 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                 var searchresults = JSON.parse(body);
                                 searchresults.should.have.property('_metadata');
                                 searchresults.should.have.property('things');
-                                searchresults.things[3].name.should.be.greaterThan(searchresults.things[2].name);
-                                searchresults.things[2].name.should.be.greaterThan(searchresults.things[1].name);
-                                searchresults.things[1].name.should.be.greaterThan(searchresults.things[0].name);
+                                searchresults.things[3].name.should.be.greaterThanOrEqual(searchresults.things[2].name);
+                                searchresults.things[2].name.should.be.greaterThanOrEqual(searchresults.things[1].name);
+                                searchresults.things[1].name.should.be.greaterThanOrEqual(searchresults.things[0].name);
                             }
                             done();
                         });

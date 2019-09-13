@@ -30,8 +30,8 @@ var observation = conf.customSchema.observationSchema || {
     timestamp: {type: Number, index: true, required: true},
     value: {type: Number, index: true, required: true},
     location: {
-        type: {type: String, enum: ['Point'], required: true},
-        coordinates: {type: [Number], required: true}
+        type: {type: String, enum: ['Point']},
+        coordinates: {type: [Number]}
     },
     deviceId: {type: mongoose.ObjectId, required: true, index: true},
     unitId: {type: mongoose.ObjectId, required: true, index: true}

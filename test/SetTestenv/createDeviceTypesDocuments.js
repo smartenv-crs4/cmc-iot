@@ -23,28 +23,36 @@
 
 var _ = require('underscore')._
 var async = require('async')
-var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver')
+var DeviceType = require('../../DBEngineHandler/drivers/deviceTypeDriver');
+var observedPropertiesDocument = require('./createObservedPropertiesDocuments');
 
 
 module.exports.createDocuments = function(numbers, callback) {
 
-    var range = _.range(numbers)
-    var deviceTypeId
 
-    async.each(range, function(e, cb) {
-        DeviceType.create({
-            name: "name" + e,
-            description: "description" + e,
-            observedPropertyId: DeviceType.ObjectId()
-        }, function(err, newDeviceType) {
-            if (err) throw err
-            if (e === 0) deviceTypeId = newDeviceType._id
-            cb()
-        })
-    }, function(err) {
-        callback(err, deviceTypeId)
-    })
+    observedPropertiesDocument.createDocuments(1,function(err,observedPropertyId){
+        if(!err){
+            var range = _.range(numbers)
+            var deviceTypeId
 
+            async.each(range, function(e, cb) {
+                DeviceType.create({
+                    name: "name" + e,
+                    description: "description" + e,
+                    observedPropertyId: observedPropertyId
+                }, function(err, newDeviceType) {
+                    if (err) throw err
+                    if (e === 0) deviceTypeId = newDeviceType._id
+                    cb()
+                })
+            }, function(err) {
+                //TODO:i campi da restituire devono essere un obj {deviceTypeId:id, observedPropertyId:id}
+                callback(err, deviceTypeId,observedPropertyId)
+            })
+        }else{
+            callback(err);
+        }
+    });
 }
 
 
@@ -52,7 +60,13 @@ module.exports.createDocuments = function(numbers, callback) {
 module.exports.deleteDocuments = function(callback) {
 
     DeviceType.deleteMany({},function(err){
-       callback(err);
+        if(!err){
+         observedPropertiesDocument.deleteDocuments(function(err){
+             callback(err);
+         })
+        }else {
+            callback(err);
+        }
     });
 }
 

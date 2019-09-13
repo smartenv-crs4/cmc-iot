@@ -42,6 +42,14 @@ module.exports.createDocuments = function(numbers, callback) {
         callback(err, observedPropertyId)
     })
 
-}
+};
+
+
+module.exports.deleteDocuments=function(callback){
+    ObservedProperty.deleteMany({},function(err){
+        callback(err);
+    });
+};
+
 
 

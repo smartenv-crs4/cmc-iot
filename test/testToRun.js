@@ -32,6 +32,10 @@ require('./Models-Test/siteModel');
 require('./Models-Test/thingModel');
 require('./Models-Test/unitModel');
 require('./Models-Test/vendorModel');
+require('./Models-Test/observations');
+
+// Utility
+require('./handlerUtility-Test/observationsUtility-Test');
 
 
 //Middlewares

@@ -22,36 +22,37 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var Device = require('../../DBEngineHandler/drivers/deviceDriver');
-var thingDocuments=require('./createThingsDocuments');
-var deviceTypeDocuments=require('./createDeviceTypesDocuments');
+var Observation = require('../../DBEngineHandler/drivers/observationDriver');
+var deviceCreateDocuments=require('./createDevicesDocuments');
+var unitCreateDocuments=require('./createUnitsDocuments');
 
 
 module.exports.createDocuments=function(numbers,callback){
 
+    var range = _.range(numbers);
+    var observationId;
 
-    thingDocuments.createDocuments(1,function(err,thingId){
+    deviceCreateDocuments.createDocuments(1,function(err,deviceId){
        if(!err){
-           deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId,observedPropertyId){
+           unitCreateDocuments.createDocuments(1,function(err,unitId){
                if(!err){
-                   var range = _.range(numbers);
-                   var deviceId;
                    async.each(range, function(e,cb){
 
-                       Device.create({
-                           name:"name" + e,
-                           description:"description" +e,
-                           thingId:thingId,
-                           typeId:deviceTypeId
-                       },function(err,newDevice){
+                       Observation.create({
+                           timestamp:new Date().getTime(),
+                           value:e,
+                           deviceId:deviceId,
+                           unitId:unitId
+                       },function(err,newObservation){
                            if (err) throw err;
-                           if(e===0) deviceId=newDevice._id;
+                           if(e===0) observationId=newObservation._id;
                            cb();
                        });
 
                    }, function(err){
-                       callback(err,deviceId,deviceTypeId,observedPropertyId,thingId);
+                       callback(err,observationId, deviceId, unitId);
                    });
+
                } else{
                    callback(err);
                }
@@ -60,28 +61,26 @@ module.exports.createDocuments=function(numbers,callback){
            callback(err);
        }
     });
-
-
-
 };
 
 
-
 module.exports.deleteDocuments=function(callback){
-    Device.deleteMany({},function(err){
+
+    Observation.deleteMany({},function(err){
         if(!err){
-         deviceTypeDocuments.deleteDocuments(function(err){
-            if(!err){
-                thingDocuments.deleteDocuments(function(err){
+            deviceCreateDocuments.deleteDocuments(function(err){
+                if(!err){
+                    unitCreateDocuments.deleteDocuments(function(err){
+                        callback(err);
+                    });
+                }else{
                     callback(err);
-                });
-            } else{
-                callback(err);
-            }
-         });
-        }else {
+                }
+            });
+        }else{
             callback(err);
         }
+
     });
 };
 

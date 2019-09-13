@@ -51,8 +51,14 @@ module.exports.createDocuments = function(numbers, callback) {
     catch (e) {
         callback (e)
     }
+};
 
 
-}
+module.exports.deleteDocuments=function(callback){
+    Unit.deleteMany({},function(err){
+        callback(err);
+    });
+};
+
 
 

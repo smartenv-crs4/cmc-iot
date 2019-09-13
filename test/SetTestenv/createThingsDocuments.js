@@ -57,3 +57,8 @@ module.exports.createDocuments=function(numbers,callback){
 };
 
 
+module.exports.deleteDocuments=function(callback){
+    Thing.deleteMany({},function(err){
+        callback(err);
+    });
+};

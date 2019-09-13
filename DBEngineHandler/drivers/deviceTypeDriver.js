@@ -26,6 +26,13 @@ var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
 
 
+
+/* delete DeviceType_Domains. */
+module.exports.aggregate = function(pipeline,callback){
+    deviceTypes.aggregate(pipeline,callback);
+};
+
+
 /* GET deviceTypes listing */
 module.exports.findAll = function(conditions, fields, options, callback) {
     deviceTypes.findAll(conditions, fields, options, function(err, results) {

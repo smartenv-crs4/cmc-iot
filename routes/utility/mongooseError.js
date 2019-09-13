@@ -28,9 +28,9 @@ function serverError(res,err,message){
     res.boom.badImplementation(message);
 }
 
-function badRequestError(res,err,message){
+function badRequestError(res,err,message,printError){
     message=err.message || message || "The server cannot or will not process the request due to an apparent client error";
-    errorLog.printErrorLog("mongooseError.js " + message);
+    if(printError) errorLog.printErrorLog("mongooseError.js " + message);
     res.boom.badRequest(message);
 }
 
@@ -96,6 +96,21 @@ exports.handleError= function(res,err){
             break;
         case "ConflictError":
             conflictError(res,err," Thrown The request could not be processed because of conflict in the current state of the resource");
+            break;
+        case "outOfRangeError":
+            badRequestError(res,err,"Value Out of Range",false);
+            break;
+        case "DeviceTypeError":
+            badRequestError(res,err,"Not valid for tis device Type",false);
+            break;
+        case "DismissedError":
+            badRequestError(res,err,"Dismissed thing/device",false);
+            break;
+        case "DisabledError":
+            badRequestError(res,err,"Disabled thing/device",false);
+            break;
+        case "NotExistError":
+            badRequestError(res,err,"Not available thing/device",false);
             break;
         default:
             handleOtherErrors(res,err);

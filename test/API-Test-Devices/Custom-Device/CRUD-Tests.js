@@ -96,6 +96,8 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('description');
                     results.should.have.property('thingId');
                     results.should.have.property('typeId');
+                    results.should.have.property('disabled');
+                    results.should.have.property('dismissed');
                 }
                 done();
             });
