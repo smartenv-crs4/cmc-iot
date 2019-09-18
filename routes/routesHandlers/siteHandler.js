@@ -202,7 +202,7 @@ module.exports.getSites = function(req, res, next) {
  * @apiGroup Sites
  * @apiPermission Access Token
  *
- * @apiDescription Returns a Site object.
+ * @apiDescription Returns a Site object
  *
  * @apiParam (URL Parameter) {String}  id  The Site identifier
  * @apiUse Projection
@@ -234,7 +234,7 @@ module.exports.getSiteById = function(req, res, next) {
  * @apiGroup Sites
  * @apiPermission Access Token
  *
- * @apiDescription Updates a Site object and returns the newly updated resource, or an error Object.
+ * @apiDescription Updates a Site object and returns the newly updated resource, or an error Object
  *
  * @apiUse SiteBodyParams
  *

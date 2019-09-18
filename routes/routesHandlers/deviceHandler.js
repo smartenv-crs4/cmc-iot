@@ -226,7 +226,7 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  * @apiGroup Devices
  * @apiPermission Access Token
  *
- * @apiDescription Creates a new Device object and returns the newly created resource, or an error Object.
+ * @apiDescription Creates a new Device object and returns the newly created resource, or an error Object
  *
  * @apiUse DeviceBodyParams
  *
@@ -256,7 +256,7 @@ module.exports.postCreateDevice = function (req, res, next) {
  * @apiGroup Devices
  * @apiPermission Access Token
  *
- * @apiDescription Updates a Device object and returns the newly updated resource, or an error Object.
+ * @apiDescription Updates a Device object and returns the newly updated resource, or an error Object
  *
  * @apiUse DeviceBodyParams
  *
@@ -288,7 +288,7 @@ module.exports.updateDevice = function (req, res, next) {
  * @apiGroup Devices
  * @apiPermission Access Token
  *
- * @apiDescription Disables a Device object.
+ * @apiDescription Disables a Device object
  *
  * @apiParam (URL Parameters) {String}  id  The Device identifier
  *
@@ -380,7 +380,7 @@ module.exports.disableEnableDevice = function (req, res, next) {
  * @apiGroup Devices
  * @apiPermission Access Token
  *
- * @apiDescription Returns a Device object.
+ * @apiDescription Returns a Device object
  *
  * @apiParam (URL Parameter) {String}  id  The device identifier
  * @apiUse Projection
@@ -444,7 +444,7 @@ module.exports.getDevices = function (req, res, next) {
  * @apiGroup Devices
  * @apiPermission Access Token
  *
- * @apiDescription Returns a paginated list of all dismissed Devices. <br>
+ * @apiDescription Returns a paginated list of all dismissed Devices
  *
  * @apiParam (Body Parameter)   {Object}        [searchFilters]                 Filters parent object
  * @apiParam (Body Parameter)   {String[]}      [searchFilters.name]            Filter by device name. It can be a string (e.g. `name=Crs4Dev`),

@@ -282,7 +282,7 @@ module.exports.postCreateThing = function (req, res, next) {
  * @apiGroup Things
  * @apiPermission Access Token
  *
- * @apiDescription Updates a Thing object and returns the newly updated resource, or an error Object.
+ * @apiDescription Updates a Thing object and returns the newly updated resource, or an error Object
  *
  * @apiUse ThingBodyParams
  *
@@ -314,7 +314,7 @@ module.exports.updateThing = function (req, res, next) {
  * @apiGroup Things
  * @apiPermission Access Token
  *
- * @apiDescription Returns a Thing object.
+ * @apiDescription Returns a Thing object
  *
  * @apiParam (URL Parameter) {String}  id  The Thing identifier
  * @apiUse Projection
@@ -379,7 +379,7 @@ module.exports.getThings = function (req, res, next) {
  * @apiGroup Things
  * @apiPermission Access Token
  *
- * @apiDescription Disables a Thing object.
+ * @apiDescription Disables a Thing object
  *
  * @apiParam (URL Parameters) {String}  id  The Thing identifier
  *
