@@ -67,9 +67,9 @@ var observationsDriver = require('../../DBEngineHandler/drivers/observationDrive
  * @apiSuccess (201 - CREATED) {String} disabled                Created thing `disabled` status
  * @apiSuccess (201 - CREATED) {String} mobile                  Created thing `mobile` status
  * @apiSuccess (201 - CREATED) {String} ownerId                 Created thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess (201 - CREATED) {Object} [api]                   Created thing API URL of its middleware
- * @apiSuccess (201 - CREATED) {String} [api.url]               Created thing API URL of its middleware
- * @apiSuccess (201 - CREATED) {String} [api.access_token]      Created thing API URL of its middleware
+ * @apiSuccess (201 - CREATED) {Object} [api]                   Created thing middleware object
+ * @apiSuccess (201 - CREATED) {String} [api.url]               Created thing API URL of its connector middleware
+ * @apiSuccess (201 - CREATED) {String} [api.access_token]      Created thing API access token of its connector middleware
  * @apiSuccess (201 - CREATED) {Object} [direct]                Created thing direct access
  * @apiSuccess (201 - CREATED) {String} [direct.url]            Created thing direct access URL
  * @apiSuccess (201 - CREATED) {String} [direct.access_token]   Created thing direct access token
@@ -85,9 +85,9 @@ var observationsDriver = require('../../DBEngineHandler/drivers/observationDrive
  * @apiSuccess {String} disabled                Updated thing `disabled` status
  * @apiSuccess {String} mobile                  Updated thing `mobile` status
  * @apiSuccess {String} ownerId                 Updated thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [api]                   Updated thing API URL of its middleware
- * @apiSuccess {String} [api.url]               Updated thing API URL of its middleware
- * @apiSuccess {String} [api.access_token]      Updated thing API URL of its middleware
+ * @apiSuccess {Object} [api]                   Updated thing middleware object
+ * @apiSuccess {String} [api.url]               Updated thing API URL of its connector middleware
+ * @apiSuccess {String} [api.access_token]      Updated thing API access token of its connector middleware
  * @apiSuccess {Object} [direct]                Updated thing direct access
  * @apiSuccess {String} [direct.url]            Updated thing direct access URL
  * @apiSuccess {String} [direct.access_token]   Updated thing direct access token
@@ -140,14 +140,14 @@ var observationsDriver = require('../../DBEngineHandler/drivers/observationDrive
  * @apiSuccessExample {json} Example: 201 CREATED
  *      HTTP/1.1 201 CREATED
  *      {
- *        "name":"customThing",
- *        "description":"weather station developed by crs4",
- *        "mobile":"false",
- *        "ownerId":"5d4044fc346a8f0277643ac42",
+ *        "name": "customThing",
+ *        "description": "weather station developed by crs4",
+ *        "mobile": "false",
+ *        "ownerId" "5d4044fc346a8f0277643ac42",
  *        "api": {"url": "http://iotgw.crs4.it", "access_token": "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"},
- *        "disabled":"false",
- *        "typeId":"5d4044fc346a8f0277643bf2",
- *        "thingId":"5d4044fc346a8f0277643bf4",
+ *        "disabled": "false",
+ *        "vendorId": "5d4044fc346a8f0277643bf2",
+ *        "siteId": "5d4044fc346a8f0277643bf4",
  *      }
  */
 /**
@@ -246,7 +246,7 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
 
 
 /**
- * @api {post} /devices Create a new Thing
+ * @api {post} /things Create a new Thing
  * @apiVersion 1.0.0
  * @apiName PostThing
  * @apiGroup Things
@@ -257,8 +257,8 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
  * @apiUse ThingBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST request
- *  Body:{ "name": "customThing" , "description":"Weather station developed by crs4", "ownerId":"5d4044fc346a8f0277643ac42", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4",}
+ * HTTP/1.1 POST /things
+ *  Body:{ "name": "customThing" , "description":"Weather station developed by crs4", "ownerId":"5d4044fc346a8f0277643ac42", "vendorId":"5d4044fc346a8f0277643bf2", "siteId":"5d4044fc346a8f0277643bf4",}
  *
  * @apiUse PostThingResource
  * @apiUse PostThingResourceExample
@@ -276,7 +276,7 @@ module.exports.postCreateThing = function (req, res, next) {
 
 
 /**
- * @api {put} /devices Update a Thing
+ * @api {put} /things Update a Thing
  * @apiVersion 1.0.0
  * @apiName PutThing
  * @apiGroup Things
@@ -287,7 +287,7 @@ module.exports.postCreateThing = function (req, res, next) {
  * @apiUse ThingBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 PUT request
+ * HTTP/1.1 PUT /things/543fdd60579e1281b8f6da92
  *  Body:{ "name": "updatedCustomName" , "description": "touch sensor developed by crs4"}
  *
  * @apiUse PutThingResource
@@ -308,7 +308,7 @@ module.exports.updateThing = function (req, res, next) {
 
 
 /**
- * @api {get} /devices/:id Get Thing by id
+ * @api {get} /things/:id Get Thing by id
  * @apiVersion 1.0.0
  * @apiName GetThingById
  * @apiGroup Things
@@ -320,7 +320,7 @@ module.exports.updateThing = function (req, res, next) {
  * @apiUse Projection
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/543fdd60579e1281b8f6da92
+ * HTTP/1.1 GET /things/543fdd60579e1281b8f6da92
  *
  * @apiUse GetThingResource
  * @apiUse GetThingResourceExample
@@ -500,8 +500,6 @@ module.exports.disableEnableThing = function (req, res, next) {
 
     }
 };
-
-
 
 
 /**

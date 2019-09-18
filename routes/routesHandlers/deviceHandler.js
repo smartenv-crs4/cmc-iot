@@ -187,11 +187,11 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  * @apiSuccessExample {json} Example: 201 CREATED
  *      HTTP/1.1 201 CREATED
  *      {
- *        "name":"customDevice",
- *        "description":"touch device developed by crs4",
- *        "disabled":"false",
- *        "typeId":"5d4044fc346a8f0277643bf2"
- *        "thingId":"5d4044fc346a8f0277643bf4"
+ *        "name": "customDevice",
+ *        "description": "touch device developed by crs4",
+ *        "disabled": "false",
+ *        "typeId": "5d4044fc346a8f0277643bf2"
+ *        "thingId": "5d4044fc346a8f0277643bf4"
  *
  *      }
  */
@@ -231,7 +231,7 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  * @apiUse DeviceBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST request
+ * HTTP/1.1 POST /devices
  *  Body:{ "name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4",}
  *
  * @apiUse PostDeviceResource
@@ -261,7 +261,7 @@ module.exports.postCreateDevice = function (req, res, next) {
  * @apiUse DeviceBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 PUT request
+ * HTTP/1.1 PUT /devices/543fdd60579e1281b8f6da92
  *  Body:{ "name": "updatedCustomName" , "description": "touch sensor developed by crs4"}
  *
  * @apiUse PutDeviceResource
