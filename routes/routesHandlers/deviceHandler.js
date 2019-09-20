@@ -30,9 +30,6 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
 /**
  * @apiDefine NotFound
  * @apiError {Object} ResourceNotFound[404] The resource was not found <BR>
- * `response.body.StatusCode` contains the error status code <BR>
- * `response.body.error` contains the error name <BR>
- * `request.body.message` contains an error message specifying the error <BR>
  *
  * @apiErrorExample {Object} NotFound Error:
  *  HTTP/1.1 404 Resource Not Found
@@ -42,13 +39,9 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  *     "message": 'The resource was not found'
  *   }
  */
-
 /**
  * @apiDefine  InternalServerError
- * @apiError 5xx {Object} InternalServerError[500] An internal server error occurred <BR>
- * `response.body.StatusCode` contains the error status code <BR>
- * `response.body.error` contains the error name <BR>
- * `request.body.message` contains an error message specifying the error <BR>
+ * @apiError  (5xx) {Object} InternalServerError[500] An internal server error occurred <BR>
  *
  * @apiErrorExample {Object} InternalServerError Error:
  *  HTTP/1.1 500 Internal Server Error
@@ -58,13 +51,9 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  *     "message": 'An internal server error occurred'
  *   }
  */
-
 /**
  * @apiDefine  BadRequest
  * @apiError {Object} BadRequest[400] The server cannot or will not process the request due to malformed client request <BR>
- * `response.body.StatusCode` contains the error status code <BR>
- * `response.body.error` contains the error name <BR>
- * `request.body.message` contains an error message specifying the error <BR>
  *
  * @apiErrorExample {Object} BadRequest Error:
  *  HTTP/1.1 400 Bad Request
@@ -74,13 +63,9 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  *     "message": 'Body field missing'
  *   }
  */
-
 /**
  * @apiDefine  Unauthorized
  * @apiError {Object} Unauthorized[401] The client is not authorized to access this resource <BR>
- * `response.body.StatusCode` contains the error status code <BR>
- * `response.body.error` contains the error name <BR>
- * `request.body.message` contains an error message specifying the error <BR>
  *
  * @apiErrorExample {Object} Unauthorized Error:
  *  HTTP/1.1 401 Unauthorized
@@ -90,7 +75,6 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  *     "message": 'You are not authorized to access this resource'
  *   }
  */
-
 /**
  * @apiDefine  NoContent
  * @apiError (2xx) {Object} NoContent[204] The server successfully processed the request but no content is found <BR>
@@ -102,38 +86,78 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  */
 
 /**
- * @apiDefine Metadata
- * @apiSuccess {Object} _metadata Object containing metadata info for pagination
- * @apiSuccess {Number} _metadata.skip Number of results of this query skipped
- * @apiSuccess {Number} _metadata.limit Limits the number of results returned by this query
- * @apiSuccess {Number} _metadata.totalCount If specified in the request, it contains the total number of query results; it is false otherwise
+ * @apiDefine DeviceBodyParams
+ * @apiParam (Body Parameters) {Object}   device                    Device dictionary with all the fields.
+ * @apiParam (Body Parameters) {String}   device.name               Device name
+ * @apiParam (Body Parameters) {String}   device.description        Device description
+ * @apiParam (Body Parameters) {ObjectId} device.typeId             Device Foreign Key to DeviceType (See `/devicetypes` API reference)
+ * @apiParam (Body Parameters) {ObjectId} device.thingId            Device Foreign Key to Thing (See `/things` API reference)
+ * @apiParam (Body Parameters) {String}   [device.disabled=false]   Device disable status. If `true`, the device is disabled
  */
-
 /**
- * @apiDefine GetResource
- * @apiSuccess {Object[]} devices           A paginated array list of device objects
+ * @apiDefine DeviceQueryParams
+ * @apiParam (Query Parameter) {String[]}   [devices]      Search by device
+ * @apiParam (Query Parameter) {String[]}   [name]         Filter by device name
+ * @apiParam (Query Parameter) {String[]}   [description]  Filter by device description
+ * @apiParam (Query Parameter) {Boolean}    [disabled]     Filter by device status
+ * @apiParam (Query Parameter) {String[]}   [typeId]       Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
+ * @apiParam (Query Parameter) {String[]}   [thingId]      Filter by Thing. To get Thing identifier look at `/things` API
+ */
+/**
+ * @apiDefine PostDeviceResource
+ * @apiSuccess (201 - CREATED) {String} name         Created device name
+ * @apiSuccess (201 - CREATED) {String} description  Created device description
+ * @apiSuccess (201 - CREATED) {String} disabled     Created device `disabled` status
+ * @apiSuccess (201 - CREATED) {String} typeId       Created device DeviceType identifier
+ * @apiSuccess (201 - CREATED) {String} thingId      Created device Thing identifier
+ */
+/**
+ * @apiDefine PutDeviceResource
+ * @apiSuccess {String} name         Updated device name
+ * @apiSuccess {String} description  Updated device description
+ * @apiSuccess {String} disabled     Updated device `disabled` status
+ * @apiSuccess {String} typeId       Updated device DeviceType identifier
+ * @apiSuccess {String} thingId      Updated device Thing identifier
+ */
+/**
+ * @apiDefine GetAllDeviceResource
+ * @apiSuccess {Object[]} devices           A paginated array list of Device objects
  * @apiSuccess {String} device._id          Device identifier
  * @apiSuccess {String} device.name         Device name
  * @apiSuccess {String} device.description  Device description
  * @apiSuccess {String} device.disabled     Device status (enabled/disabled)
- * @apiSuccess {String} device.typeId       Device type identifier
- * @apiSuccess {String} device.thingId      Device thing identifier
+ * @apiSuccess {String} device.typeId       Device DeviceType identifier
+ * @apiSuccess {String} device.thingId      Device Thing identifier
  */
-
 /**
- * @apiDefine GetResourceExample
+ * @apiDefine GetDeviceResource
+ * @apiSuccess {String} _id          Device identifier
+ * @apiSuccess {String} name         Device name
+ * @apiSuccess {String} description  Device description
+ * @apiSuccess {String} disabled     Device status (enabled/disabled)
+ * @apiSuccess {String} typeId       Device DeviceType identifier
+ * @apiSuccess {String} thingId      Device Thing identifier
+ */
+/**
+ * @apiDefine GetAllDeviceResourceExample
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *     {
  *       "devices":[
  *                      {
  *                          "_id": "543fdd60579e1281b8f6da92", *
  *                          "name": "prova",
- *                          "description": "description About prova"
+ *                          "description": "description About prova",
+ *                          "disabled": "false",
+ *                          "typeId": "543fdd60579e1281b8f6ce33",
+ *                          "thingId": "543fdd60579e1281b8f6af21"
  *                      },
  *                      {
  *                          "_id": "543fdd60579e1281sdaf6da92",
- *                          "name": "prova1", *
- *                          "description": "description About prova1"
+ *                          "name": "prova1",
+ *                          "description": "description About prova1",
+ *                          "disabled": "false",
+ *                          "typeId": "543fdd60579e1281b8f6ce33",
+ *                          "thingId": "543fdd60579e1281b8f6af21"
  *
  *                     },
  *                    ...
@@ -146,7 +170,39 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  *                   }
  *     }
  */
+/**
+ * @apiDefine GetDeviceResourceExample
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *        "id": "543fdd60579e1281b8f6da92",
+ *        "name": "Crs4Device",
+ *        "description": "Crs4 Temperature device",
+ *        "disabled": "false",
+ *        "thingId": "543fdd60579e1281b8f6da93",
+ *        "typeId": "543fdd60579e1281b8f6da94"
+ *     }
+ */
+/**
+ * @apiDefine PostDeviceResourceExample
+ * @apiSuccessExample {json} Example: 201 CREATED
+ *      HTTP/1.1 201 CREATED
+ *      {
+ *        "name": "customDevice",
+ *        "description": "touch device developed by crs4",
+ *        "disabled": "false",
+ *        "typeId": "5d4044fc346a8f0277643bf2"
+ *        "thingId": "5d4044fc346a8f0277643bf4"
+ *
+ *      }
+ */
 
+/**
+ * @apiDefine Metadata
+ * @apiSuccess {Object} _metadata Object containing pagination info
+ * @apiSuccess {Number} _metadata.skip Number of query results skipped
+ * @apiSuccess {Number} _metadata.limit Limits the number of results returned by this query
+ * @apiSuccess {Number} _metadata.totalCount If specified in the request, it contains the total number of query results; it is false otherwise
+ */
 /**
  * @apiDefine  Pagination
  * @apiParam (Query Parameter) {Number}   [skip]       Pagination skip parameter - skips the first `n` results
@@ -155,7 +211,6 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  * @apiParam (Query Parameter) {String}   [sortAsc]    Ordering parameter - orders results by ascending values
  * @apiParam (Query Parameter) {String}   [sortDesc]   Ordering parameter - orders results by descending values
  */
-
 /**
  * @apiDefine Projection
  * @apiParam (Query Parameter) {String}  [fields]  A list of comma separated field names to project in query results
@@ -169,50 +224,18 @@ var deviceUtility=require('./handlerUtility/deviceUtility');
  * @apiVersion 1.0.0
  * @apiName PostDevice
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Creates a new Device object and returns the newly created resource, or an error Object. Protected by access token.
+ * @apiDescription Creates a new Device object and returns the newly created resource, or an error Object
  *
- *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL param.
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (Body Parameter) {Object}   device                    Device dictionary with all the fields.
- * @apiParam (Body Parameter) {String}   device.name               Device name
- * @apiParam (Body Parameter) {String}   device.description        Device description
- * @apiParam (Body Parameter) {ObjectId} device.typeId             Device Foreign Key to Device Type (See `/devicetypes` API reference)
- * @apiParam (Body Parameter) {ObjectId} device.thingId            Device Foreign Key to Thing (See `/things` API reference)
- * @apiParam (Body Parameter) {String}   [device.disabled=false]   Device disable status. If `true`, the device is disabled
-
+ * @apiUse DeviceBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST request
+ * HTTP/1.1 POST /devices
  *  Body:{ "name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4",}
  *
- * @apiSuccess (201 - CREATED) {String} name         Created device name
- * @apiSuccess (201 - CREATED) {String} description  Created device description
- * @apiSuccess (201 - CREATED) {String} dismissed    Created device `dismissed` status. It is set to `false` at creation time
- * @apiSuccess (201 - CREATED) {String} disabled     Created device `disabled` status
- * @apiSuccess (201 - CREATED) {String} typeId       Created device Foreign Key to Device Type (See `/devicetypes` API reference)
- * @apiSuccess (201 - CREATED) {String} thingId      Created device Foreign Key to Thing (See `/things` API reference)
- *
- * @apiSuccessExample {json} Example: 201 CREATED
- *      HTTP/1.1 201 CREATED
- *      {
- *        "name":"customDevice",
- *        "description":"touch device developed by crs4",
- *        "dismissed":"false",
- *        "disabled":"false",
- *        "typeId":"5d4044fc346a8f0277643bf2"
- *        "thingId":"5d4044fc346a8f0277643bf4"
- *
- *      }
- *
+ * @apiUse PostDeviceResource
+ * @apiUse PostDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse BadRequest
  * @apiUse InternalServerError
@@ -231,49 +254,18 @@ module.exports.postCreateDevice = function (req, res, next) {
  * @apiVersion 1.0.0
  * @apiName PutDevice
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Updates a Device object and returns the newly updated resource, or an error Object. Protected by access token.
+ * @apiDescription Updates a Device object and returns the newly updated resource, or an error Object
  *
- *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter.
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (Body Parameter) {Object}   device                 Device dictionary with all the fields.
- * @apiParam (Body Parameter) {String}   [device.name]          Device name
- * @apiParam (Body Parameter) {String}   [device.description]   Device description
- * @apiParam (Body Parameter) {ObjectId} [device.typeId]        Device Foreign Key to Device Type (See `/devicetypes` API reference)
- * @apiParam (Body Parameter) {ObjectId} [device.thingId]       Device Foreign Key to Thing (See `/things` API reference)
- * @apiParam (Body Parameter) {String}   [device.disabled]      Device status (enabled/disabled). If `true`, the device is disabled
-
+ * @apiUse DeviceBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 PUT request
+ * HTTP/1.1 PUT /devices/543fdd60579e1281b8f6da92
  *  Body:{ "name": "updatedCustomName" , "description": "touch sensor developed by crs4"}
  *
- * @apiSuccess (201 - CREATED) {String} name         Updated device name
- * @apiSuccess (201 - CREATED) {String} description  Updated device description
- * @apiSuccess (201 - CREATED) {String} disabled     Updated device disabled status
- * @apiSuccess (201 - CREATED) {String} typeId       Updated device Foreign Key to Device Type (See `/devicetypes` API reference)
- * @apiSuccess (201 - CREATED) {String} thingId      Updated device Foreign Key to Thing (See `/things` API reference)
- *
- * @apiSuccessExample {json} Example: 200 UPDATED
- *      HTTP/1.1 201 CREATED
- *      {
- *        "name":"customDevice",
- *        "description":"touch device developed by crs4",
- *        "dismissed":"false",
- *        "disabled":"false",
- *        "typeId":"5d4044fc346a8f0277643bf2"
- *        "thingId":"5d4044fc346a8f0277643bf4"
- *
- *      }
- *
+ * @apiUse PutDeviceResource
+ * @apiUse GetDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse BadRequest
  * @apiUse InternalServerError
@@ -290,39 +282,21 @@ module.exports.updateDevice = function (req, res, next) {
 
 
 /**
- * @api {get} /devices/:id/actions/disable Disable Device
+ * @api {post} /devices/:id/actions/disable Disable Device
  * @apiVersion 1.0.0
  * @apiName DeviceDisable
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Disables a Device object. Protected by access token.
+ * @apiDescription Disables a Device object
  *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter.
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (URL Parameter) {String}  id  The device identifier
- * @apiUse Projection
+ * @apiParam (URL Parameters) {String}  id  The Device identifier
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/543fdd60579e1281b8f6da92/actions/disable
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/disable
  *
- * @apiUse GetResource
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *     {
- *        "id": "543fdd60579e1281b8f6da92",
- *        "name": "Crs4Device",
- *        "description": "Crs4 Temperature device",
- *        "disabled": "true",
- *        "thingId": "543fdd60579e1281b8f6da93",
- *        "typeId": "543fdd60579e1281b8f6da94"
- *     }
-
+ * @apiUse GetDeviceResource
+ * @apiUse GetDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -331,39 +305,21 @@ module.exports.updateDevice = function (req, res, next) {
  */
 
 /**
- * @api {get} /devices/:id/actions/enable Enable Device
+ * @api {post} /devices/:id/actions/enable Enable Device
  * @apiVersion 1.0.0
  * @apiName DeviceEnable
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Enables a Device object. Protected by access token.
+ * @apiDescription Enables a Device object
  *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter.
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (URL Parameter) {String}  id  The device identifier
- * @apiUse Projection
+ * @apiParam (URL Parameter) {String}  id  The Device identifier
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/543fdd60579e1281b8f6da92/actions/enable
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/enable
  *
- * @apiUse GetResource
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *     {
- *        "id": "543fdd60579e1281b8f6da92",
- *        "name": "Crs4Device",
- *        "description": "Crs4 Temperature device",
- *        "disabled": "false",
- *        "thingId": "543fdd60579e1281b8f6da93",
- *        "typeId": "543fdd60579e1281b8f6da94"
- *     }
-
+ * @apiUse GetDeviceResource
+ * @apiUse GetDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -422,35 +378,19 @@ module.exports.disableEnableDevice = function (req, res, next) {
  * @apiVersion 1.0.0
  * @apiName GetDeviceById
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Returns a Device object. Protected by access token.
+ * @apiDescription Returns a Device object
  *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter.
- * If set, the same token sent in `Authorization` header must be `undefined`
  * @apiParam (URL Parameter) {String}  id  The device identifier
  * @apiUse Projection
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /devices/543fdd60579e1281b8f6da92
  *
- * @apiUse GetResource
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *     {
- *        "id": "543fdd60579e1281b8f6da92",
- *        "name": "Crs4Device",
- *        "description": "Crs4 Temperature device",
- *        "disabled": "false",
- *        "thingId": "543fdd60579e1281b8f6da93",
- *        "typeId": "543fdd60579e1281b8f6da94"
- *     }
-
+ * @apiSuccess {String} dismissed    Device status (active/dismissed)
+ * @apiUse GetDeviceResource
+ * @apiUse GetDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -472,46 +412,24 @@ module.exports.getDeviceById = function (req, res, next) {
  * @apiVersion 1.0.0
  * @apiName GetDevice
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Returns a paginated list of all Devices. Protected by access token. <br>
- * Pagination settings (skip/limit) and field filters in the URL request, e.g. `GET /devices?skip=10&limit=50&name=deviceCrs4` <br>
- * To filter/search by device type you need the device type id from `/deviceTypes` API and then filter by `deviceTypeId` field. <br>
- * To filter/search by thing you need the thing id from `/things` API and then filter by `thingId` field. <br>
- * To filter/search by device _id (one or more), simply set the URL parameter 'devices', which can be a comma separated list or array of ids,
- * e.g. `GET /devices?devices=12345,54321`, `GET /devices?devices=12345&devices=54321`
+ * @apiDescription Returns a paginated list of all Devices
  *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (Query Parameter) {String[]}   [name]         Filter by device name. It can be a string (e.g. `name=Crs4Dev`),
- * a string array (e.g. `name=Crs4Dev&name=dev2&name=dev3`) or a list of comma separated strings (e.g. `name=dev1,dev2,dev3`)
- * @apiParam (Query Parameter) {String[]}   [description]  Filter by device description. It can be a string (e.g. `description=Crs4Dev`),
- * a string array (e.g. `description=desc1&description=desc2&description=desc3`) or a list of comma separated strings (e.g. `description=desc1,desc2,desc3`)
- * @apiParam (Query Parameter) {Boolean}    [disabled]     Filter by device status (e.g. `disabled=true`)
- * @apiParam (Query Parameter) {String[]}   [typeId]       Filter by device type. To get device type identifier look at `/deviceTypes` API
- * @apiParam (Query Parameter) {String[]}   [thingId]      Filter by thing . To get thing identifier look at `/things` API
- * @apiUse Pagination
- * @apiUse Projection
+ * @apiUse DeviceQueryParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices?name=dev1_Crs4 dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
+ * HTTP/1.1 GET /devices?name=dev1_Crs4,dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
  *
  * @apiUse Metadata
- * @apiUse GetResource
- * @apiUse GetResourceExample
+ * @apiUse GetAllDeviceResource
+ * @apiUse GetAllDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
-// TODO descrivere che dismissed non è un prametro di ricerca di usare laction per cercare i dsmissed
 module.exports.getDevices = function (req, res, next) {
     deviceDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
         res.httpResponse(err,req.statusCode,results);
@@ -524,37 +442,33 @@ module.exports.getDevices = function (req, res, next) {
  * @apiVersion 1.0.0
  * @apiName SearchDismissedDevices
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Returns a paginated list of all dismissed Devices. Protected by access token. <br>
- * Pagination settings (skip/limit) and field filters in the URL request, e.g. `GET /devices/actions/searchDismissed?skip=10&limit=50&name=deviceCrs4` <br>
- * To filter/search by device type you need the device type id from `/deviceTypes` API and then filter by `deviceTypeId` field. <br>
- * To filter/search by thing you need the thing id from `/things` API and then filter by `thingId` field. <br>
+ * @apiDescription Returns a paginated list of all dismissed Devices
  *
- * @apiHeader {String} [Authorization] Unique access token. If set, the same `access_token` in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (Query Parameter) {String[]}   [name]         Filter by device name. It can be a string (e.g. `name=Crs4Dev`),
+ * @apiParam (Body Parameter)   {Object}        [searchFilters]                 Filters parent object
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.name]            Filter by device name. It can be a string (e.g. `name=Crs4Dev`),
  * a string array (e.g. `name=Crs4Dev&name=dev2&name=dev3`) or a list of comma separated strings (e.g. `name=dev1,dev2,dev3`)
- * @apiParam (Query Parameter) {String[]}   [description]  Filter by device description. It can be a string (e.g. `description=Crs4Dev`),
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.description]     Filter by device description. It can be a string (e.g. `description=Crs4Dev`),
  * a string array (e.g. `description=desc1&description=desc2&description=desc3`) or a list of comma separated strings (e.g. `description=desc1,desc2,desc3`)
- * @apiParam (Query Parameter) {Boolean}    [disabled]     Filter by device status (e.g. `disabled=true`)
- * @apiParam (Query Parameter) {String[]}   [typeId]       Filter by device type. To get device type identifier look at `/deviceTypes` API
- * @apiParam (Query Parameter) {String[]}   [thingId]      Filter by thing . To get thing identifier look at `/things` API
- * @apiUse Pagination
- * @apiUse Projection
+ * @apiParam (Body Parameter)   {Boolean}       [searchFilters.disabled]        Filter by device status (e.g. `disabled=true`)
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.typeId]          Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.thingId]         Filter by Thing . To get Thing identifier look at `/things` API
+ * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
+ * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /devices/actions/searchDismissed?name=dev1_Crs4 dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
  *
  * @apiUse Metadata
- * @apiUse GetResource
- * @apiUse GetResourceExample
+ * @apiUse GetAllDeviceResource
+ * @apiUse GetAllDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -569,36 +483,19 @@ module.exports.getDevices = function (req, res, next) {
  * @apiVersion 1.0.0
  * @apiName DeleteDeviceById
  * @apiGroup Devices
+ * @apiPermission Access Token
  *
- * @apiDescription Deletes a given Device by its identifier and returns the deleted resource. Protected by access token. <br>
+ * @apiDescription Deletes a given Device by its identifier and returns the deleted resource. <br>
  * If there are Observations associated with that Device, it can't be deleted to preserve the observation history. Instead, it is set in dismissed status.
  * The dismissed status cannot be reverted.
  *
- * @apiHeader {String} [Authorization] Unique access_token. If set, the same `access_token `in body or in URL parameter must be `undefined`
- *
- * @apiHeaderExample {json} Header-Example:
- *     {
- *       "Authorization": "Bearer yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"
- *     }
- *
- * @apiParam (Query Parameter) {String} [access_token] Access token that grants access to this resource. It must be sent in body or as URL parameter.
- * If set, the same token sent in `Authorization` header must be `undefined`
- * @apiParam (URL Parameter) {String}  id The device identifier
+ * @apiParam (URL Parameter) {String}  id The Device identifier
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/543fdd60579e1281b8f6da92
+ * HTTP/1.1 DELETE /devices/543fdd60579e1281b8f6da92
  *
- * @apiUse GetResource
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *     {
- *        "id": "543fdd60579e1281b8f6da92",
- *        "name": "Crs4Device",
- *        "description": "Crs4 Temperature device",
- *        "disabled": "false",
- *        "thingId": "543fdd60579e1281b8f6da93",
- *        "typeId": "543fdd60579e1281b8f6da94"
- *     }
-
+ * @apiUse GetDeviceResource
+ * @apiUse GetDeviceResourceExample
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
