@@ -30,15 +30,24 @@ var site = conf.customSchema.siteSchema || {
     name: {type: String, required: true},
     description: {type: String, required: true},
     location: {
-        type: {type: String, enum: ['Point'], required: true},
-        coordinates: {type: [Number], required: true}
+        type: {type: String, enum: ['Point']},
+        coordinates: {type: [Number]}
     },
-    locatedInSiteId: {type: mongoose.ObjectId, index: true, required: true}
+    locatedInSiteId: {type: mongoose.ObjectId, index: true}
 }
 
 
 var siteSchema = new Schema(site, {strict: "throw"})
 
+siteSchema.pre('validate', function(next) {
+
+    if (!(this.location) && !(this.locatedInSiteId)) {
+        var err = new Error('One between location or locatedInSiteId field must be set');
+        err.name = "ValidatorError";
+        next(err);
+    }
+    else next();
+});
 
 // Static method to retrieve resource WITH metadata
 siteSchema.statics.findAll = function(conditions, fields, options, callback) {
