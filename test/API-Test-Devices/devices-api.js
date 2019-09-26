@@ -24,7 +24,8 @@
 require('./Custom-Device/CRUD-Tests');
 require('./From_Template/accessTokenSecurityTests');
 require('./Custom-Device/dataValidationTests');
-require('./Custom-Device/APIActionsTests');
+require('./Custom-Device/ApiActions/APIActionsTests');
+require('./Custom-Device/ApiActions/APIActionsObservationsTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');
 require('./From_Template/paginationTests');

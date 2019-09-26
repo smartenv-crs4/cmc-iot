@@ -28,6 +28,7 @@ var deviceUtility = require('./handlerUtility/deviceUtility');
 var async=require('async');
 var config = require('propertiesmanager').conf;
 var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
+var observationUtility=require('./handlerUtility/observationUtility');
 
 
 //Begin macro
@@ -576,3 +577,13 @@ module.exports.deleteThing = function (req, res, next) {
 
 };
 
+
+
+
+//todo set documentation
+module.exports.createObservations = function (req, res, next) {
+    var id = req.params.id;
+    observationUtility.validateAndCreateThingObservations(id,req.body.observations,function(err, observations){
+        res.httpResponse(err,200,observations);
+    });
+};

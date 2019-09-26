@@ -277,7 +277,7 @@ describe('Observations Model Test', function () {
 
         it('must update a observation', function (done) {
 
-            Observation.findOne({}, null, function (err, observation) {
+            Observation.findOne({value:1}, null, function (err, observation) {
 
                 if (err) throw err;
                 else {

@@ -29,7 +29,7 @@ var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
 
 
 
-//actions
+// <actions>
 
 // /* get dismissed things */
 var dismssedMiddlewared=[
@@ -56,6 +56,14 @@ router.post('/:id/actions/enable',[authorisationManager.checkToken],function(req
     req.disableThing=false;
     thingsHandler.disableEnableThing(req,res,next);
 });
+
+router.post('/:id/actions/sendObservations', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observations"]), function(req, res, next) {
+    thingsHandler.createObservations(req, res, next);
+});
+
+
+// </actions>
+
 
 
 

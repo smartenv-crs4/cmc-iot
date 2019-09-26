@@ -102,11 +102,11 @@ describe('Observations Model Test', function () {
 
         it('must test checkIfValid [observation is valid]', function (done) {
 
-            observationUtility.checkIfValid(deviceIdResource,validUnits.first._id,validUnits.first.minValue+1,function(err,response){
+            observationUtility.checkIfValid(deviceIdResource,{unitId:validUnits.first._id,value:validUnits.first.minValue+1},function(err,response){
                 should(err).be.null();
                 response.should.have.properties("authorized", "authInfo");
                 response.authorized.should.be.true();
-                response.authInfo.should.have.properties("dismissed", "disabled", "units");
+                response.authInfo.should.have.properties("dismissed", "disabled", "thing", "units");
                 response.authInfo.dismissed.should.be.false();
                 response.authInfo.disabled.should.be.false();
                 response.authInfo.units.length.should.be.eql(2);
@@ -123,7 +123,7 @@ describe('Observations Model Test', function () {
 
         it('must test checkIfValid [The observation value is out of range]', function (done) {
 
-            observationUtility.checkIfValid(deviceIdResource,validUnits.first._id,validUnits.first.maxValue+1,function(err,response){
+            observationUtility.checkIfValid(deviceIdResource,{unitId:validUnits.first._id, value:validUnits.first.maxValue+1},function(err,response){
                 should(err).be.not.null();
                 err.should.have.properties("name", "message");
                 err.name.should.be.eql("outOfRangeError");
@@ -138,7 +138,7 @@ describe('Observations Model Test', function () {
 
         it('must test checkIfValid [observation not valid due to unit is not associated to Device Type]', function (done) {
 
-            observationUtility.checkIfValid(deviceIdResource,unitDriver.ObjectId(),validUnits.first.maxValue+1,function(err,response){
+            observationUtility.checkIfValid(deviceIdResource,{unitId:unitDriver.ObjectId(),value:validUnits.first.maxValue+1},function(err,response){
                 should(err).be.not.null();
                 err.should.have.properties("name", "message");
                 err.name.should.be.eql("DeviceTypeError");
@@ -155,7 +155,7 @@ describe('Observations Model Test', function () {
             deviceDriver.findByIdAndUpdate(deviceIdResource,{dismissed:true},function(err,dismissedDev){
                 if (err) consoleLogError.printErrorLog("checkIfValid: 'ust test checkIfValid [observation not valid due to Dismissed Device]'  -->" + err);
                 else{
-                    observationUtility.checkIfValid(deviceIdResource,unitDriver.ObjectId(),validUnits.first.maxValue+1,function(err,response){
+                    observationUtility.checkIfValid(deviceIdResource,{unitId:unitDriver.ObjectId(),value:validUnits.first.maxValue+1},function(err,response){
                         should(err).be.not.null();
                         err.should.have.properties("name", "message");
                         err.name.should.be.eql("DismissedError");
@@ -174,7 +174,7 @@ describe('Observations Model Test', function () {
             deviceDriver.findByIdAndUpdate(deviceIdResource,{disabled:true},function(err,dismissedDev){
                 if (err) consoleLogError.printErrorLog("checkIfValid: 'ust test checkIfValid [observation not valid due to Disabled Device]'  -->" + err);
                 else{
-                    observationUtility.checkIfValid(deviceIdResource,unitDriver.ObjectId(),validUnits.first.maxValue+1,function(err,response){
+                    observationUtility.checkIfValid(deviceIdResource,{unitId:unitDriver.ObjectId(),value:validUnits.first.maxValue+1},function(err,response){
                         should(err).be.not.null();
                         err.should.have.properties("name", "message");
                         err.name.should.be.eql("DisabledError");
@@ -191,7 +191,7 @@ describe('Observations Model Test', function () {
 
         it('must test checkIfValid [observation not valid due to Device not exist]', function (done) {
 
-            observationUtility.checkIfValid(deviceDriver.ObjectId(),unitDriver.ObjectId(),validUnits.first.maxValue+1,function(err,response){
+            observationUtility.checkIfValid(deviceDriver.ObjectId(),{unitId:unitDriver.ObjectId(),value:validUnits.first.maxValue+1},function(err,response){
                 should(err).be.not.null();
                 err.should.have.properties("name", "message");
                 err.name.should.be.eql("NotExistError");

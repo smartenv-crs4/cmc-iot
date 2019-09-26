@@ -97,7 +97,7 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
 
     describe('POST /sites', function() {
         it('must test site creation [data validation error due to required fields missing]', function(done) {
-            var bodyParam = JSON.stringify({site: {name: "name", description: "description", location: {type: "Point", coordinates: [1,1]}}})
+            var bodyParam = JSON.stringify({site: {name: "name", }})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
@@ -111,7 +111,7 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode')
                     results.should.have.property('error')
                     results.should.have.property('message')
-                    results.message.should.be.equal("site validation failed: locatedInSiteId: Path `locatedInSiteId` is required.")
+                    results.message.should.be.equal("site validation failed: description: Path `description` is required.")
                 }
                 done()
             })

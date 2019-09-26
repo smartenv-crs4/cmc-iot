@@ -27,24 +27,24 @@ var Schema = mongoose.Schema
 var conf = require('propertiesmanager').conf
 
 var observation = conf.customSchema.observationSchema || {
-    timestamp: {type: Number, index: true, required: true},
+    timestamp: {type: Number, index: true, required: true, default:new Date()},
     value: {type: Number, index: true, required: true},
     location: {
         type: {type: String, enum: ['Point']},
-        coordinates: {type: [Number]}
+        coordinates: {type: [Number], default:null}
     },
     deviceId: {type: mongoose.ObjectId, required: true, index: true},
     unitId: {type: mongoose.ObjectId, required: true, index: true}
-}
+};
 
 
-var observationSchema = new Schema(observation, {strict: "throw"})
+var observationSchema = new Schema(observation, {strict: "throw"});
 
 
 // Static method to retrieve resource WITH metadata
 observationSchema.statics.findAll = function(conditions, fields, options, callback) {
     return findAllFn(this, 'observations', conditions, fields, options, callback)
-}
+};
 
 
 var Observation = mongoose.model('observation', observationSchema)

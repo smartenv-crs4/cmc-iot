@@ -23,36 +23,52 @@
 var _ = require('underscore')._;
 var async = require('async');
 var Thing = require('../../DBEngineHandler/drivers/thingDriver');
+var vendorDocuments=require("./createVendorsDocuments");
+var siteDocuments=require("./createSitesDocuments");
 
 
 
 module.exports.createDocuments=function(numbers,callback){
 
-    var range = _.range(numbers);
-    var thingId;
-    try {
-        async.each(range, function (e, cb) {
+    vendorDocuments.createDocuments(1,function(err,vendorId){
+       if(!err){
+           siteDocuments.createDocuments(1,function(err,siteId){
+               if(!err){
+                   var range = _.range(numbers);
+                   var thingId;
+                   try {
+                       async.each(range, function (e, cb) {
 
-            Thing.create({
-                name: "thingName" + e,
-                description: "thingDescription" + e,
-                ownerId: Thing.ObjectId(),
-                vendorId: Thing.ObjectId(),
-                siteId: Thing.ObjectId(),
-                api: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e},
-                direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
-            }, function (err, newThing) {
-                if (err) throw err;
-                if (e === 0) thingId = newThing._id;
-                cb();
-            });
+                           Thing.create({
+                               name: "thingName" + e,
+                               description: "thingDescription" + e,
+                               ownerId: Thing.ObjectId(),
+                               vendorId: vendorId,
+                               siteId: siteId,
+                               api: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e},
+                               direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
+                           }, function (err, newThing) {
+                               if (err) throw err;
+                               if (e === 0) thingId = newThing._id;
+                               cb();
+                           });
 
-        }, function (err) {
-            callback(err, thingId);
-        });
-    }catch (e) {
-        callback(e);
-    }
+                       }, function (err) {
+                           callback(err, thingId,vendorId,siteId);
+                       });
+                   }catch (e) {
+                       callback(e);
+                   }
+               } else{
+                   callback(err,null);
+               }
+           });
+       } else{
+        callback(err,null);
+       }
+    });
+
+
 
 };
 

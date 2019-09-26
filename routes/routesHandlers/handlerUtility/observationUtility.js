@@ -21,100 +21,184 @@
  */
 
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
-var typeDriver = require('../../../DBEngineHandler/drivers/deviceTypeDriver');
-var _=require('underscore');
+var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
+var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
+var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
+var async = require('async');
+
+var _ = require('underscore');
 
 
-function checkValidity(err,authorisation, unitId, observationValue, callback){
-    if(!err) {
 
-        // //TODO: Remove
-        // console.log("CHECK:");
-        // console.log(authorisation);
-        // console.log(unitId);
+function validateUnitAndValueRange(deviceStatus, observation, callback) {
 
-        if(authorisation) {
-            var auth = {
-                authorized: false,
-                authInfo: {}
-            };
+    var valid = false;
+    var interval = false;
+    deviceStatus.units.forEach(function (unit) {
 
-            auth.authorized = (!authorisation.disabled) && (!authorisation.dismissed);
-            if (auth.authorized) {
-                var valid = false;
-                var interval = false;
-
-
-                authorisation.units.forEach(function (unit) {                  ;
-
-                    if (unit._id.toString() === unitId.toString()) {
-                        valid = true;
-                        if ((observationValue >= unit.minValue) && (observationValue <= unit.maxValue))
-                            interval = true;
-                    }
-                });
-                if (valid) {
-                    if (interval) { // it pass all verification tests
-                        auth.authorized = true;
-                        auth.authInfo = authorisation;
-                        callback(null, auth);
-                    } else { // observation out of range
-                        var Err = new Error("The observation value is out of range.");
-                        Err.name = "outOfRangeError";
-                        callback(Err, null);
-                    }
-
-                } else { // not valid unitId for this device Type
-                    var Err = new Error("Not a valid unitId for this device type.");
-                    Err.name = "DeviceTypeError";
-                    callback(Err, null);
-                }
-
-            } else {
-                var Err;
-                if (authorisation.dismissed) {
-                    Err = new Error("The device/thing was removed from available devices/things.");
-                    Err.name = "DismissedError";
-                } else {
-                    Err = new Error("The device/thing was disable. It must be enabled to set observations.");
-                    Err.name = "DisabledError";
-                }
-                callback(Err, null);
-            }
-        }else{
-            Err = new Error("The device/thing not exist.");
-            Err.name = "NotExistError";
-            callback(Err,null);
+        if (unit._id.toString() === observation.unitId.toString()) {
+            valid = true;
+            if ((observation.value >= unit.minValue) && (observation.value <= unit.maxValue))
+                interval = true;
+        }
+    });
+    if (valid) {
+        if (interval) { // it pass all verification tests
+            callback(null);
+        } else { // observation out of range
+            var Err = new Error("The observation value is out of range.");
+            Err.name = "outOfRangeError";
+            callback(Err);
         }
 
-    }else{
-        callback(err,null);
+    } else { // not valid unitId for this device Type
+        var Err = new Error("Not a valid unitId for this device type.");
+        Err.name = "DeviceTypeError";
+        callback(Err);
     }
 }
 
 
-/* Delete devices. */
-module.exports.checkIfValid = function (id,unitId,observationValue,callback) {
+
+function locationHandler(observation, deviceStatus, callback){
 
 
-    //TODO:c
-    // - controlla se su Redis c'è un mem cache che verifica se il device può fare una scrittura [disabled,dismissed]
+    if(deviceStatus.thing.mobile){ // it is a mobile device
+        if(observation.location && observation.location.coordinates){ // valid coordinates
+            callback(null,observation);
+        }else{
+            var Err = new Error("Location:{ coordinates: [lon, lat]} is a mandatory field for mobile devices");
+            Err.name = "BadRequestError";
+            callback(Err, null, null);
+        }
+    }else{ // it is a not mobile device
+        if(observation.location && observation.location.coordinates){ // has location
+            var Err = new Error("Location field must be set only for mobile devices.");
+            Err.name = "unprocessableError";
+            callback(Err, null, null);
+
+        }else{
+            observation.location=deviceStatus.location;
+            callback(null,observation);
+        }
+    }
+}
+
+
+function validateAndUpdateObservationContent(id, observation, deviceStatus, callback) {
+
+    // -  verifica se il device può fare una scrittura [disabled,dismissed]
     // e se è l'unitadi misura è compattibile col suo device Type
     // - se non c'è su memm cache allora controlla sul database
     // - Salva su mem cache Redis le autorizzazioni del device [dismissed, disabled, validUnits[unit1,unit2,.....]
 
-    var redis=false; //TODO: change with redis check
 
-    if(redis){
-        checkValidity(null,null,unitId,observationValue,callback);
+    locationHandler(observation,deviceStatus,function(err,updateObservation){
+        if(!err){
+
+            if (deviceStatus.dismissed) {
+                Err = new Error("The device/thing was removed from available devices/things.");
+                Err.name = "DismissedError";
+                callback(Err)
+            } else {
+                if (deviceStatus.disabled) {
+                    Err = new Error("The device/thing was disable. It must be enabled to set observations.");
+                    Err.name = "DisabledError";
+                    callback(Err)
+                }else{
+                    if (updateObservation.value) {
+                        if (updateObservation.unitId) {
+
+                            validateUnitAndValueRange(deviceStatus, updateObservation, function(err){
+                                if(!err){
+                                    updateObservation.deviceId=id;
+                                    callback(null,{authorized:true,updatedObservation:updateObservation})
+                                }else {
+                                    callback(err);
+                                }
+                            });
+                        } else {
+                            var Err = new Error("Observation 'unitId' field missing");
+                            Err.name = "ValidatorError";
+                            callback(Err)
+                        }
+                    } else {
+                        var Err = new Error("Observation 'value' field missing");
+                        Err.name = "ValidatorError";
+                        callback(Err)
+                    }
+                }
+            }
+        }else {
+            callback(err);
+        }
+    });
+
+
+
+
+
+
+}
+
+
+
+
+
+function getDeviceLocation(deviceInfo,callback){
+    //{type: "Point", coordinates: [1, 1]},
+
+
+    if(deviceInfo){
+        if(deviceInfo.thing.mobile){ // it is a mobile device
+            callback(null,deviceInfo);
+        }else{ // it is a not mobile device
+            var siteLocation=null;
+            var siteId=deviceInfo.thing.siteId;
+            async.whilst(
+                function test() {
+                    return (siteLocation==null);
+                },
+                function iter(next) {
+                    siteDriver.findById(siteId,null,null,function(err,siteInfo){
+                        if(!err) {
+                            siteLocation = (siteInfo && siteInfo.location && siteInfo.location.coordinates && (siteInfo.location.coordinates.length > 0)) ? siteInfo.location : null;
+                            siteId = siteInfo.locatedInSiteId;
+                        }
+                        next(err,siteLocation);
+                    })
+                },
+                function (err, locationSite) {
+                    if(!err){
+                        deviceInfo.location=locationSite;
+                    }
+                    callback(err,deviceInfo);
+                }
+            );
+        }
     }else{
+        Err = new Error("The device/thing not exist.");
+        Err.name = "NotExistError";
+        callback(Err, null);
+    }
+}
+
+
+function getDeviceStatus(deviceId,callback){
+    // check if Resdis store device Stutus Information. If yes return It otherwise check info into Database
+
+    var redis = false; //TODO: change with redis check
+
+    if (redis) {
+        callback(redis);  // todo change with deviceInfo from Redis
+    } else {
         // check device info and valid units into database
         deviceDriver.aggregate([
             {
-                $match: {_id:deviceDriver.ObjectId(id)}
+                $match: {_id: deviceDriver.ObjectId(deviceId)}
             },
             {
-                $lookup:{
+                $lookup: {
                     from: 'devicetypes',
                     localField: 'typeId',
                     foreignField: '_id',
@@ -122,9 +206,19 @@ module.exports.checkIfValid = function (id,unitId,observationValue,callback) {
                 }
 
             },
-            { $unwind : "$deviceType" },
+            {$unwind: "$deviceType"},
             {
-                $lookup:{
+                $lookup: {
+                    from: 'things',
+                    localField: 'thingId',
+                    foreignField: '_id',
+                    as: 'thing'
+                }
+
+            },
+            {$unwind: "$thing"},
+            {
+                $lookup: {
                     from: 'observedproperties',
                     localField: 'deviceType.observedPropertyId',
                     foreignField: '_id',
@@ -132,7 +226,7 @@ module.exports.checkIfValid = function (id,unitId,observationValue,callback) {
                 }
 
             },
-            { $unwind : "$observedProperty" },
+            {$unwind: "$observedProperty"},
             {
                 $lookup: {
                     from: 'units',
@@ -144,11 +238,13 @@ module.exports.checkIfValid = function (id,unitId,observationValue,callback) {
             },
             {
                 $project: {
-                    dismissed:1,
-                    disabled:1,
-                    "units._id":1,
-                    "units.minValue":1,
-                    "units.maxValue":1
+                    dismissed: 1,
+                    disabled: 1,
+                    "units._id": 1,
+                    "units.minValue": 1,
+                    "units.maxValue": 1,
+                    "thing.mobile":1,
+                    "thing.siteId":1
                     // name: 0,
                     // description: 0,
                     // thingId: 0,
@@ -157,8 +253,208 @@ module.exports.checkIfValid = function (id,unitId,observationValue,callback) {
                     // observedProperty:0
                 }
             }
-        ],function (err, results) {
-            checkValidity(err, results[0] || null, unitId, observationValue, callback);
+        ], function (err, results) {
+            if(!err){
+                getDeviceLocation(results[0] || null ,callback);
+            }else{
+                callback(err);
+            }
+
         });
     }
+
+
+}
+
+
+
+function validateAndUpdateDeviceObservations(deviceId,observations,callback){
+
+    getDeviceStatus(deviceId,function(err,deviceStatus){
+        if(!err){
+
+            var updatedObservations=[];
+
+            async.each(observations, function (observation, callbackfunction) {
+                validateAndUpdateObservationContent(deviceId, observation, deviceStatus, function (err, validationResults) {
+                    if (err){
+                        err.observation=JSON.stringify(observation);
+                    } else{
+                        updatedObservations.push(validationResults.updatedObservation);
+                    }
+                    callbackfunction(err);
+
+                });
+            }, function (err) {
+                callback(err,updatedObservations,deviceStatus);
+            });
+        }else{
+            err.observation=null;
+            callback(err);
+        }
+
+    });
+
+
+}
+
+
+
+
+
+
+function createObservations(observations,callback){
+    var createdResourcesId = [];
+    async.eachSeries(observations, function (observation, clbFun) {
+        observationsDriver.create(observation, function (err, createdObservation) {
+            if (createdObservation)
+                createdResourcesId.push(createdObservation);
+            clbFun(err);
+        });
+    }, function (err) {
+        if (!err) {
+            callback(null, createdResourcesId);
+        } else {
+            if (createdResourcesId.length > 0) {
+                var observationsToDelete = _.map(createdResourcesId, function (obs) {
+                    return obs._id
+                });
+
+                //TODO: Try to handle data inconsistent if deletion is not completed
+                observationsDriver.deleteMany({_id: {"$in": observationsToDelete}}, function (errDelete) {
+                    if (errDelete)
+                        callback(new Error("Observations: inconsistent data due to error in delete invalid observations--> " + observationsToDelete), null);
+                    else callback(err, null);
+                });
+            } else {
+                callback(err, null);
+            }
+        }
+    });
+}
+
+
+
+function validateThingObservations(thingId, thingStatus,deviceId,observations,callback){
+
+    if(thingStatus.disabled){
+        Err = new Error("The thing was removed from available devices/things.");
+        Err.name = "DismissedError";
+        callback(Err)
+    }else{
+        if(thingStatus.disabled){
+            Err = new Error("The thing was disable. It must be enabled to set observations.");
+            Err.name = "DisabledError";
+            callback(Err)
+        }else{
+            if(thingStatus.devices && thingStatus.devices.indexOf(deviceId)>=0){ // it is a thing device
+                validateAndUpdateDeviceObservations(deviceId, observations, function (err, validatedObservations) {
+                    if (err){
+                        err.message = "Unprocessable observation " + (err.observation ? err.observation + " " : "")  + "for a device " + deviceId + " due to " + err.message;
+                        callback(err,null);
+                    } else{
+                        callback(null,validatedObservations);
+                    }
+                });
+
+            }else{ // it isn't a thing device
+                var Err=new Error("Unprocessable request due to device '" + deviceId + "' is not associated to thing '" + thingId + "'");
+                Err.name = "unprocessableError";
+                callback(Err);
+            }
+        }
+    }
+
+
+}
+
+
+function getThingStatus(thingId,callback){
+
+    var redis = false; //TODO: change with redis check
+
+    if (redis) {
+        callback(redis);  // todo change with deviceInfo from Redis
+    } else {
+        thingDriver.findById(thingId, "disabled dismissed", null, function (err, thingStatus) {
+            if (!err) {
+                deviceDriver.findAll({thingId: thingId}, "_id", null, function (err, devices) {
+                    if(!err) {
+                        callback(null, {dismissed:thingStatus.dismissed, disabled:thingStatus.disabled, devices:devices.devices} );
+                    }else{
+                        callback(err, null);
+                    }
+                });
+            } else {
+                callback(err, null);
+            }
+        });
+    }
+
+
+}
+
+module.exports.validateAndCreateObservations = function (deviceId, observations, callback) {
+
+    validateAndUpdateDeviceObservations(deviceId, observations, function (err, validatedObservations) {
+        if (err){
+            err.message = "Unprocessable observation " + (err.observation ? err.observation + " " : "")  + "for a device " + deviceId + " due to " + err.message;
+            callback(err,null);
+        } else{
+            createObservations(validatedObservations,callback);
+        }
+    });
+
+};
+
+module.exports.checkIfValid = function (deviceId, observation, callback) {
+
+
+    validateAndUpdateDeviceObservations(deviceId, [observation], function (err, validatedObservations,deviceStatus) {
+        if (err){
+            callback(err,null);
+        } else{
+            callback(null,{authorized:true,authInfo:deviceStatus});
+        }
+    });
+};
+
+
+module.exports.validateAndCreateThingObservations = function (thingId, observations, callback) {
+
+    var validatedObservationsList={};
+    getThingStatus(thingId,function(err,associatedDevices){
+       if(!err){
+           async.eachOf(observations, function (deviceObservations,deviceId ,callbackfunction) {
+               validateThingObservations(thingId,associatedDevices, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
+                   validatedObservationsList[deviceId]=validatedDeviceObservations;
+                   callbackfunction(err);
+               });
+           }, function (err) {
+                if(!err){
+                    var createdObservationsList={}
+                    async.eachOf(validatedObservationsList, function (deviceObservations,deviceId ,callbackfunction) {
+                        validateThingObservations(thingId,associatedDevices, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
+                            createObservations(validatedObservations,function(err,crestedObservations){
+                                createdObservationsList[deviceId]=crestedObservations;
+                                callbackfunction(err);
+                            });
+
+                        });
+                    }, function (err) {
+                        if(!err){
+                            callback(null,createdObservationsList);
+                        }else{
+                            callback(err,null)
+                        }
+                    });
+                }else{
+                    callback(err,null)
+                }
+           });
+       } else{
+           callback(err,null);
+       }
+    });
+
 };

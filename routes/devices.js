@@ -57,6 +57,11 @@ router.post('/:id/actions/enable',[authorisationManager.checkToken],function(req
   devicesHandler.disableEnableDevice(req,res,next);
 });
 
+router.post('/:id/actions/sendObservations', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observations"]), function(req, res, next) {
+  devicesHandler.createObservations(req, res, next);
+});
+
+// </Actions>
 
 /* Create devices */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {

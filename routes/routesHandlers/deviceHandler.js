@@ -24,6 +24,8 @@
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
+var observationUtility=require('./handlerUtility/observationUtility');
+
 
 
 // Begin Macro
@@ -508,5 +510,16 @@ module.exports.deleteDevice = function (req, res, next) {
 
     deviceUtility.deleteDevice(id,function(err,deletedDevice){
         res.httpResponse(err,null,deletedDevice);
+    });
+};
+
+
+
+
+//todo set documentation
+module.exports.createObservations = function (req, res, next) {
+    var id = req.params.id;
+    observationUtility.validateAndCreateObservations(id,req.body.observations,function(err, observations){
+        res.httpResponse(err,200,observations);
     });
 };

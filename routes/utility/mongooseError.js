@@ -34,6 +34,12 @@ function badRequestError(res,err,message,printError){
     res.boom.badRequest(message);
 }
 
+function unprocessableError(res,err,message,printError){
+    message=err.message || message || "The server cannot or will not process the request due to semantic errors";
+    if(printError) errorLog.printErrorLog("mongooseError.js " + message);
+    res.boom.badData(message);
+}
+
 
 function conflictError(res,err,message){
     message=err.message || message || "The request could not be processed because of conflict in the current state of the resource";
@@ -94,23 +100,29 @@ exports.handleError= function(res,err){
         case "StrictModeError":
             badRequestError(res,err," Thrown when you pass a field not in schema and strict mode is set to throw");
             break;
+        case "BadRequestError":
+            badRequestError(res,err," The server cannot or will not process the request due to an apparent client error");
+            break;
         case "ConflictError":
             conflictError(res,err," Thrown The request could not be processed because of conflict in the current state of the resource");
             break;
         case "outOfRangeError":
-            badRequestError(res,err,"Value Out of Range",false);
+            unprocessableError(res,err,"Value Out of Range",false);
+            break;
+        case "unprocessableError":
+            unprocessableError(res,err,"The server cannot or will not process the request due to semantic errors",false);
             break;
         case "DeviceTypeError":
-            badRequestError(res,err,"Not valid for tis device Type",false);
+            unprocessableError(res,err,"Not valid for tis device Type",false);
             break;
         case "DismissedError":
-            badRequestError(res,err,"Dismissed thing/device",false);
+            unprocessableError(res,err,"Dismissed thing/device",false);
             break;
         case "DisabledError":
-            badRequestError(res,err,"Disabled thing/device",false);
+            unprocessableError(res,err,"Disabled thing/device",false);
             break;
         case "NotExistError":
-            badRequestError(res,err,"Not available thing/device",false);
+            unprocessableError(res,err,"Not available thing/device",false);
             break;
         default:
             handleOtherErrors(res,err);

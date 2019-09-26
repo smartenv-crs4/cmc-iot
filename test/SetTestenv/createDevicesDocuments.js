@@ -30,7 +30,7 @@ var deviceTypeDocuments=require('./createDeviceTypesDocuments');
 module.exports.createDocuments=function(numbers,callback){
 
 
-    thingDocuments.createDocuments(1,function(err,thingId){
+    thingDocuments.createDocuments(1,function(err,thingId,vendorId,siteId){
        if(!err){
            deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId,observedPropertyId){
                if(!err){
@@ -50,7 +50,7 @@ module.exports.createDocuments=function(numbers,callback){
                        });
 
                    }, function(err){
-                       callback(err,deviceId,deviceTypeId,observedPropertyId,thingId);
+                       callback(err,deviceId,deviceTypeId,observedPropertyId,thingId,vendorId,siteId);
                    });
                } else{
                    callback(err);

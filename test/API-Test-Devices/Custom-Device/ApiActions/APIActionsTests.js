@@ -22,15 +22,15 @@
 
 
 var should = require('should/should');
-var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
-var Things = require('../../../DBEngineHandler/drivers/thingDriver');
+var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
+var Things = require('../../../../DBEngineHandler/drivers/thingDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/devices";
-var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation");
-var consoleLogError = require('../../Utility/errorLogs');
+var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
+var consoleLogError = require('../../../Utility/errorLogs');
 var async = require('async');
-var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
+var deviceDocuments = require('../../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var deviceId;

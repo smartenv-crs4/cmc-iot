@@ -41,6 +41,21 @@ module.exports.create = function(observation, callback) {
     })
 }
 
+/* Create Observations. */
+module.exports.insertMany = function(observationsArray, callback) {
+    try {
+        observations.insertMany(observationsArray,{ordered:false},function (err, createdObservation) {
+            //TODO: Remove
+            console.log("dsfdsgdskjsahdkjsahdb akfgdsjhfgsbd");
+            callback(err, createdObservation)
+        });
+    }catch (exception) {
+        //TODO: Remove
+        console.log("CATCH CATCH");
+        callback(exception,null);
+    }
+};
+
 
 /* delete Observations. */
 module.exports.deleteMany = function(conditions, options, callback) {
