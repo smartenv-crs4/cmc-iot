@@ -189,80 +189,89 @@ function getDeviceStatus(deviceId,callback){
 
     var redis = false; //TODO: change with redis check
 
-    if (redis) {
-        callback(redis);  // todo change with deviceInfo from Redis
-    } else {
-        // check device info and valid units into database
-        deviceDriver.aggregate([
-            {
-                $match: {_id: deviceDriver.ObjectId(deviceId)}
-            },
-            {
-                $lookup: {
-                    from: 'devicetypes',
-                    localField: 'typeId',
-                    foreignField: '_id',
-                    as: 'deviceType'
+    try {
+        var validDeviceId = deviceDriver.ObjectId(deviceId);
+        if (redis) {
+            callback(redis);  // todo change with deviceInfo from Redis
+        } else {
+            // check device info and valid units into database
+            deviceDriver.aggregate([
+                {
+                    $match: {_id: validDeviceId}
+                },
+                {
+                    $lookup: {
+                        from: 'devicetypes',
+                        localField: 'typeId',
+                        foreignField: '_id',
+                        as: 'deviceType'
+                    }
+
+                },
+                {$unwind: "$deviceType"},
+                {
+                    $lookup: {
+                        from: 'things',
+                        localField: 'thingId',
+                        foreignField: '_id',
+                        as: 'thing'
+                    }
+
+                },
+                {$unwind: "$thing"},
+                {
+                    $lookup: {
+                        from: 'observedproperties',
+                        localField: 'deviceType.observedPropertyId',
+                        foreignField: '_id',
+                        as: 'observedProperty'
+                    }
+
+                },
+                {$unwind: "$observedProperty"},
+                {
+                    $lookup: {
+                        from: 'units',
+                        localField: 'observedProperty._id',
+                        foreignField: 'observedPropertyId',
+                        as: 'units'
+                    }
+
+                },
+                {
+                    $project: {
+                        dismissed: 1,
+                        disabled: 1,
+                        "units._id": 1,
+                        "units.minValue": 1,
+                        "units.maxValue": 1,
+                        "thing.mobile":1,
+                        "thing.siteId":1,
+                        "thing._id":1
+                        // name: 0,
+                        // description: 0,
+                        // thingId: 0,
+                        // typeId: 0,
+                        // deviceType: 0,
+                        // observedProperty:0
+                    }
+                }
+            ], function (err, results) {
+                if(!err){
+                    getDeviceLocation(results[0] || null ,callback);
+                }else{
+                    callback(err);
                 }
 
-            },
-            {$unwind: "$deviceType"},
-            {
-                $lookup: {
-                    from: 'things',
-                    localField: 'thingId',
-                    foreignField: '_id',
-                    as: 'thing'
-                }
-
-            },
-            {$unwind: "$thing"},
-            {
-                $lookup: {
-                    from: 'observedproperties',
-                    localField: 'deviceType.observedPropertyId',
-                    foreignField: '_id',
-                    as: 'observedProperty'
-                }
-
-            },
-            {$unwind: "$observedProperty"},
-            {
-                $lookup: {
-                    from: 'units',
-                    localField: 'observedProperty._id',
-                    foreignField: 'observedPropertyId',
-                    as: 'units'
-                }
-
-            },
-            {
-                $project: {
-                    dismissed: 1,
-                    disabled: 1,
-                    "units._id": 1,
-                    "units.minValue": 1,
-                    "units.maxValue": 1,
-                    "thing.mobile":1,
-                    "thing.siteId":1,
-                    "thing._id":1
-                    // name: 0,
-                    // description: 0,
-                    // thingId: 0,
-                    // typeId: 0,
-                    // deviceType: 0,
-                    // observedProperty:0
-                }
-            }
-        ], function (err, results) {
-            if(!err){
-                getDeviceLocation(results[0] || null ,callback);
-            }else{
-                callback(err);
-            }
-
-        });
+            });
+        }
+    }catch (exception) {
+        var Err = new Error(deviceId + " is a not valid ObjectId");
+        Err.name = "BadRequestError";
+        callback(Err);
     }
+
+   
 
 
 }

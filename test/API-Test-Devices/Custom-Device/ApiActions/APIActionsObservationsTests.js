@@ -394,6 +394,43 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     });
 
 
+
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations [observation not valid due to Device Id is not valid]";
+        it(testType, function (done) {
+
+            var observations=[
+                {
+                    unitId:validUnits.first._id,
+                    value:validUnits.first.maxValue-1
+                }
+            ];
+
+
+            request.post({
+                url: APIURL +'/FakeId/actions/sendObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({observations:observations})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(400);
+                    var results = JSON.parse(body);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.indexOf("is a not valid").should.be.greaterThanOrEqual(0);
+
+                }
+                done();
+            });
+
+
+        });
+    });
+
+
+
     describe(describeMessage, function () {
         var testType="must test API action sendObservations [create Observation]";
         it(testType, function (done) {
