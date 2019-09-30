@@ -184,7 +184,7 @@ describe('POST /deviceTypes/:id/actions/addDomains', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql("body fields 'domains' missing");
+                    results.message.should.be.eql("body fields 'domains' missing or empty");
                 }
                 done();
             });

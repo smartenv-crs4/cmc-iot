@@ -244,7 +244,8 @@ function getDeviceStatus(deviceId,callback){
                     "units.minValue": 1,
                     "units.maxValue": 1,
                     "thing.mobile":1,
-                    "thing.siteId":1
+                    "thing.siteId":1,
+                    "thing._id":1
                     // name: 0,
                     // description: 0,
                     // thingId: 0,
@@ -268,26 +269,34 @@ function getDeviceStatus(deviceId,callback){
 
 
 
-function validateAndUpdateDeviceObservations(deviceId,observations,callback){
+function validateAndUpdateDeviceObservations(thingId,deviceId,observations,callback){
 
     getDeviceStatus(deviceId,function(err,deviceStatus){
         if(!err){
 
-            var updatedObservations=[];
+            if(thingId && thingId!=deviceStatus.thing._id){
+                var Err=new Error("Unprocessable request due to device '" + deviceId + "' is not associated to thing '" + thingId + "'");
+                Err.name = "unprocessableError";
+                callback(Err);
+            }else{
+                var updatedObservations=[];
 
-            async.each(observations, function (observation, callbackfunction) {
-                validateAndUpdateObservationContent(deviceId, observation, deviceStatus, function (err, validationResults) {
-                    if (err){
-                        err.observation=JSON.stringify(observation);
-                    } else{
-                        updatedObservations.push(validationResults.updatedObservation);
-                    }
-                    callbackfunction(err);
+                async.each(observations, function (observation, callbackfunction) {
+                    validateAndUpdateObservationContent(deviceId, observation, deviceStatus, function (err, validationResults) {
+                        if (err){
+                            err.observation=JSON.stringify(observation);
+                        } else{
+                            updatedObservations.push(validationResults.updatedObservation);
+                        }
+                        callbackfunction(err);
 
+                    });
+                }, function (err) {
+                    callback(err,updatedObservations,deviceStatus);
                 });
-            }, function (err) {
-                callback(err,updatedObservations,deviceStatus);
-            });
+            }
+
+
         }else{
             err.observation=null;
             callback(err);
@@ -300,7 +309,38 @@ function validateAndUpdateDeviceObservations(deviceId,observations,callback){
 
 
 
+function restoreDeviceObservationsStatus(observationsToDelete,callback){
 
+    if (observationsToDelete.length > 0) {
+        var deleteList = _.map(observationsToDelete, function (obs) {
+            return obs._id;
+        });
+
+        //TODO: Try to handle data inconsistent if deletion is not completed
+        observationsDriver.deleteMany({_id: {"$in": deleteList}}, function (errDelete) {
+            if (errDelete)
+                callback(new Error("Observations: inconsistent data due to error in delete invalid observations--> " + observationsToDelete), null);
+            else callback(null);
+        });
+    } else {
+        callback(null);
+    }
+}
+
+
+
+function restoreThingsObservationsStatus(observationsToDelete,callback){
+
+    var observations=[];
+    async.each(observationsToDelete, function (observation, clbFun) {
+        observations=observations.concat(observation);
+       clbFun();
+    }, function (err) {
+        restoreDeviceObservationsStatus(observations,function(errDeleteDevObs){
+            callback(errDeleteDevObs);
+        });
+    });
+}
 
 
 function createObservations(observations,callback){
@@ -315,20 +355,14 @@ function createObservations(observations,callback){
         if (!err) {
             callback(null, createdResourcesId);
         } else {
-            if (createdResourcesId.length > 0) {
-                var observationsToDelete = _.map(createdResourcesId, function (obs) {
-                    return obs._id
-                });
 
-                //TODO: Try to handle data inconsistent if deletion is not completed
-                observationsDriver.deleteMany({_id: {"$in": observationsToDelete}}, function (errDelete) {
-                    if (errDelete)
-                        callback(new Error("Observations: inconsistent data due to error in delete invalid observations--> " + observationsToDelete), null);
-                    else callback(err, null);
-                });
-            } else {
-                callback(err, null);
-            }
+            restoreDeviceObservationsStatus(createdResourcesId,function(errorInRestore){
+                if(errorInRestore){
+                    callback(errorInRestore,null);
+                }else{
+                    callback(err,null);
+                }
+            });
         }
     });
 }
@@ -337,18 +371,20 @@ function createObservations(observations,callback){
 
 function validateThingObservations(thingId, thingStatus,deviceId,observations,callback){
 
-    if(thingStatus.disabled){
-        Err = new Error("The thing was removed from available devices/things.");
-        Err.name = "DismissedError";
-        callback(Err)
-    }else{
-        if(thingStatus.disabled){
-            Err = new Error("The thing was disable. It must be enabled to set observations.");
-            Err.name = "DisabledError";
+
+    if(thingStatus){
+        if(thingStatus.dismissed){
+            Err = new Error("The thing '" +thingId + "' was removed from available devices/things.");
+            Err.name = "DismissedError";
             callback(Err)
         }else{
-            if(thingStatus.devices && thingStatus.devices.indexOf(deviceId)>=0){ // it is a thing device
-                validateAndUpdateDeviceObservations(deviceId, observations, function (err, validatedObservations) {
+            if(thingStatus.disabled){
+                Err = new Error("The thing '" +thingId + "' was disable. It must be enabled to set observations.");
+                Err.name = "DisabledError";
+                callback(Err)
+            }else{
+
+                validateAndUpdateDeviceObservations(thingId,deviceId, observations, function (err, validatedObservations) {
                     if (err){
                         err.message = "Unprocessable observation " + (err.observation ? err.observation + " " : "")  + "for a device " + deviceId + " due to " + err.message;
                         callback(err,null);
@@ -357,13 +393,14 @@ function validateThingObservations(thingId, thingStatus,deviceId,observations,ca
                     }
                 });
 
-            }else{ // it isn't a thing device
-                var Err=new Error("Unprocessable request due to device '" + deviceId + "' is not associated to thing '" + thingId + "'");
-                Err.name = "unprocessableError";
-                callback(Err);
             }
         }
+    }else{
+        Err = new Error("The thing '" +thingId + "' not exist.");
+        Err.name = "DismissedError";
+        callback(Err)
     }
+
 
 
 }
@@ -378,13 +415,7 @@ function getThingStatus(thingId,callback){
     } else {
         thingDriver.findById(thingId, "disabled dismissed", null, function (err, thingStatus) {
             if (!err) {
-                deviceDriver.findAll({thingId: thingId}, "_id", null, function (err, devices) {
-                    if(!err) {
-                        callback(null, {dismissed:thingStatus.dismissed, disabled:thingStatus.disabled, devices:devices.devices} );
-                    }else{
-                        callback(err, null);
-                    }
-                });
+               callback(null,thingStatus);
             } else {
                 callback(err, null);
             }
@@ -396,7 +427,7 @@ function getThingStatus(thingId,callback){
 
 module.exports.validateAndCreateObservations = function (deviceId, observations, callback) {
 
-    validateAndUpdateDeviceObservations(deviceId, observations, function (err, validatedObservations) {
+    validateAndUpdateDeviceObservations(null,deviceId, observations, function (err, validatedObservations) {
         if (err){
             err.message = "Unprocessable observation " + (err.observation ? err.observation + " " : "")  + "for a device " + deviceId + " due to " + err.message;
             callback(err,null);
@@ -410,7 +441,7 @@ module.exports.validateAndCreateObservations = function (deviceId, observations,
 module.exports.checkIfValid = function (deviceId, observation, callback) {
 
 
-    validateAndUpdateDeviceObservations(deviceId, [observation], function (err, validatedObservations,deviceStatus) {
+    validateAndUpdateDeviceObservations(null,deviceId, [observation], function (err, validatedObservations,deviceStatus) {
         if (err){
             callback(err,null);
         } else{
@@ -421,31 +452,34 @@ module.exports.checkIfValid = function (deviceId, observation, callback) {
 
 
 module.exports.validateAndCreateThingObservations = function (thingId, observations, callback) {
-
     var validatedObservationsList={};
-    getThingStatus(thingId,function(err,associatedDevices){
+    getThingStatus(thingId,function(err,thingStatus){
        if(!err){
            async.eachOf(observations, function (deviceObservations,deviceId ,callbackfunction) {
-               validateThingObservations(thingId,associatedDevices, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
+               validateThingObservations(thingId,thingStatus, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
                    validatedObservationsList[deviceId]=validatedDeviceObservations;
                    callbackfunction(err);
                });
            }, function (err) {
                 if(!err){
-                    var createdObservationsList={}
-                    async.eachOf(validatedObservationsList, function (deviceObservations,deviceId ,callbackfunction) {
-                        validateThingObservations(thingId,associatedDevices, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
-                            createObservations(validatedObservations,function(err,crestedObservations){
-                                createdObservationsList[deviceId]=crestedObservations;
+                    var createdObservationsList={};
+                    async.eachOfSeries(validatedObservationsList, function (deviceObservations,deviceId ,callbackfunction) {
+                            createObservations(deviceObservations,function(err,crestedObservations){
+                                if(!err)
+                                    createdObservationsList[deviceId]=crestedObservations;
                                 callbackfunction(err);
                             });
-
-                        });
                     }, function (err) {
                         if(!err){
                             callback(null,createdObservationsList);
                         }else{
-                            callback(err,null)
+                            restoreThingsObservationsStatus(createdObservationsList,function(errRestore){
+                                if(errRestore){
+                                    callback(errRestore,null);
+                                }else{
+                                    callback(err,null)
+                                }
+                            });
                         }
                     });
                 }else{

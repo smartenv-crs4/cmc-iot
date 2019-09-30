@@ -153,7 +153,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql("body fields 'observations' missing");
+                    results.message.should.be.eql("body fields 'observations' missing or empty");
 
                 }
                 done();
@@ -523,7 +523,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql("body fields 'observations' missing");
+                    results.message.should.be.eql("body fields 'observations' missing or empty");
                 }
                 done();
             });

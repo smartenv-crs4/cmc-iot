@@ -22,17 +22,17 @@
 
 
 var should = require('should/should');
-var Things = require('../../../DBEngineHandler/drivers/thingDriver');
-var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
-var disabledDevices = require('../../../DBEngineHandler/drivers/disabledDeviceDriver');
+var Things = require('../../../../DBEngineHandler/drivers/thingDriver');
+var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
+var disabledDevices = require('../../../../DBEngineHandler/drivers/disabledDeviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
-var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation");
-var consoleLogError = require('../../Utility/errorLogs');
+var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
+var consoleLogError = require('../../../Utility/errorLogs');
 var async = require('async');
-var thingDocuments = require('../../SetTestenv/createThingsDocuments');
-var deviceDocuments = require('../../SetTestenv/createDevicesDocuments');
+var thingDocuments = require('../../../SetTestenv/createThingsDocuments');
+var deviceDocuments = require('../../../SetTestenv/createDevicesDocuments');
 
 var webUiToken;
 var thingId;
@@ -484,7 +484,7 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                     }, function (err) {
                         var bodyParams = {
                             searchFilters: {
-                                name: [results.things[0].name, results.things[1].name]
+                                name: [results.things[1].name, results.things[2].name]
                             }
                         };
                         request.post({

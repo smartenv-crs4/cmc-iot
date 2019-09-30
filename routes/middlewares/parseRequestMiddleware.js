@@ -187,7 +187,6 @@ exports.validateBody = function (mandatoryFields) {
 
     return(
         function (req,res,next){
-
             if (!req.body || _.isEmpty(req.body)){
                 return res.boom.badRequest('body missing');
             }else{
@@ -197,7 +196,7 @@ exports.validateBody = function (mandatoryFields) {
                 });
 
                 if(noMandatoryFields.length>0){
-                    return res.boom.badRequest("body fields '" + noMandatoryFields.slice(0,-2) + "' missing");
+                    return res.boom.badRequest("body fields '" + noMandatoryFields.slice(0,-2) + "' missing or empty");
                 }else {
                     next();
                 }
