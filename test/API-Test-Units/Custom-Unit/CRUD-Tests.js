@@ -30,7 +30,7 @@ var APIURL_observations = conf.testConfig.testUrl + ":" + conf.microserviceConf.
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var unitDocuments = require('../../SetTestenv/createUnitsDocuments')
-
+var should = require('should/should');
 var webUiToken
 var unitId
 
@@ -60,16 +60,16 @@ describe('Units API Test - [GENERAL TESTS]', function() {
 
 
     beforeEach(function(done) {
-        unitDocuments.createDocuments(100, function(err, newUnitId) {
+        unitDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Unit generalTest.js - beforeEach - Units.create ---> " + err)
-            unitId = newUnitId
+            unitId = ForeignKeys.unitId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Units.deleteMany({}, function(err, elm) {
+        unitDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Unit generalTest.js - afterEach - deleteMany ---> " + err)
             done()
         })
@@ -394,7 +394,10 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                             //Search Unit to confirm that the it hasn't been deleted
                             var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                             request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                                if (error){
+                                    consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                                    throw (error);
+                                }
                                 else {
                                     var resultsUndeletedUnit = JSON.parse(body)
                                     response.statusCode.should.be.equal(200)
@@ -402,8 +405,12 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                                     resultsUndeletedUnit.should.have.property("symbol")
                                     resultsUndeletedUnit.should.have.property("minValue")
                                     resultsUndeletedUnit.should.have.property("maxValue")
+                                    Observation.deleteMany({},function(err){
+                                        should(err).be.null();
+                                        done();
+                                    });
                                 }
-                                done()
+
                             })
                         })
                     }

@@ -46,7 +46,7 @@ describe('Domains API Test - [CRUD-TESTS]', function () {
     });
 
     after(function (done) {
-        Domains.deleteMany({}, function (err,elm) {
+        domainDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("Domain CRUD-Tests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Domain CRUD-Tests.js - after - resetAuthMsStatus ---> " + err);
@@ -58,16 +58,16 @@ describe('Domains API Test - [CRUD-TESTS]', function () {
 
 
     beforeEach(function (done) {
-        domainDocuments.createDocuments(100,function(err,newDomainId){
+        domainDocuments.createDocuments(100,function(err,ForeignKeys){
             if (err) consoleLogError.printErrorLog("Domain CRUD-Tests.js - beforeEach - Domains.create ---> " + err);
-            domainId=newDomainId;
+            domainId=ForeignKeys.domainId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Domains.deleteMany({}, function (err, elm) {
+        domainDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Domain CRUD-Tests.js - afterEach - deleteMany ---> " + err);
             done();
         });

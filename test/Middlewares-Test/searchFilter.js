@@ -25,6 +25,7 @@ var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
+var should = require('should/should');
 
 describe('Search Filter Test', function(){
 
@@ -46,7 +47,7 @@ describe('Search Filter Test', function(){
 
 
   beforeEach(function(done){
-      deviceDocuments.createDocuments(100,function(err,newDeviceId){
+      deviceDocuments.createDocuments(100,function(err,foreignKey){
           if (err) consoleLogError.printErrorLog("Device searchFilterTests middleware" + err);
           done();
       });
@@ -54,7 +55,7 @@ describe('Search Filter Test', function(){
 
 
   afterEach(function(done){
-      Device.deleteMany(function(err, p){
+      deviceDocuments.deleteDocuments(function(err){
           if(err) throw err;
           done();
       });

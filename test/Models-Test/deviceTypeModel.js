@@ -49,15 +49,15 @@ describe('DeviceTypes Model Test', function() {
             if (err) throw err
             else done()
         })
-    })
+    });
 
 
     afterEach(function(done) {
-        DeviceType.deleteMany(function(err, p) {
-            if (err) throw err
+        deviceTypeDocuments.deleteDocuments(function(err) {
+            if (err) throw err;
             done()
         })
-    })
+    });
 
 
     describe('findAll({skip:2, limit:30})', function() {

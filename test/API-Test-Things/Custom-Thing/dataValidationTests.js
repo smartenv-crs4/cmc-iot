@@ -63,7 +63,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
 
 
     afterEach(function (done) {
-        Things.deleteMany({}, function (err, elm) {
+        thingDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });

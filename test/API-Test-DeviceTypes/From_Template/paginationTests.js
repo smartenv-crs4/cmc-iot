@@ -43,7 +43,7 @@ describe('DeviceTypes API Test - [PAGINATION TESTS]', function() {
 
 
     after(function(done) {
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        deviceTypeDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("DeviceType paginationTests.js - after - deleteMany ---> " + err)
             commonFunctionTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("DeviceType paginationTests.js - after - resetAuthMsStatus ---> " + err)
@@ -54,16 +54,16 @@ describe('DeviceTypes API Test - [PAGINATION TESTS]', function() {
 
 
     beforeEach(function(done) {
-        deviceTypeDocuments.createDocuments(100, function(err, newDeviceTypeId) {
+        deviceTypeDocuments.createDocuments(100, function(err, deviceTypeDocuments) {
             if (err) consoleLogError.printErrorLog("DeviceType paginationTests.js - beforeEach - DeviceTypes.create ---> " + err)
-            deviceTypeId = newDeviceTypeId
+            deviceTypeId = deviceTypeDocuments.deviceTypeId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        deviceTypeDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("DeviceType paginationTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

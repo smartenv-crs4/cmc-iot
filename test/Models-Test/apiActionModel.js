@@ -52,7 +52,7 @@ describe('ApiActions Model Test', function () {
 
 
     afterEach(function (done) {
-        ApiAction.deleteMany(function (err, p) {
+        apiActionDocuments.deleteDocuments(function (err) {
             if (err) throw err;
             done();
         });

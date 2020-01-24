@@ -64,7 +64,7 @@ describe('Units API Test - [DATA VALIDATION]', function () {
 
 
     afterEach(function(done) {
-        Units.deleteMany({}, function(err, elm) {
+        unitDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err)
             done()
         })

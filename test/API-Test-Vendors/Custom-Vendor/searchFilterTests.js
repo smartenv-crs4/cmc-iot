@@ -49,7 +49,7 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
     after(function(done) {
         this.timeout(5000)
-        Vendors.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - after - resetAuthMsStatus ---> " + err)
@@ -60,16 +60,16 @@ describe('Vendors API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newVendorId) {
+        vendorDocuments.createDocuments(100, function(err, foreignKey) {
             if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - beforeEach - Vendors.create ---> " + err)
-            vendorId = newVendorId
+            vendorId = foreignKey.vendorId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err) {
             if (err) consoleLogError.printErrorLog("Vendor searchFilterTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

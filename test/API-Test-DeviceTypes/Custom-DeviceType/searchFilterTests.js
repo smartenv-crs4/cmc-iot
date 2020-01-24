@@ -49,7 +49,7 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
 
     after(function(done) {
         this.timeout(5000)
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        deviceTypeDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("DeviceType searchFilterTests.js - after - deleteMany ---> " + err)
             commonFunctioTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("DeviceType searchFilterTests.js - after - resetAuthMsStatus ---> " + err)
@@ -60,16 +60,16 @@ describe('DeviceTypes API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        deviceTypeDocuments.createDocuments(100, function(err, newDeviceTypeId) {
+        deviceTypeDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("DeviceType searchFilterTests.js - beforeEach - DeviceTypes.create ---> " + err)
-            deviceTypeId = newDeviceTypeId
+            deviceTypeId = ForeignKeys.deviceTypeId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        DeviceTypes.deleteMany({}, function(err, elm) {
+        deviceTypeDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("DeviceType searchFilterTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

@@ -27,6 +27,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devic
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
+var should = require('should/should');
 
 var webUiToken;
 
@@ -41,7 +42,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     });
 
     after(function (done) {
-        Devices.deleteMany({}, function (err,elm) {
+        deviceDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -62,7 +63,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
+        deviceDocuments.deleteDocuments( function (err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });

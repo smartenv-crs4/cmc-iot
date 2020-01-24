@@ -53,7 +53,7 @@ describe('Vendors Model Test', function() {
 
 
     afterEach(function(done) {
-        Vendor.deleteMany(function(err, p) {
+        vendorDocuments.deleteDocuments(function(err) {
             if (err) throw err
             done()
         })

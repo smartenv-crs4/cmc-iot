@@ -28,7 +28,7 @@ var deviceTypeDocuments = require('./createDeviceTypesDocuments');
 
 module.exports.createDocuments=function(numbers,callback){
 
-    deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId){
+    deviceTypeDocuments.createDocuments(1,function(err,foreignKey){
         if(!err){
             var range = _.range(numbers);
             var apiActionId;
@@ -39,7 +39,7 @@ module.exports.createDocuments=function(numbers,callback){
                 ApiAction.create({
                     actionName:"name" + e,
                     bodyPrototype:{ field:e},
-                    deviceTypeId:deviceTypeId,
+                    deviceTypeId:foreignKey.deviceTypeId,
 
                 },function(err,newApiAction){
                     if (err) throw err;
@@ -48,7 +48,7 @@ module.exports.createDocuments=function(numbers,callback){
                 });
 
             }, function(err){
-                callback(err,apiActionId,deviceTypeId);
+                callback(err,{apiActionId:apiActionId,deviceTypeId:foreignKey.deviceTypeId});
             });
 
         } else{

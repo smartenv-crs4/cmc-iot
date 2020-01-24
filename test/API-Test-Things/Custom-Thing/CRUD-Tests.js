@@ -47,7 +47,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
     });
 
     after(function (done) {
-        Things.deleteMany({}, function (err,elm) {
+        thingDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("Thing CRUD-Tests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Thing CRUD-Tests.js - after - resetAuthMsStatus ---> " + err);
@@ -59,16 +59,16 @@ describe('Things API Test - [CRUD-TESTS]', function () {
 
 
     beforeEach(function (done) {
-        thingDocuments.createDocuments(100,function(err,newThingId){
+        thingDocuments.createDocuments(100,function(err,ForeignKeys){
             if (err) consoleLogError.printErrorLog("Thing CRUD-Tests.js - beforeEach - Things.create ---> " + err);
-            thingId=newThingId;
+            thingId=ForeignKeys.thingId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Things.deleteMany({}, function (err, elm) {
+        thingDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing CRUD-Tests.js - afterEach - deleteMany ---> " + err);
             done();
         });

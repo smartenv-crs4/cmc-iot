@@ -42,7 +42,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
     });
 
     after(function (done) {
-        ApiActions.deleteMany({}, function (err,elm) {
+        apiActionDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -63,7 +63,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
 
 
     afterEach(function (done) {
-        ApiActions.deleteMany({}, function (err, elm) {
+        apiActionDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });

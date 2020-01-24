@@ -54,16 +54,16 @@ describe('ObservedProperties API Test - [PAGINATION TESTS]', function() {
 
 
     beforeEach(function(done) {
-        observedPropertyDocuments.createDocuments(100, function(err, newObservedPropertyId) {
+        observedPropertyDocuments.createDocuments(100, function(err, foreignKeys) {
             if (err) consoleLogError.printErrorLog("ObservedProperty paginationTests.js - beforeEach - ObservedProperties.create ---> " + err)
-            observedPropertyId = newObservedPropertyId
+            observedPropertyId = foreignKeys.observedPropertyId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        ObservedProperties.deleteMany({}, function(err, elm) {
+        observedPropertyDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("ObservedProperty paginationTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

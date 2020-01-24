@@ -62,17 +62,17 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100, function (err, newDeviceId,dvTypeId,obsId,thingId) {
+        deviceDocuments.createDocuments(100, function (err, deviceForeignKeys) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Devices.create ---> " + err);
-            deviceId = newDeviceId;
-            associatedThingId=thingId;
+            deviceId = deviceForeignKeys.deviceId;
+            associatedThingId=deviceForeignKeys.thingId;
            done();
         });
     });
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
+        deviceDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
           done();
         });

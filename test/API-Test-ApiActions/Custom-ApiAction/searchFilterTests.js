@@ -48,7 +48,7 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     after(function (done) {
         this.timeout(5000);
-        ApiActions.deleteMany({}, function (err,elm) {
+        apiActionDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("ApiAction searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("ApiAction searchFilterTests.js - after - resetAuthMsStatus ---> " + err);
@@ -61,16 +61,16 @@ describe('ApiActions API Test - [SEARCH FILTERS]', function () {
 
     beforeEach(function (done) {
 
-        apiActionDocuments.createDocuments(100,function(err,newApiActionId){
+        apiActionDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("ApiAction searchFilterTests.js - beforreEach - ApiActions.create ---> " + err);
-            apiActionId=newApiActionId;
+            apiActionId=foreignKey.apiActionId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        ApiActions.deleteMany({}, function (err, elm) {
+        apiActionDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("ApiAction searchFilterTests.js - afterEach - deleteMany ---> " + err);
             done();
         });

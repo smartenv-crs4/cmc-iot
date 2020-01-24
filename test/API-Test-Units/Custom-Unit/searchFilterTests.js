@@ -60,16 +60,16 @@ describe('Units API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        unitDocuments.createDocuments(100, function(err, newUnitId) {
+        unitDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Unit searchFilterTests.js - beforeEach - Unit.create ---> " + err)
-            unitId = newUnitId
+            unitId = ForeignKeys.unitId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Units.deleteMany({}, function(err, elm) {
+        unitDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Unit searchFilterTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

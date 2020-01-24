@@ -140,8 +140,9 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     if(!results.error) {
                         conf.testConfig.myWebUITokenToSignUP = results.apiKey.token;
                         conf.testConfig.webUiID=results.userId;
-                    }
-                    callback(null,"five");
+                        callback(null,"four");
+                    }else throw(results.error);
+
                 }
             });
 
@@ -160,8 +161,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     if(!results.error) {
                         conf.testConfig.adminToken = results.apiKey.token;
                         conf.testConfig.adminID=results.userId;
-                    }
-                    callback(null,"five");
+                        callback(null,"five");
+                    }else throw(results.error);
                 }
             });
 
@@ -187,7 +188,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
 
             },function(err){
                 conf.testConfig.AuthRoles=roles;
-                callback(null,"four");
+                callback(null,"six");
             });
 
         }

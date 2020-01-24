@@ -25,6 +25,7 @@ var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
 var Site = require('../../DBEngineHandler/drivers/siteDriver')
 var siteDocuments = require('../SetTestenv/createSitesDocuments')
+var should = require('should/should');
 
 
 describe('Site Model Test', function() {
@@ -52,7 +53,7 @@ describe('Site Model Test', function() {
 
 
     afterEach(function(done) {
-        Site.deleteMany(function(err, p) {
+        siteDocuments.deleteDocuments(function(err, p) {
             if (err) throw err
             done()
         })

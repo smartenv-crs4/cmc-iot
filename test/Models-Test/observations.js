@@ -52,7 +52,7 @@ describe('Observations Model Test', function () {
 
 
     afterEach(function (done) {
-        Observation.deleteMany(function (err, p) {
+        observationDocuments.deleteDocuments(function (err) {
             if (err) throw err;
             done();
         });

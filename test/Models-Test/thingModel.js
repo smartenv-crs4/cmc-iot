@@ -55,7 +55,7 @@ describe('Things Model Test', function(){
 
 
   afterEach(function(done){
-      Thing.deleteMany(function(err, p){
+      thingDocuments.deleteDocuments(function(err){
           if(err) throw err;
           done();
       });

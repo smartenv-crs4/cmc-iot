@@ -53,16 +53,16 @@ describe('Things API Test - [PAGINATION TESTS]', function () {
 
     beforeEach(function (done) {
 
-        thingDocuments.createDocuments(100,function(err,newThingId){
+        thingDocuments.createDocuments(100,function(err,foreignKeys){
             if (err) consoleLogError.printErrorLog("Thing paginationTests.js - beforeEach - Things.create ---> " + err);
-            thingId=newThingId;
+            thingId=foreignKeys.thingId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Things.deleteMany({}, function (err, elm) {
+        thingDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing paginationTests.js - afterEach - deleteMany ---> " + err);
             done();
         });

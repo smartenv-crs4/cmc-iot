@@ -45,7 +45,7 @@ module.exports.createDocuments = function(numbers, callback) {
                 cb()
             })
         }, function(err) {
-            callback(err, unitId)
+            callback(err, {unitId:unitId})
         })
     }
     catch (e) {

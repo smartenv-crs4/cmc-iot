@@ -43,7 +43,7 @@ describe('Units API Test - [PAGINATION TESTS]', function() {
 
 
     after(function(done) {
-        Units.deleteMany({}, function(err, elm) {
+        unitDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Unit paginationTests.js - after - deleteMany ---> " + err)
             commonFunctionTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("Unit paginationTests.js - after - resetAuthMsStatus ---> " + err)
@@ -54,16 +54,16 @@ describe('Units API Test - [PAGINATION TESTS]', function() {
 
 
     beforeEach(function(done) {
-        unitDocuments.createDocuments(100, function(err, newUnitId) {
+        unitDocuments.createDocuments(100, function(err, foreignKey) {
             if (err) consoleLogError.printErrorLog("Unit paginationTests.js - beforeEach - Units.create ---> " + err)
-            unitId = newUnitId
+            unitId = foreignKey.unitId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Units.deleteMany({}, function(err, elm) {
+        unitDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Unit paginationTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

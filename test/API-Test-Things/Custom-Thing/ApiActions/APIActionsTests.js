@@ -64,10 +64,10 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     beforeEach(function (done) {
 
         // 99 + 1(by Devices =100
-        thingDocuments.createDocuments(99, function (err, newThingId) {
+        thingDocuments.createDocuments(99, function (err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Things.create ---> " + err);
-            thingId = newThingId;
-            deviceDocuments.createDocuments(100, function (err, newThingId) {
+            thingId = ForeignKeys.thingId;
+            deviceDocuments.createDocuments(100, function (err, newThingIdFK) {
                 if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Device.create ---> " + err);
                 disabledDevices.deleteMany({},function(err){
                     if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - beforreEach - Device.create ---> " + err);
@@ -79,9 +79,9 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
 
 
     afterEach(function (done) {
-        Things.deleteMany({}, function (err, elm) {
+        thingDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            Devices.deleteMany({}, function (err, elm) {
+            deviceDocuments.deleteDocuments(function (err, elm) {
                 if (err) consoleLogError.printErrorLog("Thing APIActionsTests.js - afterEach - deleteMany ---> " + err);
                 done();
             });

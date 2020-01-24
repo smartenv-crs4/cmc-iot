@@ -43,7 +43,7 @@ describe('ApiActions API Test - [PAGINATION TESTS]', function () {
     });
 
     after(function (done) {
-        ApiActions.deleteMany({}, function (err,elm) {
+        apiActionDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -56,16 +56,16 @@ describe('ApiActions API Test - [PAGINATION TESTS]', function () {
 
     beforeEach(function (done) {
 
-        apiActionDocuments.createDocuments(100,function(err,newApiActionId){
+        apiActionDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - beforeEach - ApiActions.create ---> " + err);
-            apiActionId=newApiActionId;
+            apiActionId=foreignKey.apiActionId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        ApiActions.deleteMany({}, function (err, elm) {
+        apiActionDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("ApiAction paginationTests.js - afterEach - deleteMany ---> " + err);
             done();
         });

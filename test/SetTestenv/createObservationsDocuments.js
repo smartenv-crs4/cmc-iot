@@ -32,17 +32,17 @@ module.exports.createDocuments=function(numbers,callback){
     var range = _.range(numbers);
     var observationId;
 
-    deviceCreateDocuments.createDocuments(1,function(err,deviceId){
+    deviceCreateDocuments.createDocuments(1,function(err,deviceForeignKey){
        if(!err){
-           unitCreateDocuments.createDocuments(1,function(err,unitId){
+           unitCreateDocuments.createDocuments(1,function(err,unitForeignKey){
                if(!err){
                    async.each(range, function(e,cb){
 
                        Observation.create({
                            timestamp:new Date().getTime(),
                            value:e,
-                           deviceId:deviceId,
-                           unitId:unitId
+                           deviceId:deviceForeignKey.deviceId,
+                           unitId:unitForeignKey.unitId
                        },function(err,newObservation){
                            if (err) throw err;
                            if(e===0) observationId=newObservation._id;
@@ -50,7 +50,7 @@ module.exports.createDocuments=function(numbers,callback){
                        });
 
                    }, function(err){
-                       callback(err,observationId, deviceId, unitId);
+                       callback(err,{observationId:observationId, deviceId:deviceForeignKey.deviceId, unitId:unitForeignKey.unitId});
                    });
 
                } else{

@@ -48,7 +48,7 @@ describe('Domains API Test - [SEARCH FILTERS]', function () {
 
     after(function (done) {
         this.timeout(5000);
-        Domains.deleteMany({}, function (err,elm) {
+        domainDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("Domain searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Domain searchFilterTests.js - after - resetAuthMsStatus ---> " + err);
@@ -61,16 +61,16 @@ describe('Domains API Test - [SEARCH FILTERS]', function () {
 
     beforeEach(function (done) {
 
-        domainDocuments.createDocuments(100,function(err,newDomainId){
+        domainDocuments.createDocuments(100,function(err,ForeignKeys){
             if (err) consoleLogError.printErrorLog("Domain searchFilterTests.js - beforreEach - Domains.create ---> " + err);
-            domainId=newDomainId;
+            domainId=ForeignKeys.domainId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Domains.deleteMany({}, function (err, elm) {
+        domainDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Domain searchFilterTests.js - afterEach - deleteMany ---> " + err);
             done();
         });

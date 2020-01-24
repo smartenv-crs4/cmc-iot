@@ -35,11 +35,11 @@ module.exports.createDocuments = function(numbers, callback) {
             description: "description" + e
         }, function(err, newObservedProperty) {
             if (err) throw err
-            if (e === 0) observedPropertyId = newObservedProperty._id
+            if (e === 0) observedPropertyId = newObservedProperty._id;
             cb()
         })
     }, function(err) {
-        callback(err, observedPropertyId)
+        callback(err, {observedPropertyId:observedPropertyId});
     })
 
 };

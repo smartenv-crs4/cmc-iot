@@ -61,16 +61,16 @@ describe('Things API Test - [SEARCH FILTERS]', function () {
 
     beforeEach(function (done) {
 
-        thingDocuments.createDocuments(100,function(err,newThingId){
+        thingDocuments.createDocuments(100,function(err,ForeignKeys){
             if (err) consoleLogError.printErrorLog("Thing searchFilterTests.js - beforreEach - Things.create ---> " + err);
-            thingId=newThingId;
+            thingId=ForeignKeys.thingId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Things.deleteMany({}, function (err, elm) {
+        thingDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Thing searchFilterTests.js - afterEach - deleteMany ---> " + err);
             done();
         });

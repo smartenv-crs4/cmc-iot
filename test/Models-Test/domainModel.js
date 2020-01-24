@@ -52,7 +52,7 @@ describe('Domains Model Test', function () {
 
 
     afterEach(function (done) {
-        Domain.deleteMany(function (err, p) {
+        domainDocuments.deleteDocuments(function (err, p) {
             if (err) throw err;
             done();
         });

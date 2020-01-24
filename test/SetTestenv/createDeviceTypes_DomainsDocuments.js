@@ -30,37 +30,83 @@ var deviceTypeDocuments = require('./createDeviceTypesDocuments');
 
 module.exports.createDocuments = function(numbers, callback) {
 
-    // Create Domain
-    domainDocuments.createDocuments(1,function(err,domainId){
-       if(!err){
-           // Create DeviceType
-           deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId){
-               if(!err){
-                   var range = _.range(numbers)
-                   var deviceType_domainTypeId
 
-                   async.each(range, function(e, cb) {
-                       DeviceType_DomainType.create({
-                           deviceTypeId:DeviceType_DomainType.ObjectId(),
-                           domainId: DeviceType_DomainType.ObjectId()
-                       }, function(err, newDeviceType_DomainType) {
-                           if (err) throw err
-                           if (e === 0) deviceType_domainTypeId = newDeviceType_DomainType._id;
-                           cb()
-                       })
-                   }, function(err) {
-                       callback(err, deviceType_domainTypeId,domainId,deviceType_domainTypeId);
-                   })
+    var range = _.range(numbers)
+    var returnValue={};
 
-               } else{
-                   callback(err);
-               }
-           });
-       } else{
-           callback(err);
-       }
-    });
+    async.each(range, function(e, cb) {
+
+        // Create Domain
+        domainDocuments.createDocuments(1,function(err,foreignKeyDomain){
+            if(!err){
+                // Create DeviceType
+                deviceTypeDocuments.createDocuments(1,function(err,foreignKey){
+                    if(!err){
+                        DeviceType_DomainType.create({
+                            deviceTypeId:foreignKey.deviceTypeId,
+                            domainId:foreignKeyDomain.domainId
+                        }, function(err, newDeviceType_DomainType) {
+                            if (err) throw err
+                            if (e === 0){
+                                returnValue={
+                                     deviceType_domainTypeId:newDeviceType_DomainType._id,
+                                    domainId:foreignKeyDomain.domainId,
+                                    deviceTypeId:foreignKey.deviceTypeId
+                                };
+                            }
+                            cb()
+                        })
+
+                    } else{
+                        callback(err);
+                    }
+                });
+            } else{
+                callback(err);
+            }
+        });
+
+    }, function(err) {
+        callback(err, returnValue);
+    })
+
+
+
 };
+//
+// module.exports.createDocuments = function(numbers, callback) {
+//
+//     // Create Domain
+//     domainDocuments.createDocuments(1,function(err,foreignKeyDomain){
+//        if(!err){
+//            // Create DeviceType
+//            deviceTypeDocuments.createDocuments(1,function(err,foreignKey){
+//                if(!err){
+//                    var range = _.range(numbers)
+//                    var deviceType_domainTypeId;
+//
+//                    async.each(range, function(e, cb) {
+//                        DeviceType_DomainType.create({
+//                            deviceTypeId:foreignKey.deviceTypeId,
+//                            domainId:foreignKeyDomain.domainId
+//                        }, function(err, newDeviceType_DomainType) {
+//                            if (err) throw err
+//                            if (e === 0) deviceType_domainTypeId = newDeviceType_DomainType._id;
+//                            cb()
+//                        })
+//                    }, function(err) {
+//                        callback(err, {deviceType_domainTypeId:deviceType_domainTypeId,domainId:foreignKeyDomain.domainId,deviceTypeId:foreignKey.deviceTypeId});
+//                    })
+//
+//                } else{
+//                    callback(err);
+//                }
+//            });
+//        } else{
+//            callback(err);
+//        }
+//     });
+// };
 
 
 module.exports.deleteDocuments=function(callback){

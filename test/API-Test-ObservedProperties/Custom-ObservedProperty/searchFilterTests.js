@@ -60,16 +60,16 @@ describe('ObservedProperties API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newObservedPropertyId) {
+        vendorDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("ObservedProperty searchFilterTests.js - beforeEach - ObservedProperties.create ---> " + err)
-            vendorId = newObservedPropertyId
+            vendorId = ForeignKeys.observedPropertyId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        ObservedProperties.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("ObservedProperty searchFilterTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

@@ -60,16 +60,16 @@ describe('Sites API Test - [SEARCH FILTERS]', function() {
 
 
     beforeEach(function(done) {
-        siteDocuments.createDocuments(100, function(err, newSiteId) {
+        siteDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Site searchFilterTests.js - beforeEach - Sites.create ---> " + err)
-            siteId = newSiteId
+            siteId = ForeignKeys.siteId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Sites.deleteMany({}, function(err, elm) {
+        siteDocuments.deleteDocuments( function(err, elm) {
             if (err) consoleLogError.printErrorLog("Site searchFilterTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

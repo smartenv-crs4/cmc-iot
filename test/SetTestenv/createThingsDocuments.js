@@ -30,9 +30,9 @@ var siteDocuments=require("./createSitesDocuments");
 
 module.exports.createDocuments=function(numbers,callback){
 
-    vendorDocuments.createDocuments(1,function(err,vendorId){
+    vendorDocuments.createDocuments(1,function(err,vendorForeignKey){
        if(!err){
-           siteDocuments.createDocuments(1,function(err,siteId){
+           siteDocuments.createDocuments(1,function(err,siteForeignKey){
                if(!err){
                    var range = _.range(numbers);
                    var thingId;
@@ -43,8 +43,8 @@ module.exports.createDocuments=function(numbers,callback){
                                name: "thingName" + e,
                                description: "thingDescription" + e,
                                ownerId: Thing.ObjectId(),
-                               vendorId: vendorId,
-                               siteId: siteId,
+                               vendorId: vendorForeignKey.vendorId,
+                               siteId: siteForeignKey.siteId,
                                api: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e},
                                direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
                            }, function (err, newThing) {
@@ -54,7 +54,7 @@ module.exports.createDocuments=function(numbers,callback){
                            });
 
                        }, function (err) {
-                           callback(err, thingId,vendorId,siteId);
+                           callback(err, {thingId:thingId,vendorId:vendorForeignKey.vendorId,siteId:siteForeignKey.siteId});
                        });
                    }catch (e) {
                        callback(e);
@@ -75,6 +75,18 @@ module.exports.createDocuments=function(numbers,callback){
 
 module.exports.deleteDocuments=function(callback){
     Thing.deleteMany({},function(err){
-        callback(err);
+        if(!err) {
+            vendorDocuments.deleteDocuments(function (err) {
+                if (!err) {
+                    siteDocuments.deleteDocuments(function (err) {
+                        callback(err);
+                    });
+                } else {
+                    callback(err);
+                }
+            });
+        }else {
+            callback(err);
+        }
     });
 };

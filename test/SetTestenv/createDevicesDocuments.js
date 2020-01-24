@@ -30,9 +30,9 @@ var deviceTypeDocuments=require('./createDeviceTypesDocuments');
 module.exports.createDocuments=function(numbers,callback){
 
 
-    thingDocuments.createDocuments(1,function(err,thingId,vendorId,siteId){
+    thingDocuments.createDocuments(1,function(err,foreignKey){
        if(!err){
-           deviceTypeDocuments.createDocuments(1,function(err,deviceTypeId,observedPropertyId){
+           deviceTypeDocuments.createDocuments(1,function(err,foreignKeyDT){
                if(!err){
                    var range = _.range(numbers);
                    var deviceId;
@@ -41,8 +41,8 @@ module.exports.createDocuments=function(numbers,callback){
                        Device.create({
                            name:"name" + e,
                            description:"description" +e,
-                           thingId:thingId,
-                           typeId:deviceTypeId
+                           thingId:foreignKey.thingId,
+                           typeId:foreignKeyDT.deviceTypeId
                        },function(err,newDevice){
                            if (err) throw err;
                            if(e===0) deviceId=newDevice._id;
@@ -50,7 +50,14 @@ module.exports.createDocuments=function(numbers,callback){
                        });
 
                    }, function(err){
-                       callback(err,deviceId,deviceTypeId,observedPropertyId,thingId,vendorId,siteId);
+                       callback(err,{
+                           deviceId:deviceId,
+                           deviceTypeId:foreignKeyDT.deviceTypeId,
+                           observedPropertyId:foreignKeyDT.observedPropertyId,
+                           thingId:foreignKey.thingId,
+                           vendorId:foreignKey.vendorId,
+                           siteId:foreignKey.siteId
+                       });
                    });
                } else{
                    callback(err);

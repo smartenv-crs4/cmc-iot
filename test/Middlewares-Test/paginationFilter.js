@@ -25,6 +25,7 @@ var async = require('async');
 var db = require("../../DBEngineHandler/models/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
+var should = require('should/should');
 
 describe('Pagination Filter Test', function(){
 
@@ -47,7 +48,7 @@ describe('Pagination Filter Test', function(){
 
   beforeEach(function(done){
 
-      deviceDocuments.createDocuments(100,function(err,newDeviceId){
+      deviceDocuments.createDocuments(100,function(err,foreignKey){
           if (err) consoleLogError.printErrorLog("Pagination Middleware tests ---> " + err);
           done();
       });
@@ -56,7 +57,7 @@ describe('Pagination Filter Test', function(){
 
 
   afterEach(function(done){
-      Device.deleteMany(function(err, p){
+      deviceDocuments.deleteDocuments(function(err, p){
           if(err) throw err;
           done();
       });

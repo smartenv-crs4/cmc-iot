@@ -52,7 +52,7 @@ describe('Devices Model Test', function () {
 
 
     afterEach(function (done) {
-        Device.deleteMany(function (err, p) {
+        deviceDocuments.deleteDocuments(function (err) {
             if (err) throw err;
             done();
         });

@@ -52,17 +52,17 @@ describe('Observations Model Test', function () {
 
 
     beforeEach(function (done) {
-        deviceDocuments.createDocuments(100, function (err,deviceId,deviceTypeId,observedPropertyId) {
+        deviceDocuments.createDocuments(100, function (err,deviceForeignKeys) {
             if (err) throw err;
             else {
-                deviceIdResource=deviceId;
-                typeIdResource=deviceTypeId;
+                deviceIdResource=deviceForeignKeys.deviceId;
+                typeIdResource=deviceForeignKeys.deviceTypeId;
                 unitDriver.create({
                     name: "name",
                     symbol: "symbol",
                     minValue: 0,
                     maxValue: 10,
-                    observedPropertyId: observedPropertyId
+                    observedPropertyId: deviceForeignKeys.observedPropertyId
                 },function(err,unitId){
                     validUnits.first=unitId;
                     unitDriver.create({
@@ -70,7 +70,7 @@ describe('Observations Model Test', function () {
                         symbol: "symbolBis",
                         minValue: 0,
                         maxValue: 100,
-                        observedPropertyId: observedPropertyId
+                        observedPropertyId: deviceForeignKeys.observedPropertyId
                     },function(err,unitIdBis){
                         validUnits.second=unitIdBis;
                         done()

@@ -62,16 +62,16 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
 
     beforeEach(function (done) {
 
-        domainDocuments.createDocuments(100, function (err, newDomainId) {
+        domainDocuments.createDocuments(100, function (err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Domain APIActionsTests.js - beforreEach - Domains.create ---> " + err);
-            domainId = newDomainId;
+            domainId = ForeignKeys.domainId;
            done();
         });
     });
 
 
     afterEach(function (done) {
-        Domains.deleteMany({}, function (err, elm) {
+        domainDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Domain APIActionsTests.js - afterEach - deleteMany ---> " + err);
           done();
         });
@@ -84,13 +84,13 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
 
 
             //create Device Type
-            deviceTypesDocuments.createDocuments(1,function(error,deviceId){
+            deviceTypesDocuments.createDocuments(1,function(error,foreignKeys){
                 if (error) consoleLogError.printErrorLog("POST /domains/:id/actions/getDeviceTypes: 'must test API action getDeviceTypes'  -->" + error.message);
 
                 //add Domain reference
                 var body=JSON.stringify({domains: [domainId]});
                 request.post({
-                    url: APIURLDeviceTypes + '/' + deviceId +'/actions/addDomains',
+                    url: APIURLDeviceTypes + '/' + foreignKeys.deviceTypeId +'/actions/addDomains',
                     headers: {
                         'content-type': 'application/json',
                         'Authorization': "Bearer " + webUiToken
@@ -104,7 +104,7 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                         var results = JSON.parse(body);
                         results.length.should.be.equal(1);
                         Domains.ObjectId(results[0].domainId).should.be.eql(Domains.ObjectId(domainId));
-                        Domains.ObjectId(results[0].deviceTypeId).should.be.eql(Domains.ObjectId(deviceId));
+                        Domains.ObjectId(results[0].deviceTypeId).should.be.eql(Domains.ObjectId(foreignKeys.deviceTypeId));
                     }
 
                     //check
@@ -114,14 +114,14 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                             data.should.have.property("deviceType_domains");
                             data.deviceType_domains.length.should.be.equal(1);
                             Domains.ObjectId(data.deviceType_domains[0].domainId).should.be.eql(Domains.ObjectId(domainId));
-                            Domains.ObjectId(data.deviceType_domains[0].deviceTypeId).should.be.eql(Domains.ObjectId(deviceId));
+                            Domains.ObjectId(data.deviceType_domains[0].deviceTypeId).should.be.eql(Domains.ObjectId(foreignKeys.deviceTypeId));
 
                             // Create second deviceType
-                            deviceTypesDocuments.createDocuments(1,function(error,deviceTypeIdBis){
+                            deviceTypesDocuments.createDocuments(1,function(error,foreignKeysBis){
                                 if (error) consoleLogError.printErrorLog("POST /domains/:id/actions/getDeviceTypes: 'must test API action getDeviceTypes'  -->" + error.message);
                                 var body=JSON.stringify({domains: [domainId]});
                                 request.post({
-                                    url: APIURLDeviceTypes + '/' + deviceTypeIdBis +'/actions/addDomains',
+                                    url: APIURLDeviceTypes + '/' + foreignKeysBis.deviceTypeId +'/actions/addDomains',
                                     headers: {
                                         'content-type': 'application/json',
                                         'Authorization': "Bearer " + webUiToken
@@ -135,7 +135,7 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                                         var results = JSON.parse(body);
                                         results.length.should.be.equal(1);
                                         Domains.ObjectId(results[0].domainId).should.be.eql(Domains.ObjectId(domainId));
-                                        Domains.ObjectId(results[0].deviceTypeId).should.be.eql(Domains.ObjectId(deviceTypeIdBis));
+                                        Domains.ObjectId(results[0].deviceTypeId).should.be.eql(Domains.ObjectId(foreignKeysBis.deviceTypeId));
                                     }
 
                                     //check
@@ -145,9 +145,9 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                                             data.should.have.property("deviceType_domains");
                                             data.deviceType_domains.length.should.be.equal(2);
                                             Domains.ObjectId(data.deviceType_domains[0].domainId).should.be.eql(Domains.ObjectId(domainId));
-                                            Domains.ObjectId(data.deviceType_domains[0].deviceTypeId).should.be.oneOf(deviceId,deviceTypeIdBis);
+                                            Domains.ObjectId(data.deviceType_domains[0].deviceTypeId).should.be.oneOf(foreignKeys.deviceTypeId,foreignKeysBis.deviceTypeId);
                                             Domains.ObjectId(data.deviceType_domains[1].domainId).should.be.eql(Domains.ObjectId(domainId));
-                                            Domains.ObjectId(data.deviceType_domains[1].deviceTypeId).should.be.oneOf(deviceId,deviceTypeIdBis);
+                                            Domains.ObjectId(data.deviceType_domains[1].deviceTypeId).should.be.oneOf(foreignKeys.deviceTypeId,foreignKeysBis.deviceTypeId);
 
                                             request.post({
                                                 url: APIURL + '/' + domainId +'/actions/getDeviceTypes',
@@ -160,8 +160,8 @@ describe('Domains API Test - [ACTIONS TESTS]', function () {
                                                 response.statusCode.should.be.equal(200);
                                                 var resultsGetDevicetypes = JSON.parse(body);
                                                 resultsGetDevicetypes.length.should.be.equal(2);
-                                                Domains.ObjectId(resultsGetDevicetypes[0]._id).should.be.oneOf(deviceId,deviceTypeIdBis);
-                                                Domains.ObjectId(resultsGetDevicetypes[1]._id).should.be.oneOf(deviceId,deviceTypeIdBis);
+                                                Domains.ObjectId(resultsGetDevicetypes[0]._id).should.be.oneOf(foreignKeys.deviceTypeId,foreignKeysBis.deviceTypeId);
+                                                Domains.ObjectId(resultsGetDevicetypes[1]._id).should.be.oneOf(foreignKeys.deviceTypeId,foreignKeysBis.deviceTypeId);
                                                 DeviceTypeDomainDriver.deleteMany({},null,function(error){
                                                     if (error) consoleLogError.printErrorLog("POST /domains/:id/actions/getDeviceTypes: 'must test API action getDeviceTypes'  -->" + error.message);
                                                     deviceTypesDocuments.deleteDocuments(function(err){

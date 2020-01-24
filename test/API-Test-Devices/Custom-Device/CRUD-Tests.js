@@ -46,7 +46,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     });
 
     after(function (done) {
-        Devices.deleteMany({}, function (err,elm) {
+        deviceDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - after - resetAuthMsStatus ---> " + err);
@@ -58,16 +58,16 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
 
 
     beforeEach(function (done) {
-        deviceDocuments.createDocuments(100,function(err,newDeviceId){
+        deviceDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - beforeEach - Devices.create ---> " + err);
-            deviceId=newDeviceId;
+            deviceId=foreignKey.deviceId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
+        deviceDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - afterEach - deleteMany ---> " + err);
             done();
         });

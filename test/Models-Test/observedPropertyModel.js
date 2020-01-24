@@ -25,7 +25,7 @@ var _ = require('underscore')._
 var db = require("../../DBEngineHandler/models/mongooseConnection")
 var ObservedProperty = require('../../DBEngineHandler/drivers/observedPropertyDriver')
 var observedPropertyDocuments = require('../SetTestenv/createObservedPropertiesDocuments')
-var should = require('should/should')
+var should = require('should/should');
 
 
 describe('ObservedProperty Model Test', function() {
@@ -53,7 +53,7 @@ describe('ObservedProperty Model Test', function() {
 
 
     afterEach(function(done) {
-        ObservedProperty.deleteMany(function(err, p) {
+        observedPropertyDocuments.deleteDocuments(function(err, p) {
             if (err) throw err
             done()
         })

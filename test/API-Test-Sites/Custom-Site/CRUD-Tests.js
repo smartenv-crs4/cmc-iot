@@ -60,16 +60,16 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
 
 
     beforeEach(function(done) {
-        siteDocuments.createDocuments(100, function(err, newSiteId) {
+        siteDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Site generalTest.js - beforeEach - Sites.create ---> " + err)
-            siteId = newSiteId
+            siteId = ForeignKeys.siteId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Sites.deleteMany({}, function(err, elm) {
+        siteDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Site generalTest.js - afterEach - deleteMany ---> " + err)
             done()
         })
@@ -398,7 +398,10 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                             //Search Site to confirm that the it hasn't been deleted
                             var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                             request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error) consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Things) -->" + error.message)
+                                if (error){
+                                    consoleLogError.printErrorLog("DELETE /sites: 'must test Site Delete (with associated Things) -->" + error.message)
+                                    throw (error);
+                                }
                                 else {
                                     var resultsUndeletedSite = JSON.parse(body)
                                     response.statusCode.should.be.equal(200)
@@ -408,8 +411,12 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                                     resultsUndeletedSite.location.should.have.property('type')
                                     resultsUndeletedSite.location.should.have.property('coordinates')
                                     resultsUndeletedSite.should.have.property('locatedInSiteId')
+                                    Thing.deleteMany({},function(err){
+                                        should(err).be.null();
+                                        done();
+                                    });
                                 }
-                                done()
+
                             })
                         })
                     }

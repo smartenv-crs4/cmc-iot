@@ -22,6 +22,10 @@
 
 
 var ObservedProperties = require('../../../DBEngineHandler/drivers/observedPropertyDriver')
+var domainDriver= require('../../../DBEngineHandler/drivers/domainDriver');
+var unitDriver= require('../../../DBEngineHandler/drivers/unitDriver');
+var deviceTypeDriver= require('../../../DBEngineHandler/drivers/deviceTypeDriver');
+var deviceType_domainDriver= require('../../../DBEngineHandler/drivers/deviceType_domainDriver');
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observedProperties"
@@ -30,7 +34,7 @@ var APIURL_units = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + 
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var observedPropertyDocuments = require('../../SetTestenv/createObservedPropertiesDocuments')
-
+var should = require('should/should');
 var webUiToken
 var observedPropertyId
 
@@ -59,16 +63,16 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
 
 
     beforeEach(function(done) {
-        observedPropertyDocuments.createDocuments(100, function(err, newObservedPropertyId) {
+        observedPropertyDocuments.createDocuments(100, function(err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("ObservedProperty generalTests.js - beforeEach - ObservedProperties.create ---> " + err)
-            observedPropertyId = newObservedPropertyId
+            observedPropertyId = ForeignKeys.observedPropertyId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        ObservedProperties.deleteMany({}, function(err, elm) {
+        observedPropertyDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("ObservedProperty generalTests.js - afterEach - deleteMany ---> " + err)
             done()
         })
@@ -268,53 +272,71 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
                     results.should.have.property('name')
                     results.should.have.property('description')
                 }
-                // Now let's prepare the body for the associated DeviceType POST request
-                var bodyDeviceTypeParam = JSON.stringify({
-                    deviceType: {
-                        name: "name",
-                        description: "description",
-                        observedPropertyId: results._id
-                    },
-                    domains:[results._id]
-                });
-                var requestDeviceTypeParams = {
-                    url: APIURL_deviceTypes,
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': "Bearer " + conf.testConfig.adminToken
-                    },
-                    body: bodyDeviceTypeParam
-                }
-                // Create the associated DeviceType
-                request.post(requestDeviceTypeParams, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("POST /deviceTypes: " + error.message);
-                    else {
-                        response.statusCode.should.be.equal(201);
-                        // DELETE observedProperty
-                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
-                        request.del(getByIdRequestUrl, function(error, response, body) {
-                            if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+
+                //set a domain
+                domainDriver.create({name:"test",description:"test"},function(error,domainItem){
+                    if(error){
+                        consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+                        should(error).be.null();
+                    }else{
+                        // Now let's prepare the body for the associated DeviceType POST request
+                        var bodyDeviceTypeParam = JSON.stringify({
+                            deviceType: {
+                                name: "name",
+                                description: "description",
+                                observedPropertyId: results._id
+                            },
+                            domains:[domainItem._id]
+                        });
+                        var requestDeviceTypeParams = {
+                            url: APIURL_deviceTypes,
+                            headers: {
+                                'content-type': 'application/json',
+                                'Authorization': "Bearer " + conf.testConfig.adminToken
+                            },
+                            body: bodyDeviceTypeParam
+                        }
+                        // Create the associated DeviceType
+                        request.post(requestDeviceTypeParams, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("POST /deviceTypes: " + error.message);
                             else {
-                                var resultsDeleteById = JSON.parse(body)
-                                response.statusCode.should.be.equal(409) //HTTP Conflict
-                                resultsDeleteById.should.have.property("message")
-                                resultsDeleteById.message.should.be.equal("Cannot delete the ObservedProperty due to associated DeviceType(s)")
+                                response.statusCode.should.be.equal(201);
+                                // DELETE observedProperty
+                                var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                                request.del(getByIdRequestUrl, function(error, response, body) {
+                                    if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+                                    else {
+                                        var resultsDeleteById = JSON.parse(body)
+                                        response.statusCode.should.be.equal(409) //HTTP Conflict
+                                        resultsDeleteById.should.have.property("message")
+                                        resultsDeleteById.message.should.be.equal("Cannot delete the ObservedProperty due to associated DeviceType(s)")
+                                    }
+                                    //Search observedProperty to confirm that the it hasn't been deleted
+                                    var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                                    request.get(geByIdRequestUrl, function(error, response, body) {
+                                        if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
+                                        else {
+                                            var resultsUndeletedDeviceType = JSON.parse(body)
+                                            response.statusCode.should.be.equal(200)
+                                            resultsUndeletedDeviceType.should.have.property("name")
+                                            resultsUndeletedDeviceType.should.have.property("description")
+                                        }
+                                        domainDriver.deleteMany({},function(err){
+                                            should(err).be.null();
+                                            deviceType_domainDriver.deleteMany({},function(err){
+                                                should(err).be.null();
+                                                deviceTypeDriver.deleteMany({},function(err){
+                                                    should(err).be.null();
+                                                    done();
+                                                });
+                                            });
+                                        });
+                                    })
+                                })
                             }
-                            //Search observedProperty to confirm that the it hasn't been deleted
-                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
-                            request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error) consoleLogError.printErrorLog("DELETE /observedProperties: 'must test observedProperty Delete (with associated DeviceTypes) -->" + error.message)
-                                else {
-                                    var resultsUndeletedDeviceType = JSON.parse(body)
-                                    response.statusCode.should.be.equal(200)
-                                    resultsUndeletedDeviceType.should.have.property("name")
-                                    resultsUndeletedDeviceType.should.have.property("description")
-                                }
-                                done()
-                            })
                         })
                     }
-                })
+                });
             })
         })
     })
@@ -385,7 +407,10 @@ describe('ObservedProperties API Test - [CRUD-TESTS]', function() {
                                     resultsUndeletedDeviceType.should.have.property("name")
                                     resultsUndeletedDeviceType.should.have.property("description")
                                 }
-                                done()
+                                unitDriver.deleteMany({},function(err){
+                                    should(err).be.null();
+                                    done();
+                                });
                             })
                         })
                     }

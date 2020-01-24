@@ -61,7 +61,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
     after(function (done) {
         this.timeout(0);
-        Devices.deleteMany({}, function (err, elm) {
+        deviceDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function (err) {
                 if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - after - resetAuthMsStatus ---> " + err);
@@ -70,16 +70,15 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         });
     });
 
-
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100, function (err, newDeviceId,dvTypeId,obsId,thingId,vendorId,siteId) {
+        deviceDocuments.createDocuments(100, function (err, deviceForeignKeys) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - beforreEach - Devices.create ---> " + err);
-            deviceId = newDeviceId;
-            associatedThingId=thingId;
-            devicetypeId=dvTypeId;
-            observedPropertyId=obsId;
-            associateSiteId=siteId;
+            deviceId = deviceForeignKeys.deviceId;
+            associatedThingId=deviceForeignKeys.thingId;
+            devicetypeId=deviceForeignKeys.deviceTypeId;
+            observedPropertyId=deviceForeignKeys.observedPropertyId;
+            associateSiteId=deviceForeignKeys.siteId;
             unitDriver.create({
                 name: "name",
                 symbol: "symbol",
@@ -104,9 +103,24 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     afterEach(function (done) {
-        Devices.deleteMany({}, function (err, elm) {
-            if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
-          done();
+        deviceDocuments.deleteDocuments(function (err) {
+            if (err) {
+                consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
+                throw (err);
+            }else{
+                unitDriver.deleteMany({},function(err){
+                    if (err) {
+                        consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
+                        throw (err);
+                    }else{
+                        observationDriver.deleteMany({},function(err){
+                            should(err).be.null();
+                            done();
+                        });
+                    }
+                });
+            }
+
         });
     });
 
@@ -645,7 +659,10 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         should(err).be.null();
                         data.should.have.properties("_metadata","observations");
                         data.observations.length.should.be.eql(0);
-                        done();
+                        observationDriver.deleteMany({},function(err){
+                            should(err).be.null();
+                            done();
+                        });
                     });
                 }
             });
@@ -770,17 +787,17 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         var testType="must test API action sendObservations [device in site hierarchy]";
         it(testType, function (done) {
 
-            sitesDocuments.createDocuments(1,function(error,newSiteId){
+            sitesDocuments.createDocuments(1,function(error,foreignKey){
                 if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
                 else {
-                    sitesDriver.findByIdAndUpdate(associateSiteId,{location:null,locatedInSiteId:newSiteId},function(error,updatedSite){
+                    sitesDriver.findByIdAndUpdate(associateSiteId,{location:null,locatedInSiteId:foreignKey.siteId},function(error,updatedSite){
                         if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
                         else {
 
                             updatedSite=JSON.parse(JSON.stringify(updatedSite));
                             should(updatedSite.location).be.eql(null);
-                            Devices.ObjectId(updatedSite.locatedInSiteId).should.be.eql(newSiteId);
-                            sitesDriver.findByIdAndUpdate(newSiteId,{locatedInSiteId:null,location:{coordinates:[2,2]}},function(error,updatedSite){
+                            Devices.ObjectId(updatedSite.locatedInSiteId).should.be.eql(foreignKey.siteId);
+                            sitesDriver.findByIdAndUpdate(foreignKey.siteId,{locatedInSiteId:null,location:{coordinates:[2,2]}},function(error,updatedSite){
                                 if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
                                 else {
                                     updatedSite.location.should.be.not.eql(null);

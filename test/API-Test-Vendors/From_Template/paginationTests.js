@@ -43,7 +43,7 @@ describe('Vendors API Test - [PAGINATION TESTS]', function() {
 
 
     after(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - deleteMany ---> " + err)
             commonFunctionTest.resetAuthMsStatus(function(err) {
                 if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - after - resetAuthMsStatus ---> " + err)
@@ -54,16 +54,16 @@ describe('Vendors API Test - [PAGINATION TESTS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newVendorId) {
+        vendorDocuments.createDocuments(100, function(err, foreignKey) {
             if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - beforeEach - Vendors.create ---> " + err)
-            vendorId = newVendorId
+            vendorId = foreignKey.vendorId
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor paginationTests.js - afterEach - deleteMany ---> " + err)
             done()
         })

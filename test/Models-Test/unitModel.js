@@ -53,7 +53,7 @@ describe('Unit Model Test', function() {
 
 
     afterEach(function(done) {
-        Unit.deleteMany(function(err, p) {
+        unitDocuments.deleteDocuments(function(err, p) {
             if (err) throw err
             done()
         })

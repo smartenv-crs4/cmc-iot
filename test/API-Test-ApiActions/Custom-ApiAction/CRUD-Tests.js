@@ -58,16 +58,16 @@ describe('ApiActions API Test - [CRUD-TESTS]', function () {
 
 
     beforeEach(function (done) {
-        apiActionDocuments.createDocuments(100,function(err,newApiActionId){
+        apiActionDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("ApiAction CRUD-Tests.js - beforeEach - ApiActions.create ---> " + err);
-            apiActionId=newApiActionId;
+            apiActionId=foreignKey.apiActionId;
             done();
         });
     });
 
 
     afterEach(function (done) {
-        ApiActions.deleteMany({}, function (err, elm) {
+        apiActionDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("ApiAction CRUD-Tests.js - afterEach - deleteMany ---> " + err);
             done();
         });

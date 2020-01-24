@@ -52,7 +52,7 @@ describe('DeviceType_Domains Model Test', function () {
 
 
     afterEach(function (done) {
-        DeviceType_Domain.deleteMany(function (err, p) {
+        deviceType_domainDocuments.deleteDocuments(function (err) {
             if (err) throw err;
             done();
         });

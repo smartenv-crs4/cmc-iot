@@ -39,9 +39,16 @@ module.exports.createDocuments=function(numbers,callback) {
             cb();
         });
     }, function(err){
-        callback(err, vendorId);
+        callback(err, {vendorId:vendorId});
     });
 
+};
+
+
+module.exports.deleteDocuments=function(callback){
+    Vendor.deleteMany({},function(err){
+            callback(err);
+    });
 };
 
 

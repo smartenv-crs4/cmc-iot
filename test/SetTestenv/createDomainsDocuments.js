@@ -41,7 +41,7 @@ module.exports.createDocuments=function(numbers,callback){
         });
 
     }, function(err){
-        callback(err,domainId);
+        callback(err,{domainId:domainId});
     });
 
 };

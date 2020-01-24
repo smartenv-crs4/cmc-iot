@@ -30,7 +30,7 @@ var observedPropertiesDocument = require('./createObservedPropertiesDocuments');
 module.exports.createDocuments = function(numbers, callback) {
 
 
-    observedPropertiesDocument.createDocuments(1,function(err,observedPropertyId){
+    observedPropertiesDocument.createDocuments(1,function(err,foreignKey){
         if(!err){
             var range = _.range(numbers)
             var deviceTypeId
@@ -39,15 +39,14 @@ module.exports.createDocuments = function(numbers, callback) {
                 DeviceType.create({
                     name: "name" + e,
                     description: "description" + e,
-                    observedPropertyId: observedPropertyId
+                    observedPropertyId: foreignKey.observedPropertyId
                 }, function(err, newDeviceType) {
                     if (err) throw err
                     if (e === 0) deviceTypeId = newDeviceType._id
                     cb()
                 })
             }, function(err) {
-                //TODO:i campi da restituire devono essere un obj {deviceTypeId:id, observedPropertyId:id}
-                callback(err, deviceTypeId,observedPropertyId)
+                callback(err, {deviceTypeId:deviceTypeId,observedPropertyId:foreignKey.observedPropertyId});
             })
         }else{
             callback(err);
@@ -61,9 +60,9 @@ module.exports.deleteDocuments = function(callback) {
 
     DeviceType.deleteMany({},function(err){
         if(!err){
-         observedPropertiesDocument.deleteDocuments(function(err){
-             callback(err);
-         })
+             observedPropertiesDocument.deleteDocuments(function(err){
+                 callback(err);
+             });
         }else {
             callback(err);
         }

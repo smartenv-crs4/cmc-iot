@@ -29,7 +29,8 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/vend
 var APIURL_things = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things"
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
-var vendorDocuments = require('../../SetTestenv/createVendorsDocuments')
+var vendorDocuments = require('../../SetTestenv/createVendorsDocuments');
+var should = require('should/should');
 
 var webUiToken
 var vendorId
@@ -59,16 +60,16 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
 
 
     beforeEach(function(done) {
-        vendorDocuments.createDocuments(100, function(err, newVendorId) {
+        vendorDocuments.createDocuments(100, function(err, foreignKey) {
             if (err) consoleLogError.printErrorLog("Vendor generalTests.js - beforeEach - Vendors.create ---> " + err)
-            vendorId = newVendorId
+            vendorId = foreignKey.vendorId;
             done()
         })
     })
 
 
     afterEach(function(done) {
-        Vendors.deleteMany({}, function(err, elm) {
+        vendorDocuments.deleteDocuments(function(err, elm) {
             if (err) consoleLogError.printErrorLog("Vendor generalTests.js - afterEach - deleteMany ---> " + err)
             done()
         })
@@ -305,14 +306,22 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                             //Search vendor to confirm that the it hasn't been deleted
                             var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
                             request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error) consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (with associated Things) -->" + error.message)
+                                if (error){
+                                    consoleLogError.printErrorLog("DELETE /vendors: 'must test vendor Delete (with associated Things) -->" + error.message)
+                                    throw (error);
+                                }
                                 else {
                                     var resultsUndeletedVendor = JSON.parse(body)
                                     response.statusCode.should.be.equal(200)
                                     resultsUndeletedVendor.should.have.property("name")
                                     resultsUndeletedVendor.should.have.property("description")
+
+                                    Thing.deleteMany({},function(err){
+                                        should(err).be.null();
+                                        done();
+                                    });
                                 }
-                                done()
+
                             })
                         })
                     }

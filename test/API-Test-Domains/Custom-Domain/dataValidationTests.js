@@ -42,7 +42,7 @@ describe('Domains API Test - [DATA VALIDATION]', function () {
     });
 
     after(function (done) {
-        Domains.deleteMany({}, function (err,elm) {
+        domainDocuments.deleteDocuments(function (err,elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -63,7 +63,7 @@ describe('Domains API Test - [DATA VALIDATION]', function () {
 
 
     afterEach(function (done) {
-        Domains.deleteMany({}, function (err, elm) {
+        domainDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - deleteMany ---> " + err);
             done();
         });
