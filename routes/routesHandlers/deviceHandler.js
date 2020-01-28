@@ -280,9 +280,10 @@ module.exports.updateDevice = function (req, res, next) {
 
 
     deviceDriver.findById(req.params.id,"dismissed",function(err,deviceItem){
+        try{
         if(err) return res.httpResponse(err,null,null);
         else{
-            if(deviceItem.dismissed){
+            if(deviceItem && deviceItem.dismissed){
                 var Err = new Error("The device '" +req.params.id + "' was removed from available devices/things.");
                 Err.name = "DismissedError";
                 return res.httpResponse(Err,null,null);
@@ -291,6 +292,9 @@ module.exports.updateDevice = function (req, res, next) {
                     res.httpResponse(err,null,results);
                 });
             }
+        }
+        }catch (ex) {
+            return res.httpResponse(ex,null,null)
         }
     })
 };
