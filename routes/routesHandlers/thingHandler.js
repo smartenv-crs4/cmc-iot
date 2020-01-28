@@ -302,9 +302,20 @@ module.exports.postCreateThing = function (req, res, next) {
  */
 // TODO notificare  tramite REDIS??
 module.exports.updateThing = function (req, res, next) {
-    thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed","disabled"], function (err, results) {
-        res.httpResponse(err,null,results);
-    });
+    thingDriver.findById(req.params.id,"dismissed",function(err,thingItem){
+        if(err) return res.httpResponse(err,null,null);
+        else{
+            if(thingItem.dismissed){
+                var Err = new Error("The thing '" +req.params.id + "' was removed from available devices/things.");
+                Err.name = "DismissedError";
+                return res.httpResponse(Err,null,null);
+            }else{
+                thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing,["dismissed","disabled"], function (err, results) {
+                    res.httpResponse(err,null,results);
+                });
+            }
+        }
+    })
 };
 
 

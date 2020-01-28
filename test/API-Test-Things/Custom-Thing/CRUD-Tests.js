@@ -406,6 +406,67 @@ describe('Things API Test - [CRUD-TESTS]', function () {
 
 
 
+    describe('PUT /thing/:id', function(){
+
+        it('must test update thing by Id error due to dismissed thing', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Thing
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("PUT /thing/:id :'must test update thing by Id error due to dismissed thing -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('api');
+                    results.should.have.property('direct');
+                    results.should.have.property('ownerId');
+                    results.should.have.property('vendorId');
+                    results.should.have.property('siteId');
+                    results.should.have.property('dismissed');
+                    results.should.have.property('disabled');
+                    results.should.have.property('mobile');
+                }
+
+                
+                //set dismissed
+                Things.findByIdAndUpdate(results._id,{dismissed:true},function (err,updatedThing) {
+                   should(err).be.null();
+                   updatedThing.dismissed.should.be.true();
+
+                    var nameUpdated="nameUpdated";
+                    bodyParam=JSON.stringify({thing:{name:nameUpdated}, access_token:webUiToken});
+                    requestParams={
+                        url:APIURL+"/" + results._id,
+                        headers:{'content-type': 'application/json'},
+                        body:bodyParam
+                    };
+                    request.put(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog("PUT /thing/:id :'must test update thing by Id error due to dismissed thing -->" + error.message);
+                        else{
+                            var resultsById = JSON.parse(body);
+                            response.statusCode.should.be.equal(422);
+                            resultsById.should.have.property('error');
+                            resultsById.should.have.property('message');
+                            resultsById.message.should.be.eql("The thing '" +results._id + "' was removed from available devices/things.");
+
+                        }
+                        done();
+                    });
+                });
+
+            });
+
+        });
+    });
+
+
     /******************************************************************************************************************
     ************************************************** DELETE TESTS **************************************************
     ***************************************************************************************************************** */
