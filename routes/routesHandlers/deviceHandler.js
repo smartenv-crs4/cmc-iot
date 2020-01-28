@@ -277,9 +277,22 @@ module.exports.postCreateDevice = function (req, res, next) {
  */
 // TODO notificare tramite redis???
 module.exports.updateDevice = function (req, res, next) {
-    deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"] ,function (err, results) {
-        res.httpResponse(err,null,results);
-    });
+
+
+    deviceDriver.findById(req.params.id,"dismissed",function(err,deviceItem){
+        if(err) return res.httpResponse(err,null,null);
+        else{
+            if(deviceItem.dismissed){
+                var Err = new Error("The device '" +req.params.id + "' was removed from available devices/things.");
+                Err.name = "DismissedError";
+                return res.httpResponse(Err,null,null);
+            }else{
+                deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"] ,function (err, results) {
+                    res.httpResponse(err,null,results);
+                });
+            }
+        }
+    })
 };
 
 

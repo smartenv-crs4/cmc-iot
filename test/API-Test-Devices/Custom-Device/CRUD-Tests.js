@@ -277,6 +277,58 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
         });
     });
 
+    describe('PUT /device/:id', function(){
+
+        it('\'must test update device by Id error due to dismissed thing', function(done){
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Device
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("PUT /device/:id :''must test update device by Id error due to dismissed thing -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('thingId');
+                    results.should.have.property('typeId');
+                }
+
+
+                Devices.findByIdAndUpdate(results._id,{dismissed:true},function (err,updatedDevice) {
+                    should(err).be.null();
+                    updatedDevice.dismissed.should.be.true();
+
+                    var nameUpdated="nameUpdated";
+                    bodyParam=JSON.stringify({device:{name:nameUpdated}, access_token:webUiToken});
+                    requestParams={
+                        url:APIURL+"/" + results._id,
+                        headers:{'content-type': 'application/json'},
+                        body:bodyParam
+                    };
+                    request.put(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog("PUT /device/:id :''must test update device by Id error due to dismissed thing -->" + error.message);
+                        else{
+                            var resultsById = JSON.parse(body);
+                            response.statusCode.should.be.equal(422);
+                            resultsById.should.have.property('error');
+                            resultsById.should.have.property('message');
+                            resultsById.message.should.be.eql("The device '" +results._id + "' was removed from available devices/things.");
+                        }
+                        done();
+                    });
+                });
+
+
+            });
+
+        });
+    });
 
 
     /******************************************************************************************************************
