@@ -23,6 +23,7 @@
 var express = require('express');
 var router = express.Router();
 var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
+var parseThingOwnerIdMiddleware=require('./middlewares/parseThingOwnerIdMiddleware');
 var authorisationManager=require('./middlewares/authorisationMiddleware');
 var thingsHandler=require('./routesHandlers/thingHandler');
 var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
@@ -69,7 +70,7 @@ router.post('/:id/actions/sendObservations', [authorisationManager.checkToken], 
 
 
 /* Create things */
-router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]), function(req, res, next) {
+router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]),parseThingOwnerIdMiddleware.validateOwnerId(true), function(req, res, next) {
   thingsHandler.postCreateThing(req,res,next);
 });
 
@@ -81,7 +82,7 @@ router.delete('/:id',[authorisationManager.checkToken], function(req, res, next)
 
 
 /* Update things. */
-router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]), function(req, res, next) {
+router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["thing"]),parseThingOwnerIdMiddleware.validateOwnerId(false), function(req, res, next) {
   thingsHandler.updateThing(req,res,next);
 });
 

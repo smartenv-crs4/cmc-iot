@@ -100,6 +100,33 @@ describe('Things API Test - [DATA VALIDATION]', function () {
     });
 
 
+    describe('POST /thing', function(){
+        it('must test thing creation [user cannot handle thing ownerId]', function(done){
+            var oldConf=conf.whoCanHandleThingsAndDevicesOwner;
+            conf.whoCanHandleThingsAndDevicesOwner=["erwe"];
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"http://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                conf.whoCanHandleThingsAndDevicesOwner=oldConf;
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [user cannot handle thing ownerId] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("Thing ownerId field must be set only by 'erwe' token types");
+                }
+                done();
+            });
+
+        });
+    });
+
 
     describe('POST /thing', function(){
         it('must test thing creation [data validation error due to required fields missing]', function(done){
@@ -117,7 +144,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("thing validation failed: siteId: Path `siteId` is required., vendorId: Path `vendorId` is required., ownerId: Path `ownerId` is required.");
+                    results.message.should.be.equal("thing validation failed: siteId: Path `siteId` is required., vendorId: Path `vendorId` is required.");
                 }
                done();
             });
@@ -295,5 +322,37 @@ describe('Things API Test - [DATA VALIDATION]', function () {
         });
     });
 
+
+
+    describe('POST /thing', function(){
+        it('must test thing update [user cannot handle thing ownerId]', function(done){
+            var oldConf=conf.whoCanHandleThingsAndDevicesOwner;
+            conf.whoCanHandleThingsAndDevicesOwner=["erwe"];
+
+            Things.findOne({}, null, function(err, thing){
+                should(err).be.null();
+                var bodyParam=JSON.stringify({thing:{name:"name", description: "description",ownerId:Things.ObjectId(), disabled:true}});
+                var requestParams={
+                    url:APIURL+"/" + thing._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    conf.whoCanHandleThingsAndDevicesOwner=oldConf;
+                    if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [user cannot handle thing ownerId] -->" + error.message);
+                    else{
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(400);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.should.be.eql("Thing ownerId field must be set only by 'erwe' token types");
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
 
 });

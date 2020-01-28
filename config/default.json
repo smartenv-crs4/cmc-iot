@@ -39,7 +39,8 @@
       "email": "cmc-iot@cmc.com",
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
-    }
+    },
+    "whoCanHandleThingsAndDevicesOwner": ["admin"]
   },
   "dev":{
     "dbHost":"127.0.0.1",
@@ -81,7 +82,8 @@
       "email": "cmc-iot@cmc.com",
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
-    }
+    },
+    "whoCanHandleThingsAndDevicesOwner": ["admin"]
   },
   "test":{
     "dbHost":"127.0.0.1",
@@ -144,6 +146,7 @@
       "email": "cmc-iot@cmc.com",
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
-    }
+    },
+    "whoCanHandleThingsAndDevicesOwner": ["admin","webui"]
   }
 }

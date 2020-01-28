@@ -110,6 +110,39 @@ describe('Things API Test - [CRUD-TESTS]', function () {
         });
     });
 
+    describe('POST /thing', function(){
+
+        it('must test thing creation [create Thing and set ownerId by token]', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [create Thing and set ownerId by token] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('api');
+                    results.should.have.property('direct');
+                    results.should.have.property('ownerId');
+                    results.ownerId.should.be.eql(conf.testConfig.adminID);
+                    results.should.have.property('vendorId');
+                    results.should.have.property('siteId');
+                    results.should.have.property('dismissed');
+                    results.should.have.property('disabled');
+                    results.should.have.property('mobile');
+                }
+                done();
+            });
+
+        });
+    });
+
+
 
     /******************************************************************************************************************
      ********************************************* READ TESTS (Get By ID)**********************************************
