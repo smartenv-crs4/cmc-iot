@@ -692,7 +692,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                         else {
                             response.statusCode.should.be.equal(200);
                             var disableesults = JSON.parse(body);
-                            disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                            disableesults.should.have.properties('name', 'description','disabled');
+                            disableesults.should.not.have.property('dismissed');
                             disableesults.disabled.should.be.true();
                         }
                         request.post({
@@ -704,7 +705,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                             else {
                                 response.statusCode.should.be.equal(200);
                                 var disableesults = JSON.parse(body);
-                                disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                disableesults.should.have.properties('name', 'description', 'disabled');
+                                disableesults.should.not.have.property('dismissed');
                                 disableesults.disabled.should.be.false();
                             }
                             done();
@@ -770,7 +772,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                 else {
                                                     response.statusCode.should.be.equal(200);
                                                     var disableesults = JSON.parse(body);
-                                                    disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                    disableesults.should.have.properties('name', 'description','disabled');
+                                                    disableesults.should.not.have.property('dismissed');
                                                     disableesults.disabled.should.be.true();
 
                                                     Devices.findAll({thingId: thingId}, null, null, function (err, results) {
@@ -796,7 +799,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                                     else {
                                                                         response.statusCode.should.be.equal(200);
                                                                         var disableesults = JSON.parse(body);
-                                                                        disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                                        disableesults.should.have.properties('name', 'description', 'disabled');
+                                                                        disableesults.should.not.have.property('dismissed');
                                                                         disableesults.disabled.should.be.false();
                                                                     }
                                                                     Devices.findAll({thingId: thingId}, null, null, function (err, results) {
@@ -918,7 +922,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                     else {
                                                         response.statusCode.should.be.equal(200);
                                                         var disableesults = JSON.parse(body);
-                                                        disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                        disableesults.should.have.properties('name', 'description', 'disabled');
+                                                        disableesults.should.not.have.property('dismissed');
                                                         disableesults.disabled.should.be.true();
 
                                                         Devices.findAll({thingId: thingId}, null, null, function (err, results) {
@@ -944,7 +949,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                                                                         else {
                                                                             response.statusCode.should.be.equal(200);
                                                                             var disableesults = JSON.parse(body);
-                                                                            disableesults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                                            disableesults.should.have.properties('name', 'description', 'disabled');
+                                                                            disableesults.should.not.have.property('dismissed');
                                                                             disableesults.disabled.should.be.false();
                                                                         }
                                                                         Devices.findAll({thingId: thingId}, null, null, function (err, results) {
@@ -993,5 +999,148 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
         });
 
     });
+
+
+
+
+
+    describe('POST /things/:id/actions/enable-disable', function () {
+
+        it('must test API action disable/enable [dismissed thing] ', function (done) {
+
+
+            Things.findByIdAndUpdate(thingId, {dismissed:true, disabled:true}, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing without devices]'  -->" + err);
+                else {
+
+                    results.should.have.properties("name", "description","dismissed", "disabled", "ownerId", "vendorId");
+                    results.dismissed.should.be.true();
+                    results.disabled.should.be.true();
+                    request.post({
+                        url: APIURL + '/' + thingId + '/actions/disable',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing without devices]'  -->" + error);
+                        else {
+                            response.statusCode.should.be.equal(409);
+                            var disableResults = JSON.parse(body);
+                            disableResults.should.have.properties('error', 'statusCode', 'message');
+                            disableResults.message.should.be.eql("Dismissed Thing. Status cannot be changed");
+                        }
+                        request.post({
+                            url: APIURL + '/' + thingId + '/actions/enable',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing without devices]'  -->" + error);
+                            else {
+                                response.statusCode.should.be.equal(409);
+                                var disableResults = JSON.parse(body);
+                                disableResults.should.have.properties('error', 'statusCode', 'message');
+                                disableResults.message.should.be.eql("Dismissed Thing. Status cannot be changed");
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+
+    });
+
+
+    describe('POST /things/:id/actions/enable-disable', function () {
+
+        it('must test API action disable/enable [thing not exist] ', function (done) {
+
+
+            Things.findByIdAndRemove(thingId,function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing not exist]'  -->" + err);
+                else {
+
+                    results.should.have.properties("name", "description","dismissed", "disabled", "ownerId", "vendorId");
+
+                    request.post({
+                        url: APIURL + '/' + thingId + '/actions/disable',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing not exist]'  -->" + error);
+                        else {
+                            response.statusCode.should.be.equal(409);
+                            var disableResults = JSON.parse(body);
+                            disableResults.should.have.properties('error', 'statusCode', 'message');
+                            disableResults.message.should.be.eql("Thing not exist");
+                        }
+                        request.post({
+                            url: APIURL + '/' + thingId + '/actions/enable',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/enable-disable: 'must test API action disable/enable [thing not exist]'  -->" + error);
+                            else {
+                                response.statusCode.should.be.equal(409);
+                                var disableResults = JSON.parse(body);
+                                disableResults.should.have.properties('error', 'statusCode', 'message');
+                                disableResults.message.should.be.eql("Thing not exist");
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+
+    });
+
+
+    describe('POST /things/:id/actions/disable', function () {
+
+        it('must test API action disable [thing without devices. Thing in disabled status] ', function (done) {
+
+
+            Things.findByIdAndUpdate(thingId, {disabled:true}, function (err, results) {
+                if (err) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices. Thing in disabled status]'  -->" + err);
+                else {
+
+
+
+                    results.disabled.should.be.true();
+                    request.post({
+                        url: APIURL + '/' + results._id + '/actions/disable',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices. Thing in disabled status]'  -->" + error);
+                        else {
+                            response.statusCode.should.be.equal(200);
+                            var disableesults = JSON.parse(body);
+                            disableesults.should.have.properties('name', 'description','disabled');
+                            disableesults.should.not.have.property('dismissed');
+                            disableesults.disabled.should.be.true();
+                        }
+                        request.post({
+                            url: APIURL + '/' + results._id + '/actions/enable',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /things/:id/actions/disable: 'must test API action disable [thing without devices. Thing in disabled status]'  -->" + error);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var disableesults = JSON.parse(body);
+                                disableesults.should.have.properties('name', 'description', 'disabled');
+                                disableesults.should.not.have.property('dismissed');
+                                disableesults.disabled.should.be.false();
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+
+    });
+
 
 });

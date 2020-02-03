@@ -26,6 +26,7 @@ var conf = require('propertiesmanager').conf;
 var extendedFunction = require('./metadata');
 
 
+
 var thing= conf.customSchema.thingSchema || {
     name:{type:String,required:true},
     description:{type:String,required:true},

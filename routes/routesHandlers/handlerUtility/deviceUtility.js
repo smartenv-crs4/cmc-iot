@@ -33,7 +33,7 @@ module.exports.deleteDevice = function (id,callback) {
             return callback(err);
         } else {
             if ((results._metadata.totalCount) > 0) { // there are observations then set dismissed:true
-                deviceDriver.findByIdAndUpdate(id, {dismissed: true}, function (err, dismissedDevice) {
+                deviceDriver.findByIdAndUpdate(id, {disabled:true,dismissed: true}, function (err, dismissedDevice) {
                     if (err) {
                         return callback(err);
                     } else {

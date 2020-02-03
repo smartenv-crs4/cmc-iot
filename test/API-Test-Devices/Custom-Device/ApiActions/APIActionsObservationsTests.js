@@ -346,7 +346,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         }
                     ];
 
-
                     request.post({
                         url: APIURL +'/' + deviceId +'/actions/sendObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},

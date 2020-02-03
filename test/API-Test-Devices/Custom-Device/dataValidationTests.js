@@ -28,7 +28,7 @@ var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
 var deviceDocuments=require('../../SetTestenv/createDevicesDocuments');
 var should = require('should/should');
-
+var thingId;
 var webUiToken;
 
 describe('Devices API Test - [DATA VALIDATION]', function () {
@@ -55,8 +55,9 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
     beforeEach(function (done) {
 
-        deviceDocuments.createDocuments(100,function(err){
+        deviceDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Devices.create ---> " + err);
+            thingId=foreignKey.thingId;
             done();
         });
     });
@@ -77,7 +78,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     describe('POST /device', function(){
 
         it('must test device creation [no valid device field - field is not in the schema]', function(done){
-            var bodyParam=JSON.stringify({device:{noschemaField:"invalid"}});
+            var bodyParam=JSON.stringify({device:{thingId:thingId, noschemaField:"invalid"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -103,8 +104,34 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
 
     describe('POST /device', function(){
 
+        it('must test device creation [undefined ThingId]', function(done){
+            var bodyParam=JSON.stringify({device:{thingId:undefined, noschemaField:"invalid"}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [undefined ThingId] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("data validation failed: thingId is required.");
+                }
+                done();
+            });
+
+        });
+    });
+
+
+    describe('POST /device', function(){
+
         it('must test device creation [data validation error due to required fields missing]', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description"}});
+            var bodyParam=JSON.stringify({device:{thingId:thingId,name:"name", description: "description"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -118,7 +145,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("device validation failed: typeId: Path `typeId` is required., thingId: Path `thingId` is required.");
+                    results.message.should.be.equal("device validation failed: typeId: Path `typeId` is required.");
                 }
                 done();
             });
@@ -129,7 +156,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
     describe('POST /device', function(){
 
         it('must test device creation [data validation error due to invalid field typeId]', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:"typeId"}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:"typeId"}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},

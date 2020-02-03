@@ -40,7 +40,8 @@
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
     },
-    "whoCanHandleThingsAndDevicesOwner": ["admin"]
+    "whoCanHandleThingsAndDevicesOwner": ["admin"],
+    "authorizationVerbToHandleDismissedStatus": ["admin"]
   },
   "dev":{
     "dbHost":"127.0.0.1",
@@ -83,7 +84,8 @@
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
     },
-    "whoCanHandleThingsAndDevicesOwner": ["admin"]
+    "whoCanHandleThingsAndDevicesOwner": ["admin"],
+    "authorizationVerbToHandleDismissedStatus": ["admin"]
   },
   "test":{
     "dbHost":"127.0.0.1",
@@ -147,6 +149,7 @@
       "password": "cmcIot",
       "tokenType": "cmc-IoT-ThOw"
     },
-    "whoCanHandleThingsAndDevicesOwner": ["admin","webui"]
+    "whoCanHandleThingsAndDevicesOwner": ["admin","webui"],
+    "authorizationVerbToHandleDismissedStatus": ["admin","webui"]
   }
 }

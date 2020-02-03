@@ -691,7 +691,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                         else {
                                             response.statusCode.should.be.equal(200);
                                             var disableResults = JSON.parse(body);
-                                            disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                            disableResults.should.have.properties('name', 'description', 'disabled');
+                                            disableResults.should.not.have.property('dismissed');
                                             disableResults.disabled.should.be.true();
                                         }
                                         request.post({
@@ -706,7 +707,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                             else {
                                                 response.statusCode.should.be.equal(200);
                                                 var disableResults = JSON.parse(body);
-                                                disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                                disableResults.should.have.properties('name', 'description', 'disabled');
+                                                disableResults.should.not.have.property('dismissed');
                                                 disableResults.disabled.should.be.false();
                                             }
                                             Things.findByIdAndRemove(thing._id, function (err) {
@@ -757,7 +759,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                         else {
                                             response.statusCode.should.be.equal(200);
                                             var disableResults = JSON.parse(body);
-                                            disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                            disableResults.should.have.properties('name', 'description','disabled');
+                                            disableResults.should.not.have.property('dismissed');
                                             disableResults.disabled.should.be.true();
                                         }
                                         request.post({
@@ -770,7 +773,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
                                             if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by disabled thing]'  -->" + error);
                                             else {
-                                                response.statusCode.should.be.equal(400);
+                                                response.statusCode.should.be.equal(409);
                                                 var disableResults = JSON.parse(body);
                                                 disableResults.should.have.properties('error', 'statusCode', 'message');
                                                 disableResults.message.should.be.eql("Cannot enable device due to associated thing is not enabled");
@@ -819,7 +822,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 else {
                                     response.statusCode.should.be.equal(200);
                                     var disableResults = JSON.parse(body);
-                                    disableResults.should.have.properties('name', 'description', 'dismissed', 'disabled');
+                                    disableResults.should.have.properties('name', 'description', 'disabled');
+                                    disableResults.should.not.have.property('dismissed');
                                     disableResults.disabled.should.be.true();
                                 }
                                 request.post({
@@ -847,6 +851,156 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
             });
         });
     });
-    
+
+
+
+    describe('POST /devices/:id/actions/disable', function () {
+
+        it('must test API action disable/enable [device by dismissed thing] ', function (done) {
+
+            Things.findByIdAndUpdate(associatedThingId,{dismissed:true, disabled:true},function(err,dismissedThing){
+                if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by dismissed thing]'  -->" + err);
+                else {
+                    Devices.findAll({}, null, null, function (err, results) {
+                        if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by dismissed thing]'  -->" + err);
+                        else {
+
+                            results.devices.length.should.be.eql(100);
+                            results.should.have.properties("devices", "_metadata");
+                            results.devices[0].disabled.should.be.false();
+
+                            request.post({
+                                url: APIURL + '/' + results.devices[0]._id + '/actions/disable',
+                                headers: {
+                                    'content-type': 'application/json',
+                                    'Authorization': "Bearer " + webUiToken
+                                },
+                            }, function (error, response, body) {
+
+                                if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by dismissed thing]'  -->" + error);
+                                else {
+                                    response.statusCode.should.be.equal(200);
+                                    var disableResults = JSON.parse(body);
+                                    disableResults.should.have.properties('name', 'description', 'disabled');
+                                    disableResults.should.not.have.property('dismissed');
+                                    disableResults.disabled.should.be.true();
+                                }
+                                request.post({
+                                    url: APIURL + '/' + results.devices[0]._id + '/actions/enable',
+                                    headers: {
+                                        'content-type': 'application/json',
+                                        'Authorization': "Bearer " + webUiToken
+                                    },
+                                }, function (error, response, body) {
+
+                                    if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device by dismissed thing]'  -->" + error);
+                                    else {
+                                        console.log(body);
+                                        response.statusCode.should.be.equal(409);
+                                        var disableResults = JSON.parse(body);
+                                        disableResults.should.have.properties('error', 'statusCode', 'message');
+                                        disableResults.message.should.be.eql("Cannot enable device due to associated thing is dismissed");
+                                    }
+                                    done();
+                                });
+                            });
+                        }
+                    });
+                }
+            });
+        });
+    });
+
+
+    describe('POST /devices/:id/actions/disable', function () {
+
+        it('must test API action disable/enable [dismissed device] ', function (done) {
+
+            Devices.findByIdAndUpdate(deviceId,{dismissed:true,disabled:true},function(err,dismissedThing){
+                if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [dismissed device]'  -->" + err);
+                else {
+                    request.post({
+                        url: APIURL + '/' + deviceId + '/actions/disable',
+                        headers: {
+                            'content-type': 'application/json',
+                            'Authorization': "Bearer " + webUiToken
+                        },
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [dismissed device]'  -->" + error);
+                        else {
+                            response.statusCode.should.be.equal(409);
+                            var disableResults = JSON.parse(body);
+                            disableResults.should.have.properties('error', 'statusCode', 'message');
+                            disableResults.message.should.be.eql("Dismissed Device. Status cannot be changed");
+                        }
+                        request.post({
+                            url: APIURL + '/' + deviceId + '/actions/enable',
+                            headers: {
+                                'content-type': 'application/json',
+                                'Authorization': "Bearer " + webUiToken
+                            },
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [dismissed device]'  -->" + error);
+                            else {
+                                console.log(body);
+                                response.statusCode.should.be.equal(409);
+                                var disableResults = JSON.parse(body);
+                                disableResults.should.have.properties('error', 'statusCode', 'message');
+                                disableResults.message.should.be.eql("Dismissed Device. Status cannot be changed");
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+    });
+
+    describe('POST /devices/:id/actions/disable', function () {
+
+        it('must test API action disable/enable [device not exist] ', function (done) {
+
+            Devices.findByIdAndRemove(deviceId,function(err,deletedDevice){
+                if (err) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device not exist]'  -->" + err);
+                else {
+                    request.post({
+                        url: APIURL + '/' + deviceId + '/actions/disable',
+                        headers: {
+                            'content-type': 'application/json',
+                            'Authorization': "Bearer " + webUiToken
+                        },
+                    }, function (error, response, body) {
+
+                        if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device not exist]'  -->" + error);
+                        else {
+                            response.statusCode.should.be.equal(409);
+                            var disableResults = JSON.parse(body);
+                            disableResults.should.have.properties('error', 'statusCode', 'message');
+                            disableResults.message.should.be.eql("Device not exist");
+                        }
+                        request.post({
+                            url: APIURL + '/' + deviceId + '/actions/enable',
+                            headers: {
+                                'content-type': 'application/json',
+                                'Authorization': "Bearer " + webUiToken
+                            },
+                        }, function (error, response, body) {
+
+                            if (error) consoleLogError.printErrorLog("POST /devices/:id/actions/disable: 'must test API action disable [device not exist]'  -->" + error);
+                            else {
+                                response.statusCode.should.be.equal(409);
+                                var disableResults = JSON.parse(body);
+                                disableResults.should.have.properties('error', 'statusCode', 'message');
+                                disableResults.message.should.be.eql("Device not exist");
+                            }
+                            done();
+                        });
+                    });
+                }
+            });
+        });
+    });
 
 });

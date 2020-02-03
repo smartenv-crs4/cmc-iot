@@ -26,6 +26,7 @@ var parseRequestMiddleware=require('./middlewares/parseRequestMiddleware');
 var authorisationManager=require('./middlewares/authorisationMiddleware');
 var devicesHandler=require('./routesHandlers/deviceHandler');
 var mongosecurity=require('./middlewares/mongoDbinjectionSecurity');
+var conf = require('propertiesmanager').conf;
 
 
 
@@ -76,14 +77,14 @@ router.delete('/:id',[authorisationManager.checkToken], function(req, res, next)
 
 
 /* Update devices. */
-router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["device"]), function(req, res, next) {
+router.put('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions],parseRequestMiddleware.validateBody(["device"]),parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed"],conf.authorizationVerbToHandleDismissedStatus), function(req, res, next) {
   devicesHandler.updateDevice(req,res,next);
 });
 
 
 
 /* Read devices. */
-router.get('/:id',[authorisationManager.checkToken],parseRequestMiddleware.parseFields, function(req, res, next) {
+router.get('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions],parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed"],conf.authorizationVerbToHandleDismissedStatus), function(req, res, next) {
   devicesHandler.getDeviceById(req,res,next);
 });
 

@@ -22,6 +22,7 @@
 
 
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
+var thingsDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var Observation = require('../../../DBEngineHandler/drivers/observationDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
@@ -33,6 +34,7 @@ var should=require('should');
 
 var webUiToken;
 var deviceId;
+var thingId;
 
 
 describe('Devices API Test - [CRUD-TESTS]', function () {
@@ -61,6 +63,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
         deviceDocuments.createDocuments(100,function(err,foreignKey){
             if (err) consoleLogError.printErrorLog("Device CRUD-Tests.js - beforeEach - Devices.create ---> " + err);
             deviceId=foreignKey.deviceId;
+            thingId=foreignKey.thingId;
             done();
         });
     });
@@ -81,7 +84,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     describe('POST /device', function(){
 
         it('must test device creation [create Device]', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -97,7 +100,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('thingId');
                     results.should.have.property('typeId');
                     results.should.have.property('disabled');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                 }
                 done();
             });
@@ -106,6 +109,64 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     });
 
 
+    describe('POST /device', function(){
+
+        it('must test device creation [Create Device. dismissed Thing]', function(done){
+
+            thingsDriver.findByIdAndUpdate(thingId,{dismissed:true},function(err,dismissedThing){
+                if(err) consoleLogError.printErrorLog("POST /device: 'must test device creation [Create Device. dismissed Thing] -->" + error.message);
+                else{
+                    var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
+                    var requestParams={
+                        url:APIURL,
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [Create Device. dismissed Thing] -->" + error.message);
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(409);
+                            results.should.have.properties('error', 'statusCode', 'message');
+                            results.message.should.be.eql("Cannot create device due to associated thing is dismissed");
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+    });
+
+
+
+    describe('POST /device', function(){
+
+        it('must test device creation [Create Device. Not Available Thing]', function(done){
+
+            thingsDriver.findByIdAndRemove(thingId,function(err,deletedThing){
+                if(err) consoleLogError.printErrorLog("POST /device: 'must test device creation [Create Device.  Not Available Thing] -->" + error.message);
+                else{
+                    var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
+                    var requestParams={
+                        url:APIURL,
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog("POST /device: 'must test device creation [Create Device.  Not Available Thing] -->" + error.message);
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(409);
+                            results.should.have.properties('error', 'statusCode', 'message');
+                            results.message.should.be.eql("Cannot create device due to associated thing is not available");
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+    });
+
     /******************************************************************************************************************
      ********************************************* READ TESTS (Get )**********************************************
      ***************************************************************************************************************** */
@@ -113,7 +174,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     describe('GET /device', function(){
 
         it('must test get device filter by disabled(Boolean)', function(done){
-            var bodyParam=JSON.stringify({device:{disabled:true,name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{disabled:true,name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -145,6 +206,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                         resultsById.devices[0].should.have.property('thingId');
                         resultsById.devices[0].should.have.property('typeId');
                         resultsById.devices[0].should.have.property('disabled');
+                        resultsById.devices[0].should.not.have.property('dismissed');
                         resultsById.devices[0].disabled.should.be.true();
                         resultsById.devices.length.should.be.eql(1);
                         resultsById.devices[0]._id.should.be.eql(results._id);
@@ -185,7 +247,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     describe('GET /device/:id', function(){
 
         it('must test get device by Id', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -214,6 +276,51 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                         resultsById.should.have.property('description');
                         resultsById.should.have.property('thingId');
                         resultsById.should.have.property('typeId');
+                        resultsById.should.have.property('disabled');
+                        resultsById.should.have.property('dismissed');
+                        resultsById._id.should.be.eql(results._id);
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
+
+    describe('GET /device/:id', function(){
+
+        it('must test get device by Id (remove dismissed if not authorised)', function(done){
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Device
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("GET /device/:id :''must test get device by Id (remove dismissed if not authorised -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('thingId');
+                    results.should.have.property('typeId');
+                }
+                // todo remove disableAdmin=true when acl mucroservice is On. Used only for testing
+                var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken+ "&disableAdmin=true";
+                request.get(geByIdRequestUrl,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("GET /device/:id :''must test get device by Id (remove dismissed if not authorised -->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.property('name');
+                        resultsById.should.have.property('description');
+                        resultsById.should.have.property('thingId');
+                        resultsById.should.have.property('typeId');
+                        resultsById.should.have.property('disabled');
+                        resultsById.should.not.have.property('dismissed');
                         resultsById._id.should.be.eql(results._id);
                     }
                     done();
@@ -224,6 +331,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     });
 
 
+
     /******************************************************************************************************************
      ********************************************* UPDATE TESTS (PUT))**********************************************
      ***************************************************************************************************************** */
@@ -231,7 +339,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     describe('PUT /device/:id', function(){
 
         it('must test update device by Id', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -248,6 +356,8 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('description');
                     results.should.have.property('thingId');
                     results.should.have.property('typeId');
+                    results.should.not.have.property('dismissed');
+                    results.should.have.property('disabled');
                 }
 
 
@@ -267,6 +377,62 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                         resultsById.should.have.property('description');
                         resultsById.should.have.property('thingId');
                         resultsById.should.have.property('typeId');
+                        resultsById.should.have.property('dismissed');
+                        resultsById.should.have.property('disabled');
+                        resultsById._id.should.be.eql(results._id);
+                        resultsById.name.should.be.eql(nameUpdated);
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
+
+
+    describe('PUT /device/:id', function(){
+
+        it('must test update device and remove dismissed field from results', function(done){
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Device
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("PUT /device/:id :''must test update device and remove dismissed field from results -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('thingId');
+                    results.should.have.property('typeId');
+                    results.should.not.have.property('dismissed');
+                    results.should.have.property('disabled');
+                }
+
+
+                var nameUpdated="nameUpdated";
+                bodyParam=JSON.stringify({device:{name:nameUpdated}, access_token:webUiToken});
+                requestParams={
+                    url:APIURL+"/" + results._id+ "?disableAdmin=true",
+                    headers:{'content-type': 'application/json'},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /device/:id :''must test update device and remove dismissed field from results -->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.property('name');
+                        resultsById.should.have.property('description');
+                        resultsById.should.have.property('thingId');
+                        resultsById.should.have.property('typeId');
+                        resultsById.should.not.have.property('dismissed');
+                        resultsById.should.have.property('disabled');
                         resultsById._id.should.be.eql(results._id);
                         resultsById.name.should.be.eql(nameUpdated);
                     }
@@ -280,7 +446,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
     describe('PUT /device/:id', function(){
 
         it('\'must test update device by Id error due to dismissed thing', function(done){
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -341,7 +507,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
 
         it('must test device Delete (without observation)', function(done){
 
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -357,7 +523,8 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('description');
                     results.should.have.property('thingId');
                     results.should.have.property('typeId');
-                    results.dismissed.should.be.false();
+                    results.should.not.have.property('dismissed');
+
                 }
 
                 // DELETE Device
@@ -371,6 +538,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                         resultsDeleteById.should.have.property('description');
                         resultsDeleteById.should.have.property('thingId');
                         resultsDeleteById.should.have.property('typeId');
+                        resultsDeleteById.should.have.property('dismissed');
                         resultsDeleteById._id.should.be.eql(results._id);
                         resultsDeleteById.dismissed.should.be.false();
                     }
@@ -397,7 +565,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
 
         it('must test device Delete (with observation)', function(done){
 
-            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:Devices.ObjectId(), typeId:Devices.ObjectId()}});
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
             var requestParams={
                 url:APIURL,
                 headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
@@ -413,7 +581,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('description');
                     results.should.have.property('thingId');
                     results.should.have.property('typeId');
-                    results.dismissed.should.be.false();
+                    results.should.not.have.property('dismissed');
                 }
 
 
@@ -431,8 +599,10 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                             resultsDeleteById.should.have.property('description');
                             resultsDeleteById.should.have.property('thingId');
                             resultsDeleteById.should.have.property('typeId');
+                            resultsDeleteById.should.have.property('dismissed');
                             resultsDeleteById._id.should.be.eql(results._id);
                             resultsDeleteById.dismissed.should.be.true();
+                            resultsDeleteById.disabled.should.be.true();
                         }
 
                         //Search Device to confirm delete
@@ -446,8 +616,10 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                                 resultsFindById.should.have.property('description');
                                 resultsFindById.should.have.property('thingId');
                                 resultsFindById.should.have.property('typeId');
+                                resultsFindById.should.have.property('dismissed');
                                 resultsFindById._id.should.be.eql(results._id);
-                                resultsFindById.dismissed.should.be.true();
+                                resultsDeleteById.dismissed.should.be.true();
+                                resultsDeleteById.disabled.should.be.true();
                             }
                             Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                 should(err).be.null();
@@ -459,5 +631,115 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
             });
         });
     });
+
+
+    describe('DELETE /device', function(){
+
+        it('must test device Delete (delete dismissed device)', function(done){
+
+            var bodyParam=JSON.stringify({device:{name:"name", description: "description",thingId:thingId, typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            // create Device
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("DELETE /device: 'must test device Delete (delete dismissed device) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('thingId');
+                    results.should.have.property('typeId');
+                    results.should.not.have.property('dismissed');
+                }
+
+
+                // create Observation
+                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: Observation.ObjectId()},function(err,observation){
+
+                    // DELETE Device
+                    var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                    request.del(geByIdRequestUrl,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog("DELETE /device: 'must test device Delete (delete dismissed device) -->" + error.message);
+                        else{
+                            var resultsDeleteById = JSON.parse(body);
+                            response.statusCode.should.be.equal(200);
+                            resultsDeleteById.should.have.property('name');
+                            resultsDeleteById.should.have.property('description');
+                            resultsDeleteById.should.have.property('thingId');
+                            resultsDeleteById.should.have.property('typeId');
+                            resultsDeleteById.should.have.property('dismissed');
+                            resultsDeleteById._id.should.be.eql(results._id);
+                            resultsDeleteById.dismissed.should.be.true();
+                            resultsDeleteById.disabled.should.be.true();
+                        }
+
+                        //Search Device to confirm delete
+                        var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                        request.get(geByIdRequestUrl,function(error, response, body){
+                            if(error) consoleLogError.printErrorLog("DELETE /device: 'must test device Delete (delete dismissed device) -->" + error.message);
+                            else{
+                                var resultsFindById = JSON.parse(body);
+                                response.statusCode.should.be.equal(200);
+                                resultsFindById.should.have.property('name');
+                                resultsFindById.should.have.property('description');
+                                resultsFindById.should.have.property('thingId');
+                                resultsFindById.should.have.property('typeId');
+                                resultsFindById.should.have.property('dismissed');
+                                resultsFindById._id.should.be.eql(results._id);
+                                resultsDeleteById.dismissed.should.be.true();
+                                resultsDeleteById.disabled.should.be.true();
+
+                                // DELETE Device again
+                                var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                                request.del(geByIdRequestUrl,function(error, response, body){
+                                    if(error) consoleLogError.printErrorLog("DELETE /device: 'must test device Delete (delete dismissed device) -->" + error.message);
+                                    else{
+                                        var resultsDeleteById = JSON.parse(body);
+                                        response.statusCode.should.be.equal(200);
+                                        resultsDeleteById.should.have.property('name');
+                                        resultsDeleteById.should.have.property('description');
+                                        resultsDeleteById.should.have.property('thingId');
+                                        resultsDeleteById.should.have.property('typeId');
+                                        resultsDeleteById.should.have.property('dismissed');
+                                        resultsDeleteById._id.should.be.eql(results._id);
+                                        resultsDeleteById.dismissed.should.be.true();
+                                        resultsDeleteById.disabled.should.be.true();
+                                    }
+
+                                    //Search Device to confirm delete
+                                    var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
+                                    request.get(geByIdRequestUrl,function(error, response, body){
+                                        if(error) consoleLogError.printErrorLog("DELETE /device: 'must test device Delete (delete dismissed device) -->" + error.message);
+                                        else{
+                                            var resultsFindById = JSON.parse(body);
+                                            response.statusCode.should.be.equal(200);
+                                            resultsFindById.should.have.property('name');
+                                            resultsFindById.should.have.property('description');
+                                            resultsFindById.should.have.property('thingId');
+                                            resultsFindById.should.have.property('typeId');
+                                            resultsFindById.should.have.property('dismissed');
+                                            resultsFindById._id.should.be.eql(results._id);
+                                            resultsDeleteById.dismissed.should.be.true();
+                                            resultsDeleteById.disabled.should.be.true();
+                                        }
+                                        Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
+                                            should(err).be.null();
+                                            done();
+                                        });
+                                    });
+                                });
+                            }
+                        });
+                    });
+                });
+            });
+        });
+    });
+
+
 
 });

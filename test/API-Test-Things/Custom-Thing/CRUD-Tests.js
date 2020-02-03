@@ -100,7 +100,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
                 }
@@ -132,7 +132,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.ownerId.should.be.eql(conf.testConfig.adminID);
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
                 }
@@ -171,7 +171,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
                 }
@@ -219,7 +219,8 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(201);
-                    results.should.have.properties('name','description','api','direct','ownerId','vendorId','siteId','dismissed','disabled','mobile');
+                    results.should.have.properties('name','description','api','direct','ownerId','vendorId','siteId','disabled','mobile');
+                    results.should.not.have.property('dismissed');
                 }
                // todo remove disableAdmin=true when acl mucroservice is On. Used only for testing
                 var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken + "&disableAdmin=true";
@@ -247,7 +248,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
 
 
 
-    describe('GET /device', function(){
+    describe('GET /things', function(){
 
         it('must test get thing filter by disabled(Boolean)', function(done){
             var bodyParam=JSON.stringify({thing:{disabled:true, name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
@@ -282,6 +283,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                         resultsById.things[0].should.have.property('vendorId');
                         resultsById.things[0].should.have.property('ownerId');
                         resultsById.things[0].should.have.property('disabled');
+                        resultsById.things[0].should.not.have.property('dismissed');
                         resultsById.things[0].disabled.should.be.true();
                         resultsById.things.length.should.be.eql(1);
                         resultsById.things[0]._id.should.be.eql(results._id);
@@ -366,7 +368,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
                 }
@@ -405,6 +407,67 @@ describe('Things API Test - [CRUD-TESTS]', function () {
     });
 
 
+    describe('PUT /thing/:id', function(){
+
+        it('must test update thing by Id and remove field dismissed from results', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+
+            // Crete Thing
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("PUT /thing/:id :'must test update thing by Id and remove field dismissed from results -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('api');
+                    results.should.have.property('direct');
+                    results.should.have.property('ownerId');
+                    results.should.have.property('vendorId');
+                    results.should.have.property('siteId');
+                    results.should.not.have.property('dismissed');
+                    results.should.have.property('disabled');
+                    results.should.have.property('mobile');
+                }
+
+
+                var nameUpdated="nameUpdated";
+                bodyParam=JSON.stringify({thing:{name:nameUpdated}, access_token:webUiToken});
+                requestParams={
+                    url:APIURL+"/" + results._id+ "?disableAdmin=true",
+                    headers:{'content-type': 'application/json'},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog("PUT /thing/:id :'must test update thing by Id and remove field dismissed from results -->" + error.message);
+                    else{
+                        var resultsById = JSON.parse(body);
+                        response.statusCode.should.be.equal(200);
+                        resultsById.should.have.property('name');
+                        resultsById.should.have.property('description');
+                        resultsById.should.have.property('api');
+                        resultsById.should.have.property('direct');
+                        resultsById.should.have.property('ownerId');
+                        resultsById.should.have.property('vendorId');
+                        resultsById.should.have.property('siteId');
+                        resultsById.should.not.have.property('dismissed');
+                        resultsById.should.have.property('disabled');
+                        resultsById.should.have.property('mobile');
+                        resultsById._id.should.be.eql(results._id);
+                        resultsById.name.should.be.eql(nameUpdated);
+                    }
+                    done();
+                });
+            });
+
+        });
+    });
+
 
     describe('PUT /thing/:id', function(){
 
@@ -429,7 +492,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
                 }
@@ -496,10 +559,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
                 // DELETE Thing
@@ -558,10 +620,6 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                 else{
                     var results = JSON.parse(body);
                     response.statusCode.should.be.equal(201);
-                    // results.should.have.property('name');
-                    // results.should.have.property('description');
-                    // results.should.have.property('thingId');
-                    // results.should.have.property('typeId');
                     results.should.have.property('name');
                     results.should.have.property('description');
                     results.should.have.property('api');
@@ -569,10 +627,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
 
@@ -646,10 +703,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
 
@@ -685,7 +741,8 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                         resultsDeleteById.should.have.property('disabled');
                                         resultsDeleteById.should.have.property('mobile');
                                         resultsDeleteById._id.should.be.eql(results._id);
-                                        resultsDeleteById.dismissed.should.be.true();
+                                        resultsDeleteById.dismissed.should.be.true();                                        ;
+                                        resultsDeleteById.disabled.should.be.true();
                                     }
 
                                     //Search Thing to confirm delete
@@ -707,6 +764,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                             resultsGetById.should.have.property('mobile');
                                             resultsGetById._id.should.be.eql(results._id);
                                             resultsGetById.dismissed.should.be.true();
+                                            resultsGetById.disabled.should.be.true();
                                             resultsGetById.ownerId.should.be.eql(conf.cmcIoTThingsOwner._id);
                                         }
 
@@ -718,7 +776,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                             findBiIdDev.should.have.property('thingId');
                                             findBiIdDev.should.have.property('typeId');
                                             findBiIdDev.dismissed.should.be.true();
-                                            findBiIdDev.disabled.should.be.false();
+                                            findBiIdDev.disabled.should.be.true();
                                             Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                                 should(err).be.null();
                                                 done();
@@ -733,6 +791,179 @@ describe('Things API Test - [CRUD-TESTS]', function () {
             });
         });
     });
+
+
+
+    describe('DELETE /thing', function(){
+
+        it('must test thing Delete (delete dismissed thing)', function(done){
+
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"HTTP://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            // create Thing
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('name');
+                    results.should.have.property('description');
+                    results.should.have.property('api');
+                    results.should.have.property('direct');
+                    results.should.have.property('ownerId');
+                    results.should.have.property('vendorId');
+                    results.should.have.property('siteId');
+                    results.should.not.have.property('dismissed');
+                    results.should.have.property('disabled');
+                    results.should.have.property('mobile');
+                }
+
+
+                // create Device
+                Device.create({name:"name", description: "description",thingId:results._id, typeId:Device.ObjectId()},function(err,device){
+                    if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                    else {
+
+                        device.should.have.property('name');
+                        device.should.have.property('description');
+                        device.should.have.property('thingId');
+                        device.should.have.property('typeId');
+
+                        // create Observation
+                        Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:device._id,unitId: Observation.ObjectId()},function(err,observation){
+                            if(error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                            else {
+                                // DELETE Thing
+                                var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken;
+                                request.del(geByIdRequestUrl, function (error, response, body) {
+                                    if (error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                                    else {
+                                        var resultsDeleteById = JSON.parse(body);
+                                        response.statusCode.should.be.equal(200);
+                                        resultsDeleteById.should.have.property('name');
+                                        resultsDeleteById.should.have.property('description');
+                                        resultsDeleteById.should.have.property('api');
+                                        resultsDeleteById.should.have.property('direct');
+                                        resultsDeleteById.should.have.property('ownerId');
+                                        resultsDeleteById.should.have.property('vendorId');
+                                        resultsDeleteById.should.have.property('siteId');
+                                        resultsDeleteById.should.have.property('dismissed');
+                                        resultsDeleteById.should.have.property('disabled');
+                                        resultsDeleteById.should.have.property('mobile');
+                                        resultsDeleteById._id.should.be.eql(results._id);
+                                        resultsDeleteById.dismissed.should.be.true();                                        ;
+                                        resultsDeleteById.disabled.should.be.true();
+                                    }
+
+                                    //Search Thing to confirm delete
+                                    var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken;
+                                    request.get(geByIdRequestUrl, function (error, response, body) {
+                                        if (error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                                        else {
+                                            var resultsGetById = JSON.parse(body);
+                                            response.statusCode.should.be.equal(200);
+                                            resultsGetById.should.have.property('name');
+                                            resultsGetById.should.have.property('description');
+                                            resultsGetById.should.have.property('api');
+                                            resultsGetById.should.have.property('direct');
+                                            resultsGetById.should.have.property('ownerId');
+                                            resultsGetById.should.have.property('vendorId');
+                                            resultsGetById.should.have.property('siteId');
+                                            resultsGetById.should.have.property('dismissed');
+                                            resultsGetById.should.have.property('disabled');
+                                            resultsGetById.should.have.property('mobile');
+                                            resultsGetById._id.should.be.eql(results._id);
+                                            resultsGetById.dismissed.should.be.true();
+                                            resultsGetById.disabled.should.be.true();
+                                            resultsGetById.ownerId.should.be.eql(conf.cmcIoTThingsOwner._id);
+                                        }
+
+                                        // search device to confirm device deletion
+                                        Device.findById(device._id, null, function (err, findBiIdDev) {
+                                            should(err).be.null();
+                                            findBiIdDev.should.have.property('name');
+                                            findBiIdDev.should.have.property('description');
+                                            findBiIdDev.should.have.property('thingId');
+                                            findBiIdDev.should.have.property('typeId');
+                                            findBiIdDev.dismissed.should.be.true();
+                                            findBiIdDev.disabled.should.be.true();
+
+                                            // DELETE Thing again
+                                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken;
+                                            request.del(geByIdRequestUrl, function (error, response, body) {
+                                                if (error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                                                else {
+                                                    var resultsDeleteById = JSON.parse(body);
+                                                    response.statusCode.should.be.equal(200);
+                                                    resultsDeleteById.should.have.property('name');
+                                                    resultsDeleteById.should.have.property('description');
+                                                    resultsDeleteById.should.have.property('api');
+                                                    resultsDeleteById.should.have.property('direct');
+                                                    resultsDeleteById.should.have.property('ownerId');
+                                                    resultsDeleteById.should.have.property('vendorId');
+                                                    resultsDeleteById.should.have.property('siteId');
+                                                    resultsDeleteById.should.have.property('dismissed');
+                                                    resultsDeleteById.should.have.property('disabled');
+                                                    resultsDeleteById.should.have.property('mobile');
+                                                    resultsDeleteById._id.should.be.eql(results._id);
+                                                    resultsDeleteById.dismissed.should.be.true();                                        ;
+                                                    resultsDeleteById.disabled.should.be.true();
+                                                }
+
+                                                //Search Thing to confirm delete
+                                                var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken;
+                                                request.get(geByIdRequestUrl, function (error, response, body) {
+                                                    if (error) consoleLogError.printErrorLog("DELETE /thing: 'must test thing Delete (delete dismissed thing) -->" + error.message);
+                                                    else {
+                                                        var resultsGetById = JSON.parse(body);
+                                                        response.statusCode.should.be.equal(200);
+                                                        resultsGetById.should.have.property('name');
+                                                        resultsGetById.should.have.property('description');
+                                                        resultsGetById.should.have.property('api');
+                                                        resultsGetById.should.have.property('direct');
+                                                        resultsGetById.should.have.property('ownerId');
+                                                        resultsGetById.should.have.property('vendorId');
+                                                        resultsGetById.should.have.property('siteId');
+                                                        resultsGetById.should.have.property('dismissed');
+                                                        resultsGetById.should.have.property('disabled');
+                                                        resultsGetById.should.have.property('mobile');
+                                                        resultsGetById._id.should.be.eql(results._id);
+                                                        resultsGetById.dismissed.should.be.true();
+                                                        resultsGetById.disabled.should.be.true();
+                                                        resultsGetById.ownerId.should.be.eql(conf.cmcIoTThingsOwner._id);
+                                                    }
+
+                                                    // search device to confirm device deletion
+                                                    Device.findById(device._id, null, function (err, findBiIdDev) {
+                                                        should(err).be.null();
+                                                        findBiIdDev.should.have.property('name');
+                                                        findBiIdDev.should.have.property('description');
+                                                        findBiIdDev.should.have.property('thingId');
+                                                        findBiIdDev.should.have.property('typeId');
+                                                        findBiIdDev.dismissed.should.be.true();
+                                                        findBiIdDev.disabled.should.be.true();
+                                                        Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
+                                                            should(err).be.null();
+                                                            done();
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    });
+
 
 
     describe('DELETE /thing', function(){
@@ -758,10 +989,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
 
@@ -855,10 +1085,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
                 // create Device
@@ -903,6 +1132,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                 resultsDeleteById.should.have.property('mobile');
                                                 resultsDeleteById._id.should.be.eql(results._id);
                                                 resultsDeleteById.dismissed.should.be.true();
+                                                resultsDeleteById.disabled.should.be.true();
                                             }
 
                                             //Search Thing to confirm delete
@@ -933,7 +1163,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                         findBiIdDev.should.have.property('thingId');
                                                         findBiIdDev.should.have.property('typeId');
                                                         findBiIdDev.dismissed.should.be.true();
-                                                        findBiIdDev.disabled.should.be.false();
+                                                        findBiIdDev.disabled.should.be.true();
                                                         Device.findById(device2._id, null, function (err, findBiIdDev2) {
                                                             should(err).be.null();
                                                             should(findBiIdDev2).be.null();
@@ -979,10 +1209,9 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                     results.should.have.property('ownerId');
                     results.should.have.property('vendorId');
                     results.should.have.property('siteId');
-                    results.should.have.property('dismissed');
+                    results.should.not.have.property('dismissed');
                     results.should.have.property('disabled');
                     results.should.have.property('mobile');
-                    results.dismissed.should.be.false();
                 }
 
                 // create Device
@@ -1030,6 +1259,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                         resultsDeleteById.should.have.property('mobile');
                                                         resultsDeleteById._id.should.be.eql(results._id);
                                                         resultsDeleteById.dismissed.should.be.true();
+                                                        resultsDeleteById.disabled.should.be.true();
                                                     }
 
                                                     //Search Thing to confirm delete
@@ -1051,6 +1281,7 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                             resultsGetById.should.have.property('mobile');
                                                             resultsGetById._id.should.be.eql(results._id);
                                                             resultsGetById.dismissed.should.be.true();
+                                                            resultsGetById.disabled.should.be.true();
                                                             resultsGetById.ownerId.should.be.eql(conf.cmcIoTThingsOwner._id);
                                                             // search device1 to confirm device1 dismiss
                                                             Device.findById(device1._id, null, function (err, findBiIdDev) {
@@ -1060,14 +1291,14 @@ describe('Things API Test - [CRUD-TESTS]', function () {
                                                                 findBiIdDev.should.have.property('thingId');
                                                                 findBiIdDev.should.have.property('typeId');
                                                                 findBiIdDev.dismissed.should.be.true();
-                                                                findBiIdDev.disabled.should.be.false();
+                                                                findBiIdDev.disabled.should.be.true();
                                                                 Device.findById(device2._id, null, function (err, findBiIdDev2) {
                                                                     findBiIdDev2.should.have.property('name');
                                                                     findBiIdDev2.should.have.property('description');
                                                                     findBiIdDev2.should.have.property('thingId');
                                                                     findBiIdDev2.should.have.property('typeId');
                                                                     findBiIdDev2.dismissed.should.be.true();
-                                                                    findBiIdDev2.disabled.should.be.false();;
+                                                                    findBiIdDev2.disabled.should.be.true();
                                                                     Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                                                         should(err).be.null();
                                                                         Observation.findByIdAndRemove(observation2._id,null,function(err, removedObs){

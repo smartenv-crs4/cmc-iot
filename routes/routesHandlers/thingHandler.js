@@ -208,17 +208,24 @@ var observationUtility=require('./handlerUtility/observationUtility');
 //End macro
 
 function deleteThingById(id,res){
-    thingDriver.findByIdAndRemove(id, function (err, deletedThing) {
+    thingDriver.findByIdAndRemove(id, function (err,deletedThing ) {
         res.httpResponse(err,null,deletedThing);
     });
 }
 
 
 
-function enableDisableThingById(id,action,res){
-    thingDriver.findByIdAndUpdate(id,{disabled:action}, function (err, updatedThing) {
-        res.httpResponse(err,200,updatedThing);
-    });
+function enableDisableThingById(currentThing,action,res){
+    if(currentThing.disabled!=action){
+        thingDriver.findByIdAndUpdate(currentThing._id,{disabled:action}, function (err, updatedThing) {
+            if (updatedThing) updatedThing["dismissed"]=undefined;
+            res.httpResponse(err,200,updatedThing);
+        });
+    }else{
+        if (currentThing) currentThing["dismissed"]=undefined;
+        res.httpResponse(null,200,currentThing);
+    }
+
 }
 
 
@@ -229,6 +236,7 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
             return callback(err);
         }else{
             if(action){
+                // create associated device disabled
                 disabledDeviceDriver.create({deviceId:deviceId,thingId:thingId},function(err,disabledDeviceList){
                     if(err){
                         return callback(err);
@@ -239,7 +247,6 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
             }else{
                 callback();
             }
-
         }
     });
 }
@@ -271,6 +278,7 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
  */
 module.exports.postCreateThing = function (req, res, next) {
     thingDriver.create(req.body.thing, function (err, results) {
+        if (results) results["dismissed"]=undefined;
         res.httpResponse(err,null,results);
     });
 };
@@ -311,7 +319,7 @@ module.exports.updateThing = function (req, res, next) {
                         Err.name = "DismissedError";
                         return res.httpResponse(Err, null, null);
                     } else {
-                        thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing, ["dismissed", "disabled"], function (err, results) {
+                        thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing, ["dismissed", "disabled"], req.dbQueryFields ,function (err, results) {
                             res.httpResponse(err, null, results);
                         });
                     }
@@ -445,76 +453,105 @@ module.exports.disableEnableThing = function (req, res, next) {
         res.httpResponse(err,null,null);
     }else{
         var id=req.params.id;
-        if(req.disableThing){ // disable
 
-            //  Get All associated enabled devices then
-            //     - set device as disabled
-            //     - save disabling into disabledDevice collection
+        thingDriver.findById(id,function(err,cThing){
+           if(err){
+               return res.httpResponse(err,null,null);
+           } else{
+               if(cThing){
+                   if(cThing.dismissed){
+                       res.httpResponse(null,409,"Dismissed Thing. Status cannot be changed");
+                   }else{
 
-            deviceDriver.findAll({thingId: id, disabled:false}, null, {totalCount: true}, function (err, results) {
-                if (err) {
-                    return res.httpResponse(err,null,null);
-                } else {
-                    if ((results._metadata.totalCount) > 0) { // there are associated device
+                       if(req.disableThing){ // disable
 
-                        //  For Each Device
-                        //      - set device as disabled
-                        //      - save disabling into disabledDevice collection
+                           if(cThing.disabled){
+                               enableDisableThingById(cThing, true,res);
+                           }else{
 
-                        async.each(results.devices, function(device, callbackDevice) {
-                            enableDisableDeviceyId(device._id,id,true,function(err){
-                               callbackDevice(err);
-                            });
-                        }, function(err) {
-                            if(err){
-                                return res.httpResponse(err,null,null);
-                            }else {
-                                enableDisableThingById(id, true, res);
-                            }
-                        });
-                    } else { // there aren't associated device then disable
-                        enableDisableThingById(id,true,res);
-                    }
-                }
-            });
-        }else{  //enable
+                               //  Get All associated enabled devices then
+                               //     - set device as disabled
+                               //     - save disabling into disabledDevice collection
+
+                               deviceDriver.findAll({thingId: id, disabled:false}, null, {totalCount: true}, function (err, results) {
+                                   if (err) {
+                                       return res.httpResponse(err,null,null);
+                                   } else {
+                                       if ((results._metadata.totalCount) > 0) { // there are associated device
+
+                                           //  For Each Device
+                                           //      - set device as disabled
+                                           //      - save disabling into disabledDevice collection
+
+                                           async.each(results.devices, function(device, callbackDevice) {
+                                               enableDisableDeviceyId(device._id,id,true,function(err){
+                                                   callbackDevice(err);
+                                               });
+                                           }, function(err) {
+                                               if(err){
+                                                   return res.httpResponse(err,null,null);
+                                               }else {
+                                                   enableDisableThingById(cThing, true, res);
+                                               }
+                                           });
+                                       } else { // there aren't associated device then disable
+                                           enableDisableThingById(cThing,true,res);
+                                       }
+                                   }
+                               });
+                           }
 
 
-            //  Get All associated devices previously disabled
+                       }else{  //enable
 
-            disabledDeviceDriver.findAll({thingId: id}, null, {totalCount: true}, function (err, results) {
-                if (err) {
-                    return res.httpResponse(err,null,null);
-                } else {
-                    if ((results._metadata.totalCount) > 0) { // there are associated device
+                           if(cThing.disabled) {
 
-                        //  1. For Each Device
-                        //      - set device as enabled
-                        //  2. Delete all previously disabled device list
+                               //  Get All associated devices previously disabled
 
-                        async.each(results.disabledDevices, function(device, callbackDevice) {
-                            enableDisableDeviceyId(device.deviceId,id,false,function(err){
-                                callbackDevice(err);
-                            });
-                        }, function(err) {
-                            if(err){
-                                return res.httpResponse(err,null,null);
-                            }else {
-                                disabledDeviceDriver.deleteMany({thingId:id},function(err){
-                                    if(err){
-                                        return res.httpResponse(err,null,null);
-                                    }else {
-                                        enableDisableThingById(id, false, res);
-                                    }
-                                });
-                            }
-                        });
-                    } else { // there aren't associated device then disable
-                        enableDisableThingById(id,false,res);
-                    }
-                }
-            });
-        }
+                               disabledDeviceDriver.findAll({thingId: id}, null, {totalCount: true}, function (err, results) {
+                                   if (err) {
+                                       return res.httpResponse(err, null, null);
+                                   } else {
+                                       if ((results._metadata.totalCount) > 0) { // there are associated device
+
+                                           //  1. For Each Device
+                                           //      - set device as enabled
+                                           //  2. Delete all previously disabled device list
+
+                                           async.each(results.disabledDevices, function (device, callbackDevice) {
+                                               enableDisableDeviceyId(device.deviceId, id, false, function (err) {
+                                                   callbackDevice(err);
+                                               });
+                                           }, function (err) {
+                                               if (err) {
+                                                   return res.httpResponse(err, null, null);
+                                               } else {
+                                                   disabledDeviceDriver.deleteMany({thingId: id}, function (err) {
+                                                       if (err) {
+                                                           return res.httpResponse(err, null, null);
+                                                       } else {
+                                                           enableDisableThingById(cThing, false, res);
+                                                       }
+                                                   });
+                                                   // enableDisableThingById(id, false, res);
+                                               }
+                                           });
+                                       } else { // there aren't associated device then enable
+                                           enableDisableThingById(cThing, false, res);
+                                       }
+                                   }
+                               });
+                           }else{
+                               enableDisableThingById(cThing, false, res);
+                           }
+                       }
+                   }
+
+               }else{
+                   res.httpResponse(null,409,"Thing not exist");
+               }
+           }
+        });
 
     }
 };
@@ -579,7 +616,7 @@ module.exports.deleteThing = function (req, res, next) {
                     });
                 }, function(err) {
                     if(dismiss){  // there are devices(dismissed) with observation then thing must be dismissed and owner change to cmc-IoT
-                        thingDriver.findByIdAndUpdate(id, {dismissed: true,ownerId:config.cmcIoTThingsOwner._id}, function (err, dismissedThing) {
+                        thingDriver.findByIdAndUpdate(id, {disabled:true,dismissed: true,ownerId:config.cmcIoTThingsOwner._id}, function (err, dismissedThing) {
                             res.httpResponse(err,null,dismissedThing);
                         });
                     }else{ // there aren't devices(dismissed) with observation then thing must be deleted

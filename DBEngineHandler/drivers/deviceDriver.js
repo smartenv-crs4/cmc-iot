@@ -71,8 +71,14 @@ module.exports.findById = function(id,projection,options,callback){
 
 
 /* findOne Device. */
-module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    devices.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
+module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,fieldsToReturn,callback){
+    var qOptions={new:true,runValidators: true};
+    if(callback){
+        if(fieldsToReturn) qOptions["select"]=fieldsToReturn;
+    }else{
+        callback=fieldsToReturn;
+    }
+    devices.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,qOptions,callback);
 };
 
 

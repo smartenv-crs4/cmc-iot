@@ -25,6 +25,7 @@ var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 var observationUtility=require('./handlerUtility/observationUtility');
+var thingAndDeviceHandlerUtility=require("./handlerUtility/thingAndDeviceHandlerUtility");
 
 
 
@@ -245,8 +246,26 @@ var observationUtility=require('./handlerUtility/observationUtility');
  * @apiSampleRequest off
  */
 module.exports.postCreateDevice = function (req, res, next) {
-    deviceDriver.create(req.body.device, function (err, results) {
-        res.httpResponse(err,null,results);
+
+    var device=req.body.device;
+    thingAndDeviceHandlerUtility.getThingStatus(device.thingId,function(err,thing){
+        if (err) {
+            return res.httpResponse(err,null,null);
+        } else {
+
+            if(!thing){
+                res.httpResponse(null,409,"Cannot create device due to associated thing is not available");
+            }else{
+                if(thing.dismissed){
+                    res.httpResponse(null,409,"Cannot create device due to associated thing is dismissed");
+                }else{
+                    deviceDriver.create(device, function (err, results) {
+                        if (results) results["dismissed"]=undefined;
+                        res.httpResponse(err,null,results);
+                    });
+                }
+            }
+        }
     });
 };
 
@@ -288,7 +307,8 @@ module.exports.updateDevice = function (req, res, next) {
                 Err.name = "DismissedError";
                 return res.httpResponse(Err,null,null);
             }else{
-                deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"] ,function (err, results) {
+
+                deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"],req.dbQueryFields,function (err, results) {
                     res.httpResponse(err,null,results);
                 });
             }
@@ -345,10 +365,16 @@ module.exports.updateDevice = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
-function enableDisableDeviceById(id,action,res){
-    deviceDriver.findByIdAndUpdate(id,{disabled:action}, function (err, updatedDevice) {
-        res.httpResponse(err,200,updatedDevice);
-    });
+function enableDisableDeviceById(currentDevice,action,res){
+    if(currentDevice.disabled|=action) {
+        deviceDriver.findByIdAndUpdate(currentDevice._id, {disabled: action}, function (err, updatedDevice) {
+            if (updatedDevice) updatedDevice["dismissed"] = undefined;
+            res.httpResponse(err, 200, updatedDevice);
+        });
+    }else{
+        if (currentDevice) currentDevice["dismissed"] = undefined;
+        res.httpResponse(null, 200, currentDevice);
+    }
 }
 
 module.exports.disableEnableDevice = function (req, res, next) {
@@ -358,36 +384,50 @@ module.exports.disableEnableDevice = function (req, res, next) {
         res.httpResponse(err,null,null);
     }else{
         var id=req.params.id;
-        if(req.disableDevice){ // disable
-            enableDisableDeviceById(id,true,res);
-        }else{  //enable
 
-            //  Get device info to capture associated thing id then
-            //  -  Get associated thing  then
-            //       - if thing is disabled then device cannot be enabled
-            //       - if thing is not disabled then enable device
+        deviceDriver.findById(id,function(err,device){
+            if (err) {
+                return res.httpResponse(err,null,null);
+            } else {
+                if(device){
+                    if(device.dismissed){
+                        res.httpResponse(null,409,"Dismissed Device. Status cannot be changed");
+                    }else{
 
-            deviceDriver.findById(id,"thingId",function(err,device){
-                if (err) {
-                    return res.httpResponse(err,null,null);
-                } else {
-                    thingDriver.findById(device.thingId,"disabled",function(err,thing){
-                        if (err) {
-                            return res.httpResponse(err,null,null);
-                        } else {
-                            if(thing && thing.disabled){
-                                res.httpResponse(null,400,"Cannot enable device due to associated thing is not enabled");
-                            }else{
-                                if(!thing){
-                                    res.httpResponse(null,409,"Cannot enable device due to associated thing is not available");
-                                }else
-                                    enableDisableDeviceById(id,false,res);
-                            }
+                        if(req.disableDevice){ // disable
+                            enableDisableDeviceById(device,true,res);
+                        }else{  //enable
+
+                            //  Get device info to capture associated thing id then
+                            //  -  Get associated thing  then
+                            //       - if thing is disabled then device cannot be enabled
+                            //       - if thing is not disabled then enable device
+
+                            thingAndDeviceHandlerUtility.getThingStatus(device.thingId,function(err,thing){
+                                if (err) {
+                                    return res.httpResponse(err,null,null);
+                                } else {
+
+                                    if(!thing){
+                                        res.httpResponse(null,409,"Cannot enable device due to associated thing is not available");
+                                    }else{
+                                        if(thing.dismissed){
+                                            res.httpResponse(null,409,"Cannot enable device due to associated thing is dismissed");
+                                        }else if(thing.disabled){
+                                            res.httpResponse(null,409,"Cannot enable device due to associated thing is not enabled");
+                                        }else{
+                                            enableDisableDeviceById(device,false,res);
+                                        }
+                                    }
+                                }
+                            });
                         }
-                    });
+                    }
+                }else{
+                    res.httpResponse(null,409,"Device not exist");
                 }
-            });
-        }
+            }
+        });
     }
 };
 
@@ -524,7 +564,6 @@ module.exports.getDevices = function (req, res, next) {
 module.exports.deleteDevice = function (req, res, next) {
 
     var id = req.params.id;
-
     deviceUtility.deleteDevice(id,function(err,deletedDevice){
         res.httpResponse(err,null,deletedDevice);
     });

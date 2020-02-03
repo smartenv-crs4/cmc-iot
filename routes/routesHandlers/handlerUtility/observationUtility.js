@@ -23,6 +23,7 @@
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
 var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
 var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
+var thingAndDeviceHandlerUtility=require("./thingAndDeviceHandlerUtility");
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var async = require('async');
 
@@ -145,142 +146,142 @@ function validateAndUpdateObservationContent(id, observation, deviceStatus, call
 
 
 
-function getDeviceLocation(deviceInfo,callback){
-    //{type: "Point", coordinates: [1, 1]},
+// function getDeviceLocation(deviceInfo,callback){
+//     //{type: "Point", coordinates: [1, 1]},
+//
+//
+//     if(deviceInfo){
+//         if(deviceInfo.thing.mobile){ // it is a mobile device
+//             callback(null,deviceInfo);
+//         }else{ // it is a not mobile device
+//             var siteLocation=null;
+//             var siteId=deviceInfo.thing.siteId;
+//             async.whilst(
+//                 function test() {
+//                     return (siteLocation==null);
+//                 },
+//                 function iter(next) {
+//                     siteDriver.findById(siteId,null,null,function(err,siteInfo){
+//                         if(!err) {
+//                             siteLocation = (siteInfo && siteInfo.location && siteInfo.location.coordinates && (siteInfo.location.coordinates.length > 0)) ? siteInfo.location : null;
+//                             siteId = siteInfo.locatedInSiteId;
+//                         }
+//                         next(err,siteLocation);
+//                     })
+//                 },
+//                 function (err, locationSite) {
+//                     if(!err){
+//                         deviceInfo.location=locationSite;
+//                     }
+//                     callback(err,deviceInfo);
+//                 }
+//             );
+//         }
+//     }else{
+//         Err = new Error("The device/thing not exist.");
+//         Err.name = "NotExistError";
+//         callback(Err, null);
+//     }
+// }
 
 
-    if(deviceInfo){
-        if(deviceInfo.thing.mobile){ // it is a mobile device
-            callback(null,deviceInfo);
-        }else{ // it is a not mobile device
-            var siteLocation=null;
-            var siteId=deviceInfo.thing.siteId;
-            async.whilst(
-                function test() {
-                    return (siteLocation==null);
-                },
-                function iter(next) {
-                    siteDriver.findById(siteId,null,null,function(err,siteInfo){
-                        if(!err) {
-                            siteLocation = (siteInfo && siteInfo.location && siteInfo.location.coordinates && (siteInfo.location.coordinates.length > 0)) ? siteInfo.location : null;
-                            siteId = siteInfo.locatedInSiteId;
-                        }
-                        next(err,siteLocation);
-                    })
-                },
-                function (err, locationSite) {
-                    if(!err){
-                        deviceInfo.location=locationSite;
-                    }
-                    callback(err,deviceInfo);
-                }
-            );
-        }
-    }else{
-        Err = new Error("The device/thing not exist.");
-        Err.name = "NotExistError";
-        callback(Err, null);
-    }
-}
-
-
-function getDeviceStatus(deviceId,callback){
-    // check if Resdis store device Stutus Information. If yes return It otherwise check info into Database
-
-    var redis = false; //TODO: change with redis check
-
-    try {
-        var validDeviceId = deviceDriver.ObjectId(deviceId);
-        if (redis) {
-            callback(redis);  // todo change with deviceInfo from Redis
-        } else {
-            // check device info and valid units into database
-            deviceDriver.aggregate([
-                {
-                    $match: {_id: validDeviceId}
-                },
-                {
-                    $lookup: {
-                        from: 'devicetypes',
-                        localField: 'typeId',
-                        foreignField: '_id',
-                        as: 'deviceType'
-                    }
-
-                },
-                {$unwind: "$deviceType"},
-                {
-                    $lookup: {
-                        from: 'things',
-                        localField: 'thingId',
-                        foreignField: '_id',
-                        as: 'thing'
-                    }
-
-                },
-                {$unwind: "$thing"},
-                {
-                    $lookup: {
-                        from: 'observedproperties',
-                        localField: 'deviceType.observedPropertyId',
-                        foreignField: '_id',
-                        as: 'observedProperty'
-                    }
-
-                },
-                {$unwind: "$observedProperty"},
-                {
-                    $lookup: {
-                        from: 'units',
-                        localField: 'observedProperty._id',
-                        foreignField: 'observedPropertyId',
-                        as: 'units'
-                    }
-
-                },
-                {
-                    $project: {
-                        dismissed: 1,
-                        disabled: 1,
-                        "units._id": 1,
-                        "units.minValue": 1,
-                        "units.maxValue": 1,
-                        "thing.mobile":1,
-                        "thing.siteId":1,
-                        "thing._id":1
-                        // name: 0,
-                        // description: 0,
-                        // thingId: 0,
-                        // typeId: 0,
-                        // deviceType: 0,
-                        // observedProperty:0
-                    }
-                }
-            ], function (err, results) {
-                if(!err){
-                    getDeviceLocation(results[0] || null ,callback);
-                }else{
-                    callback(err);
-                }
-
-            });
-        }
-    }catch (exception) {
-        var Err = new Error(deviceId + " is a not valid ObjectId");
-        Err.name = "BadRequestError";
-        callback(Err);
-    }
-
-   
-
-
-}
+// function getDeviceStatus(deviceId,callback){
+//     // check if Resdis store device Stutus Information. If yes return It otherwise check info into Database
+//
+//     var redis = false; //TODO: change with redis check
+//
+//     try {
+//         var validDeviceId = deviceDriver.ObjectId(deviceId);
+//         if (redis) {
+//             callback(redis);  // todo change with deviceInfo from Redis
+//         } else {
+//             // check device info and valid units into database
+//             deviceDriver.aggregate([
+//                 {
+//                     $match: {_id: validDeviceId}
+//                 },
+//                 {
+//                     $lookup: {
+//                         from: 'devicetypes',
+//                         localField: 'typeId',
+//                         foreignField: '_id',
+//                         as: 'deviceType'
+//                     }
+//
+//                 },
+//                 {$unwind: "$deviceType"},
+//                 {
+//                     $lookup: {
+//                         from: 'things',
+//                         localField: 'thingId',
+//                         foreignField: '_id',
+//                         as: 'thing'
+//                     }
+//
+//                 },
+//                 {$unwind: "$thing"},
+//                 {
+//                     $lookup: {
+//                         from: 'observedproperties',
+//                         localField: 'deviceType.observedPropertyId',
+//                         foreignField: '_id',
+//                         as: 'observedProperty'
+//                     }
+//
+//                 },
+//                 {$unwind: "$observedProperty"},
+//                 {
+//                     $lookup: {
+//                         from: 'units',
+//                         localField: 'observedProperty._id',
+//                         foreignField: 'observedPropertyId',
+//                         as: 'units'
+//                     }
+//
+//                 },
+//                 {
+//                     $project: {
+//                         dismissed: 1,
+//                         disabled: 1,
+//                         "units._id": 1,
+//                         "units.minValue": 1,
+//                         "units.maxValue": 1,
+//                         "thing.mobile":1,
+//                         "thing.siteId":1,
+//                         "thing._id":1
+//                         // name: 0,
+//                         // description: 0,
+//                         // thingId: 0,
+//                         // typeId: 0,
+//                         // deviceType: 0,
+//                         // observedProperty:0
+//                     }
+//                 }
+//             ], function (err, results) {
+//                 if(!err){
+//                     thingAndDeviceHandlerUtility.getDeviceLocation(results[0] || null ,callback);
+//                 }else{
+//                     callback(err);
+//                 }
+//
+//             });
+//         }
+//     }catch (exception) {
+//         var Err = new Error(deviceId + " is a not valid ObjectId");
+//         Err.name = "BadRequestError";
+//         callback(Err);
+//     }
+//
+//
+//
+//
+// }
 
 
 
 function validateAndUpdateDeviceObservations(thingId,deviceId,observations,callback){
 
-    getDeviceStatus(deviceId,function(err,deviceStatus){
+    thingAndDeviceHandlerUtility.getDeviceStatus(deviceId,function(err,deviceStatus){
         if(!err){
 
             if(thingId && thingId!=deviceStatus.thing._id){
@@ -415,24 +416,22 @@ function validateThingObservations(thingId, thingStatus,deviceId,observations,ca
 }
 
 
-function getThingStatus(thingId,callback){
-
-    var redis = false; //TODO: change with redis check
-
-    if (redis) {
-        callback(redis);  // todo change with deviceInfo from Redis
-    } else {
-        thingDriver.findById(thingId, "disabled dismissed", null, function (err, thingStatus) {
-            if (!err) {
-               callback(null,thingStatus);
-            } else {
-                callback(err, null);
-            }
-        });
-    }
-
-
-}
+// function getThingStatus(thingId,callback){
+//
+//     var redis = false; //TODO: change with redis check
+//
+//     if (redis) {
+//         callback(redis);  // todo change with deviceInfo from Redis
+//     } else {
+//         thingDriver.findById(thingId, "disabled dismissed", null, function (err, thingStatus) {
+//             if (!err) {
+//                callback(null,thingStatus);
+//             } else {
+//                 callback(err, null);
+//             }
+//         });
+//     }
+// }
 
 module.exports.validateAndCreateObservations = function (deviceId, observations, callback) {
 
@@ -462,7 +461,7 @@ module.exports.checkIfValid = function (deviceId, observation, callback) {
 
 module.exports.validateAndCreateThingObservations = function (thingId, observations, callback) {
     var validatedObservationsList={};
-    getThingStatus(thingId,function(err,thingStatus){
+    thingAndDeviceHandlerUtility.getThingStatus(thingId,function(err,thingStatus){
        if(!err){
            async.eachOf(observations, function (deviceObservations,deviceId ,callbackfunction) {
                validateThingObservations(thingId,thingStatus, deviceId, deviceObservations, function (err, validatedDeviceObservations) {
