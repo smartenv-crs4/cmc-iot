@@ -93,7 +93,6 @@ function validateAndUpdateObservationContent(id, observation, deviceStatus, call
     // - se non c'è su memm cache allora controlla sul database
     // - Salva su mem cache Redis le autorizzazioni del device [dismissed, disabled, validUnits[unit1,unit2,.....]
 
-
     locationHandler(observation,deviceStatus,function(err,updateObservation){
         if(!err){
 
@@ -134,12 +133,6 @@ function validateAndUpdateObservationContent(id, observation, deviceStatus, call
             callback(err);
         }
     });
-
-
-
-
-
-
 }
 
 

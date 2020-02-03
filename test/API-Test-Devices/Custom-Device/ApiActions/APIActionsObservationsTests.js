@@ -408,6 +408,45 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
 
+
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations [observation not valid deviceId]";
+        it(testType, function (done) {
+
+            var observations=[
+                {
+                    unitId:validUnits.first._id,
+                    value:validUnits.first.maxValue-1
+                }
+            ];
+
+
+            request.post({
+                url: APIURL +'/undefined' + '/actions/sendObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({observations:observations})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(400);
+                    var results = JSON.parse(body);
+                    console.log(body);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.indexOf("Unprocessable observation for a device undefined due to undefined is a not valid ObjectId").should.be.greaterThanOrEqual(0);
+
+                }
+                done();
+            });
+
+
+        });
+    });
+
+
+
+
     describe(describeMessage, function () {
         var testType="must test API action sendObservations [observation not valid due to Device Id is not valid]";
         it(testType, function (done) {

@@ -21,15 +21,17 @@
  */
 
 
-var observationDriver = require('../../DBEngineHandler/drivers/observationDriver')
+var observationDriver = require('../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../routesHandlers/handlerUtility/observationUtility');
 
 
 /* Create Observation */
 module.exports.postCreateObservation = function(req, res, next) {
+    observationUtility.checkIfValid()
     observationDriver.create(req.body.observation, function(err, results) {
         res.httpResponse(err, null, results)
     })
-}
+};
 
 
 /* GET Observations list */
@@ -37,7 +39,7 @@ module.exports.getObservations = function(req, res, next) {
     observationDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
     })
-}
+};
 
 
 /* GET Observation By Id */
@@ -46,7 +48,7 @@ module.exports.getObservationById = function(req, res, next) {
     observationDriver.findById(id, req.dbQueryFields, function(err, results) {
         res.httpResponse(err, null, results)
     })
-}
+};
 
 
 /* Update Observation */
@@ -54,7 +56,7 @@ module.exports.updateObservation = function(req, res, next) {
     observationDriver.findByIdAndUpdate(req.params.id, req.body.observation, function(err, results) {
         res.httpResponse(err, null, results)
     })
-}
+};
 
 
 /* Delete Observation */
@@ -63,5 +65,5 @@ module.exports.deleteObservation = function(req, res, next) {
     observationDriver.findByIdAndRemove(id, function(err, deletedObservation) {
         res.httpResponse(err, null, deletedObservation)
     })
-}
+};
 
