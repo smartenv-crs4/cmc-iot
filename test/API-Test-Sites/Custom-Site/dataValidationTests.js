@@ -28,6 +28,7 @@ var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/site
 var commonFunctioTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var siteDocuments = require('../../SetTestenv/createSitesDocuments')
+var should = require('should/should');
 
 var webUiToken
 
@@ -97,7 +98,7 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
 
     describe('POST /sites', function() {
         it('must test site creation [data validation error due to required fields missing]', function(done) {
-            var bodyParam = JSON.stringify({site: {name: "name", }})
+            var bodyParam = JSON.stringify({site: {name: "name", location: {type: "Point", coordinates: [1,1]}}})
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
@@ -148,5 +149,155 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
             })
         })
     })
+
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due coordinates not in range]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point", coordinates: [500,500]}
+                }
+            });
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due coordinates not in range] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("Invalid location coordinates: longitude must be in range [-180,180]")
+                }
+                done()
+            })
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due coordinates not in range for latitude]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point", coordinates: [120,500]}
+                }
+            });
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due coordinates not in range for latitude] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("Invalid location coordinates: latitude must be in range [-90,90]")
+                }
+                done()
+            })
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due not coordinates field in location]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point"}
+                }
+            });
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due not coordinates field in location] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("Invalid location field values: coordinates:[longitude,latitude] and type:\"Point\" must be set")
+                }
+                done()
+            })
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due not type field in location]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {coordinates: [0,0]},
+                }
+            });
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due not type field in location] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("Invalid location field values: coordinates:[longitude,latitude] and type:\"Point\" must be set")
+                }
+                done()
+            })
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due to both location and locatedInSite not set]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description"
+                }
+            });
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due to both location and locatedInSite not set] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("One between location or locatedInSiteId field must be set")
+                }
+                done()
+            })
+        })
+    })
+
 
 })

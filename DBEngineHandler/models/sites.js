@@ -41,12 +41,37 @@ var siteSchema = new Schema(site, {strict: "throw"})
 
 siteSchema.pre('validate', function(next) {
 
-    if (!(this.location) && !(this.locatedInSiteId)) {
-        var err = new Error('One between location or locatedInSiteId field must be set');
-        err.name = "ValidatorError";
-        next(err);
+    if(!this.location.coordinates.length>0 &&  !this.location.type) {  // this because coordinates are array and is set by default to []
+        if ((!this.locatedInSiteId)) {
+            var err = new Error('One between location or locatedInSiteId field must be set');
+            err.name = "ValidatorError";
+            return next(err);
+        }
     }
-    else next();
+
+    if(this.location) {
+        if (this.location.coordinates) {
+
+            if (this.location.coordinates.length>0 && this.location.type ) {
+                if (this.location.coordinates[0] > 180 || this.location.coordinates[0] < -180) {
+                    var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
+                    err.name = "ValidatorError";
+                    return next(err);
+                }
+
+                if (this.location.coordinates[1] > 90 || this.location.coordinates[1] < -90) {
+                    var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
+                    err.name = "ValidatorError";
+                    return next(err);
+                }
+            }else{
+                var err = new Error('Invalid location field values: coordinates:[longitude,latitude] and type:"Point" must be set');
+                err.name = "ValidatorError";
+                return next(err);
+            }
+        }
+    }
+    next();
 });
 
 // Static method to retrieve resource WITH metadata
