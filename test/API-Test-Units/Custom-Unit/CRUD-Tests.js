@@ -333,7 +333,7 @@ describe('Units API Test - [GENERAL TESTS]', function() {
 
     describe('DELETE /units', function() {
         it('must test unit Delete (with associated Observations)', function(done) {
-            
+
             // Create device used to create the associated Observation
             deviceDocuments.createDocuments(1,true,function(err,foreignKey){
                 if (err) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + err.message)
@@ -384,13 +384,9 @@ describe('Units API Test - [GENERAL TESTS]', function() {
                             body: bodyObservationParam
                         }
 
-                        //TODO: Remove
-                        console.log(bodyObservationParam);
                         request.post(requestObservationParams, function(error, response, body) {
                             if (error) consoleLogError.printErrorLog("POST /observations: " + error.message)
                             else {
-                                //TODO: Remove
-                                console.log(body);
                                 response.statusCode.should.be.equal(201)
                                 // DELETE Unit
                                 var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
