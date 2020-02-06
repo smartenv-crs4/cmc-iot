@@ -27,10 +27,14 @@ var thingDocuments=require('./createThingsDocuments');
 var deviceTypeDocuments=require('./createDeviceTypesDocuments');
 
 
-module.exports.createDocuments=function(numbers,callback){
+module.exports.createDocuments=function(numbers,isMobile,callback){
 
+    if(!callback) {
+        callback = isMobile;
+        isMobile=false;
+    }
 
-    thingDocuments.createDocuments(1,function(err,foreignKey){
+    thingDocuments.createDocuments(1,isMobile,function(err,foreignKey){
        if(!err){
            deviceTypeDocuments.createDocuments(1,function(err,foreignKeyDT){
                if(!err){
@@ -42,7 +46,7 @@ module.exports.createDocuments=function(numbers,callback){
                            name:"name" + e,
                            description:"description" +e,
                            thingId:foreignKey.thingId,
-                           typeId:foreignKeyDT.deviceTypeId
+                           typeId:foreignKeyDT.deviceTypeId,
                        },function(err,newDevice){
                            if (err) throw err;
                            if(e===0) deviceId=newDevice._id;

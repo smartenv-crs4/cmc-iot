@@ -30,6 +30,7 @@ var APIURL_observations = conf.testConfig.testUrl + ":" + conf.microserviceConf.
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var unitDocuments = require('../../SetTestenv/createUnitsDocuments')
+var deviceDocuments = require('../../SetTestenv/createDevicesDocuments')
 var should = require('should/should');
 var webUiToken
 var unitId
@@ -332,90 +333,108 @@ describe('Units API Test - [GENERAL TESTS]', function() {
 
     describe('DELETE /units', function() {
         it('must test unit Delete (with associated Observations)', function(done) {
-            var bodyParam = JSON.stringify({
-                unit: {
-                    name: "name",
-                    symbol: "symbol",
-                    minValue: 0,
-                    maxValue: 100,
-                    observedPropertyId: Units.ObjectId()
-                }
-            })
-            var requestParams = {
-                url: APIURL,
-                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
-                body: bodyParam
-            }
-            // create Unit
-            request.post(requestParams, function(error, response, body) {
-                if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
-                else {
-                    var results = JSON.parse(body)
-                    response.statusCode.should.be.equal(201)
-                    results.should.have.property('name')
-                    results.should.have.property('symbol')
-                    results.should.have.property('minValue')
-                    results.should.have.property('maxValue')
-                    results.should.have.property('observedPropertyId')
-                }
-                // Now let's prepare the body for the associated Observation POST request
-                var bodyObservationParam = JSON.stringify({
-                    observation: {
-                        timestamp: 0,
-                        value: 0,
-                        location: {type: "Point", coordinates: [1, 1]},
-                        deviceId: Observation.ObjectId(),
-                        unitId: results._id
+            
+            // Create device used to create the associated Observation
+            deviceDocuments.createDocuments(1,true,function(err,foreignKey){
+                if (err) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + err.message)
+
+                var bodyParam = JSON.stringify({
+                    unit: {
+                        name: "name",
+                        symbol: "symbol",
+                        minValue: 0,
+                        maxValue: 100,
+                        observedPropertyId: foreignKey.observedPropertyId
                     }
                 })
-                var requestObservationParams = {
-                    url: APIURL_observations,
-                    headers: {
-                        'content-type': 'application/json',
-                        'Authorization': "Bearer " + conf.testConfig.adminToken
-                    },
-                    body: bodyObservationParam
+                var requestParams = {
+                    url: APIURL,
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                    body: bodyParam
                 }
-                // Create the associated Observation
-                request.post(requestObservationParams, function(error, response, body) {
-                    if (error) consoleLogError.printErrorLog("POST /observations: " + error.message)
+                // create Unit
+                request.post(requestParams, function(error, response, body) {
+                    if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
                     else {
+                        var results = JSON.parse(body)
                         response.statusCode.should.be.equal(201)
-                        // DELETE Unit
-                        var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
-                        request.del(getByIdRequestUrl, function(error, response, body) {
-                            if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
-                            else {
-                                var resultsDeleteById = JSON.parse(body)
-                                response.statusCode.should.be.equal(409) //HTTP Conflict
-                                resultsDeleteById.should.have.property("message")
-                                resultsDeleteById.message.should.be.equal("Cannot delete the Unit due to associated Observation(s)")
-                            }
-                            //Search Unit to confirm that the it hasn't been deleted
-                            var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
-                            request.get(geByIdRequestUrl, function(error, response, body) {
-                                if (error){
-                                    consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
-                                    throw (error);
-                                }
-                                else {
-                                    var resultsUndeletedUnit = JSON.parse(body)
-                                    response.statusCode.should.be.equal(200)
-                                    resultsUndeletedUnit.should.have.property("name")
-                                    resultsUndeletedUnit.should.have.property("symbol")
-                                    resultsUndeletedUnit.should.have.property("minValue")
-                                    resultsUndeletedUnit.should.have.property("maxValue")
-                                    Observation.deleteMany({},function(err){
-                                        should(err).be.null();
-                                        done();
-                                    });
-                                }
+                        results.should.have.property('name')
+                        results.should.have.property('symbol')
+                        results.should.have.property('minValue')
+                        results.should.have.property('maxValue')
+                        results.should.have.property('observedPropertyId')
 
-                            })
+                        // Create the associated Observation
+                        // Now let's prepare the body for the associated Observation POST request
+                        var bodyObservationParam = JSON.stringify({
+                            observation: {
+                                timestamp: "0",
+                                value: "0",
+                                location: {type: "Point", coordinates: [1, 1]},
+                                deviceId: foreignKey.deviceId,
+                                unitId: results._id
+                            }
+                        });
+                        var requestObservationParams = {
+                            url: APIURL_observations,
+                            headers: {
+                                'content-type': 'application/json',
+                                'Authorization': "Bearer " + conf.testConfig.adminToken
+                            },
+                            body: bodyObservationParam
+                        }
+
+                        //TODO: Remove
+                        console.log(bodyObservationParam);
+                        request.post(requestObservationParams, function(error, response, body) {
+                            if (error) consoleLogError.printErrorLog("POST /observations: " + error.message)
+                            else {
+                                //TODO: Remove
+                                console.log(body);
+                                response.statusCode.should.be.equal(201)
+                                // DELETE Unit
+                                var getByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                                request.del(getByIdRequestUrl, function(error, response, body) {
+                                    if (error) consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                                    else {
+                                        var resultsDeleteById = JSON.parse(body)
+                                        response.statusCode.should.be.equal(409) //HTTP Conflict
+                                        resultsDeleteById.should.have.property("message")
+                                        resultsDeleteById.message.should.be.equal("Cannot delete the Unit due to associated Observation(s)")
+                                    }
+                                    //Search Unit to confirm that the it hasn't been deleted
+                                    var geByIdRequestUrl = APIURL + "/" + results._id + "?access_token=" + webUiToken
+                                    request.get(geByIdRequestUrl, function(error, response, body) {
+                                        if (error){
+                                            consoleLogError.printErrorLog("DELETE /units: 'must test unit Delete (with associated Observations) -->" + error.message)
+                                            throw (error);
+                                        }
+                                        else {
+                                            var resultsUndeletedUnit = JSON.parse(body)
+                                            response.statusCode.should.be.equal(200)
+                                            resultsUndeletedUnit.should.have.property("name")
+                                            resultsUndeletedUnit.should.have.property("symbol")
+                                            resultsUndeletedUnit.should.have.property("minValue")
+                                            resultsUndeletedUnit.should.have.property("maxValue")
+                                            Observation.deleteMany({},function(err){
+                                                should(err).be.null();
+                                                deviceDocuments.deleteDocuments(function(err){
+                                                    should(err).be.null();
+                                                    done();
+                                                });
+                                            });
+                                        }
+
+                                    })
+                                })
+                            }
                         })
                     }
                 })
-            })
+            });
+
+
+
         })
     })
 

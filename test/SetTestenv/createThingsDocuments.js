@@ -28,7 +28,12 @@ var siteDocuments=require("./createSitesDocuments");
 
 
 
-module.exports.createDocuments=function(numbers,callback){
+module.exports.createDocuments=function(numbers,isMobile,callback){
+
+    if(!callback) {
+        callback = isMobile;
+        isMobile=false;
+    }
 
     vendorDocuments.createDocuments(1,function(err,vendorForeignKey){
        if(!err){
@@ -46,7 +51,8 @@ module.exports.createDocuments=function(numbers,callback){
                                vendorId: vendorForeignKey.vendorId,
                                siteId: siteForeignKey.siteId,
                                api: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e},
-                               direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""}
+                               direct: {url: "http://APIURL.it:" + e, access_token: "TOKEN" + e, username: ""},
+                               mobile:isMobile
                            }, function (err, newThing) {
                                if (err) throw err;
                                if (e === 0) thingId = newThing._id;
