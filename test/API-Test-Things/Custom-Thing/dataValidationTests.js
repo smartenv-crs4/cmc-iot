@@ -178,6 +178,58 @@ describe('Things API Test - [DATA VALIDATION]', function () {
     });
 
 
+    describe('POST /thing', function(){
+
+        it('must test thing creation [data validation error due to not field siteId]', function(done){
+            var bodyParam=JSON.stringify({thing:{name:"name", description: "description", ownerId:Things.ObjectId(), vendorId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [data validation error due to not field siteId] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("thing validation failed: siteId: Path `siteId` is required.");
+                }
+                done();
+            });
+
+        });
+    });
+
+
+    describe('POST /thing', function(){
+
+        it('must test thing creation [data validation error due to not field siteId in mobile device]', function(done){
+            var bodyParam=JSON.stringify({thing:{mobile:true, name:"name", description: "description", ownerId:Things.ObjectId(), vendorId:Things.ObjectId()}});
+            var requestParams={
+                url:APIURL,
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [data validation error due to not field siteId in mobile device] -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("dovrebbe farlo perchè è mobile e non ha una posizine");
+                }
+                done();
+            });
+
+        });
+    });
+
+
 
     describe('POST /thing', function(){
 

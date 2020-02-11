@@ -25,8 +25,10 @@ var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver.js');
 var disabledDeviceDriver = require('../../DBEngineHandler/drivers/disabledDeviceDriver.js');
 var deviceUtility = require('./handlerUtility/deviceUtility');
+var thingAndDeviceHandlerUtility = require('./handlerUtility/thingAndDeviceHandlerUtility');
 var async=require('async');
 var config = require('propertiesmanager').conf;
+var _=require('underscore');
 var observationsDriver = require('../../DBEngineHandler/drivers/observationDriver');
 var observationUtility=require('./handlerUtility/observationUtility');
 
@@ -640,4 +642,59 @@ module.exports.createObservations = function (req, res, next) {
     observationUtility.validateAndCreateThingObservations(id,req.body.observations,function(err, observations){
         res.httpResponse(err,200,observations);
     });
+};
+
+
+//todo set documentation
+module.exports.addDevices = function (req, res, next) {
+    var thingId = req.params.id;
+    var associatedDevices=[];
+    var notAssociatedDevices=[];
+
+
+    if(_.isArray(req.body.devices)) {
+        thingAndDeviceHandlerUtility.getThingStatus(thingId, function (err, thing) {
+            if (err) {
+                return res.httpResponse(err, null, null);
+            } else {
+
+                if (!thing) {
+                    res.httpResponse(null, 409, "Cannot create device due to associated thing is not available");
+                } else {
+                    if (thing.dismissed) {
+                        res.httpResponse(null, 409, "Cannot create device due to associated thing is dismissed");
+                    } else {
+
+                        async.each(req.body.devices, function (device, callbackDevice) {
+
+                            device.thingId=thingId;
+                            deviceDriver.create(device, function (err, results) {
+                                if (err) notAssociatedDevices.push({error:err.message,device:device});
+                                else {
+                                    if (results) results["dismissed"] = undefined;
+                                    associatedDevices.push(results);
+                                }
+                                callbackDevice();
+
+                            });
+                        }, function (err) {
+                            var resp = {
+                                results: {
+                                    total: associatedDevices.length + notAssociatedDevices.length,
+                                    successful: associatedDevices.length,
+                                    unsuccessful: notAssociatedDevices.length
+                                },
+                                successfulAssociatedDevices: associatedDevices,
+                                unsuccessfulAssociatedDevices: notAssociatedDevices,
+
+                            };
+                            res.httpResponse(null, 200, resp);
+                        });
+                    }
+                }
+            }
+        });
+    }else{
+        res.httpResponse(null, 400, "devices field must be an array of device objects");
+    }
 };

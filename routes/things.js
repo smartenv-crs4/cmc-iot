@@ -64,6 +64,11 @@ router.post('/:id/actions/sendObservations', [authorisationManager.checkToken], 
 });
 
 
+router.post('/:id/actions/addDevices', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["devices"]), function(req, res, next) {
+    thingsHandler.addDevices(req, res, next);
+});
+
+
 // </actions>
 
 

@@ -1143,4 +1143,217 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
     });
 
 
+
+    // ******************************************************************************
+    //                     Add Device Action
+    // ******************************************************************************
+
+    var describeMessage='POST  /things/:id/actions/addDevice';
+    describe(describeMessage, function(){
+        var testMessage='must test add device [Create Device. dismissed Thing]';
+        it(testMessage, function(done){
+
+            Things.findByIdAndUpdate(thingId,{dismissed:true},function(err,dismissedThing){
+                if(err) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                else{
+                    var bodyParam=JSON.stringify({devices:[{name:"name", description: "description", typeId:Devices.ObjectId()}]});
+                    var requestParams={
+                        url:APIURL + '/' + thingId + '/actions/addDevices',
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(409);
+                            results.should.have.properties('error', 'statusCode', 'message');
+                            results.message.should.be.eql("Cannot create device due to associated thing is dismissed");
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+    });
+
+
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [Create Device. not available Thing]';
+        it(testMessage, function(done){
+
+            Things.findByIdAndRemove(thingId,function(err,deletedThing){
+                if(err) consoleLogError.printErrorLog(testMessage + " -->" + err.message);
+                else{
+                    var bodyParam=JSON.stringify({devices:[{name:"name", description: "description", typeId:Devices.ObjectId()}]});
+                    var requestParams={
+                        url:APIURL+ '/' + thingId + '/actions/addDevices',
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(409);
+                            results.should.have.properties('error', 'statusCode', 'message');
+                            results.message.should.be.eql("Cannot create device due to associated thing is not available");
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+    });
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [devices array field missing]';
+        it(testMessage, function(done){
+
+            Things.findByIdAndRemove(thingId,function(err,deletedThing){
+                if(err) consoleLogError.printErrorLog(testMessage + " -->" + err.message);
+                else{
+                    var bodyParam=JSON.stringify({nodevices:[{name:"name", description: "description", typeId:Devices.ObjectId()}]});
+                    var requestParams={
+                        url:APIURL+ '/' + thingId + '/actions/addDevices',
+                        headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                        body:bodyParam
+                    };
+                    request.post(requestParams,function(error, response, body){
+                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                        else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(400);
+                            results.should.have.properties('error', 'statusCode', 'message');
+                            results.message.should.be.eql("body fields 'devices' missing or empty");
+                        }
+                        done();
+                    });
+                }
+            });
+        });
+    });
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [devices array field empty]';
+        it(testMessage, function(done){
+
+            var bodyParam=JSON.stringify({devices:[]});
+            var requestParams={
+                url:APIURL+ '/' + thingId + '/actions/addDevices',
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.properties('error', 'statusCode', 'message');
+                    results.message.should.be.eql("body fields 'devices' missing or empty");
+                }
+                done();
+            });
+        });
+    });
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [invaid devices array field]';
+        it(testMessage, function(done){
+
+            var bodyParam=JSON.stringify({devices:{name:"name", description: "description", typeId:Devices.ObjectId()}});
+            var requestParams={
+                url:APIURL+ '/' + thingId + '/actions/addDevices',
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(400);
+                    results.should.have.properties('error', 'statusCode', 'message');
+                    results.message.should.be.eql("devices field must be an array of device objects");
+                }
+                done();
+            });
+        });
+    });
+
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [2 valid devices]';
+        it(testMessage, function(done){
+
+            var devList=[{name:"name", description: "description", typeId:Devices.ObjectId()},{name:"name1", description: "description1", typeId:Devices.ObjectId()}];
+            var bodyParam=JSON.stringify({devices:devList});
+            var requestParams={
+                url:APIURL+ '/' + thingId + '/actions/addDevices',
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(200);
+                    results.should.have.properties('results', 'successfulAssociatedDevices', 'unsuccessfulAssociatedDevices');
+                    results.results.should.have.properties('total', 'successful', 'unsuccessful');
+                    results.results.total.should.be.equal(2);
+                    results.results.successful.should.be.equal(2);
+                    results.results.unsuccessful.should.be.equal(0);
+                    results.successfulAssociatedDevices.should.be.Array();
+                    results.successfulAssociatedDevices.length.should.be.equal(2);
+                    results.successfulAssociatedDevices[0].should.have.properties("_id","name","description");
+                    results.successfulAssociatedDevices[1].should.have.properties("_id","name","description");
+                    results.successfulAssociatedDevices[0].name.should.be.equal(devList[0].name);
+                    results.successfulAssociatedDevices[1].name.should.be.equal(devList[1].name);
+
+                }
+                done();
+            });
+        });
+    });
+
+
+    describe(describeMessage, function(){
+        var testMessage='must test add device [1 valid device, 1 invalid device]';
+        it(testMessage, function(done){
+
+            var devList=[{name:"name", description: "description", typeId:Devices.ObjectId()},{name:"name1", typeId:Devices.ObjectId()}];
+            var bodyParam=JSON.stringify({devices:devList});
+            var requestParams={
+                url:APIURL+ '/' + thingId + '/actions/addDevices',
+                headers:{'content-type': 'application/json','Authorization' : "Bearer "+ conf.testConfig.adminToken},
+                body:bodyParam
+            };
+            request.post(requestParams,function(error, response, body){
+                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                else{
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(200);
+                    results.should.have.properties('results', 'successfulAssociatedDevices', 'unsuccessfulAssociatedDevices');
+                    results.results.should.have.properties('total', 'successful', 'unsuccessful');
+                    results.results.total.should.be.equal(2);
+                    results.results.successful.should.be.equal(1);
+                    results.results.unsuccessful.should.be.equal(1);
+                    results.successfulAssociatedDevices.should.be.Array();
+                    results.unsuccessfulAssociatedDevices.should.be.Array();
+                    results.successfulAssociatedDevices.length.should.be.equal(1);
+                    results.unsuccessfulAssociatedDevices.length.should.be.equal(1);
+                    results.successfulAssociatedDevices[0].should.have.properties("_id","name","description");
+                    results.successfulAssociatedDevices[0].name.should.be.equal(devList[0].name);
+                    results.unsuccessfulAssociatedDevices[0].should.have.properties("error","device");
+                    results.unsuccessfulAssociatedDevices[0].device.name.should.be.equal(devList[1].name);
+                    results.unsuccessfulAssociatedDevices[0].error.should.be.eql("device validation failed: description: Path `description` is required.");
+
+
+                }
+                done();
+            });
+        });
+    });
+
+
 });
