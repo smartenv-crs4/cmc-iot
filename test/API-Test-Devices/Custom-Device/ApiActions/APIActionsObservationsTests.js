@@ -786,6 +786,82 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         });
     });
 
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations [invalid observation due to invalid location]";
+        it(testType, function (done) {
+
+            thingsDriver.findByIdAndUpdate(associatedThingId,{mobile:true},function(error,updatedThing){
+                if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                else {
+                    var observations=[
+                        {
+                            unitId:validUnits.first._id,
+                            value:validUnits.first.maxValue-1,
+                            location:{coordinates:[360,0]}
+                        }
+                    ];
+
+
+                    request.post({
+                        url: APIURL +'/' + deviceId +'/actions/sendObservations',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        body: JSON.stringify({observations:observations})
+                    }, function (error, response, body) {
+                        if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                        else {
+                            response.statusCode.should.be.equal(400);
+                            var results = JSON.parse(body);
+                            results.should.have.property('statusCode');
+                            results.should.have.property('error');
+                            results.should.have.property('message');
+                            results.message.indexOf('Invalid location coordinates: longitude must be in range [-180,180]').should.be.greaterThanOrEqual(0);
+                            done();
+                        }
+                    });
+                }
+            });
+
+        });
+    });
+
+
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations [invalid observation due to invalid location]";
+        it(testType, function (done) {
+
+            thingsDriver.findByIdAndUpdate(associatedThingId,{mobile:true},function(error,updatedThing){
+                if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                else {
+                    var observations=[
+                        {
+                            unitId:validUnits.first._id,
+                            value:validUnits.first.maxValue-1,
+                            location:{coordinates:[0,360]}
+                        }
+                    ];
+
+
+                    request.post({
+                        url: APIURL +'/' + deviceId +'/actions/sendObservations',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        body: JSON.stringify({observations:observations})
+                    }, function (error, response, body) {
+                        if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                        else {
+                            response.statusCode.should.be.equal(400);
+                            var results = JSON.parse(body);
+                            results.should.have.property('statusCode');
+                            results.should.have.property('error');
+                            results.should.have.property('message');
+                            results.message.indexOf('Invalid location coordinates: latitude must be in range [-90,90]').should.be.greaterThanOrEqual(0);
+                            done();
+                        }
+                    });
+                }
+            });
+
+        });
+    });
 
     describe(describeMessage, function () {
         var testType="must test API action sendObservations [error due to location set for not mobile device]";

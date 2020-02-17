@@ -86,3 +86,5 @@ module.exports.ObjectId = function(ObjectId) {
 module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
 }
+
+module.exports.locationValidator=sites.locationValidator;

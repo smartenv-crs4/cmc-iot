@@ -66,7 +66,12 @@ function locationHandler(observation, deviceStatus, callback){
 
     if(deviceStatus.thing.mobile){ // it is a mobile device
         if(observation.location && observation.location.coordinates){ // valid coordinates
-            callback(null,observation);
+            siteDriver.locationValidator(observation.location,function(err){
+                callback(err,observation);
+            });
+
+            // callback(null,observation);
+
         }else{
             var Err = new Error("Location:{ coordinates: [lon, lat]} is a mandatory field for mobile devices");
             Err.name = "BadRequestError";

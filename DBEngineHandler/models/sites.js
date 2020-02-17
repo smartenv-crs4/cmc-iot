@@ -24,7 +24,8 @@
 var mongoose = require('mongoose')
 var findAllFn = require('./metadata').findAll
 var Schema = mongoose.Schema
-var conf = require('propertiesmanager').conf
+var conf = require('propertiesmanager').conf;
+
 
 var site = conf.customSchema.siteSchema || {
     name: {type: String, required: true},
@@ -41,11 +42,12 @@ var siteSchema = new Schema(site, {strict: "throw"})
 
 siteSchema.pre('validate', function(next) {
 
+    var retErr=null;
     if(!this.location.coordinates.length>0 &&  !this.location.type) {  // this because coordinates are array and is set by default to []
         if ((!this.locatedInSiteId)) {
-            var err = new Error('One between location or locatedInSiteId field must be set');
-            err.name = "ValidatorError";
-            return next(err);
+            var retErr = new Error('One between location or locatedInSiteId field must be set');
+            retErr.name = "ValidatorError";
+            return next(retErr);
         }
     }
 
@@ -53,25 +55,29 @@ siteSchema.pre('validate', function(next) {
         if (this.location.coordinates) {
 
             if (this.location.coordinates.length>0 && this.location.type ) {
-                if (this.location.coordinates[0] > 180 || this.location.coordinates[0] < -180) {
-                    var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
-                    err.name = "ValidatorError";
-                    return next(err);
-                }
+                // if (this.location.coordinates[0] > 180 || this.location.coordinates[0] < -180) {
+                //     var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
+                //     err.name = "ValidatorError";
+                //     return next(err);
+                // }
+                //
+                // if (this.location.coordinates[1] > 90 || this.location.coordinates[1] < -90) {
+                //     var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
+                //     err.name = "ValidatorError";
+                //     return next(err);
+                // }
+                validateLocation(this.location,function(err){
+                    retErr=err;
+                });
 
-                if (this.location.coordinates[1] > 90 || this.location.coordinates[1] < -90) {
-                    var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
-                    err.name = "ValidatorError";
-                    return next(err);
-                }
             }else{
-                var err = new Error('Invalid location field values: coordinates:[longitude,latitude] and type:"Point" must be set');
-                err.name = "ValidatorError";
-                return next(err);
+                var retErr = new Error('Invalid location field values: coordinates:[longitude,latitude] and type:"Point" must be set');
+                retErr.name = "ValidatorError";
+                return next(retErr);
             }
         }
     }
-    next();
+    next(retErr);
 });
 
 // Static method to retrieve resource WITH metadata
@@ -80,8 +86,32 @@ siteSchema.statics.findAll = function(conditions, fields, options, callback) {
 }
 
 
+// Static method to retrieve resource WITH metadata
+siteSchema.statics.locationValidator = function(location, callback) {
+    return validateLocation(location,callback);
+}
+
+
+var validateLocation = function(location,callback) {
+
+    if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
+        var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
+        err.name = "ValidatorError";
+        callback(err);
+    }else {
+        if (location.coordinates[1] > 90 || location.coordinates[1] < -90) {
+            var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
+            err.name = "ValidatorError";
+            return callback(err);
+        }else{
+            callback(null);
+        }
+    }
+
+};
+
 var Site = mongoose.model('site', siteSchema)
 
 
-module.exports.SiteSchema = siteSchema
-module.exports.Site = Site
+module.exports.SiteSchema = siteSchema;
+module.exports.Site = Site;

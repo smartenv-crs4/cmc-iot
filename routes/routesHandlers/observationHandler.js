@@ -27,14 +27,18 @@ var observationUtility = require('../routesHandlers/handlerUtility/observationUt
 
 /* Create Observation */
 module.exports.postCreateObservation = function(req, res, next) {
-    observationUtility.checkIfValid(req.body.observation.deviceId , req.body.observation,function(err,validityTestResult){
-       if(err) return res.httpResponse(err,null,null);
-       else{
-           observationDriver.create(req.body.observation, function(err, results) {
-               res.httpResponse(err, null, results)
-           });
-       }
-    });
+    if(!req.body.observation.deviceId){
+        return res.httpResponse(null, 400, "Observation 'deviceId' field missing");
+    }else {
+        observationUtility.checkIfValid(req.body.observation.deviceId, req.body.observation, function (err, validityTestResult) {
+            if (err) return res.httpResponse(err, null, null);
+            else {
+                observationDriver.create(req.body.observation, function (err, results) {
+                    res.httpResponse(err, null, results)
+                });
+            }
+        });
+    }
 };
 
 

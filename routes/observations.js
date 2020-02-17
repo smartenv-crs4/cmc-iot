@@ -35,10 +35,6 @@ router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.valid
 })
 
 
-/* Read observation */
-router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
-    observationsHandler.getObservationById(req, res, next)
-})
 
 
 /* Update observation */
@@ -54,7 +50,14 @@ router.delete('/:id', [authorisationManager.checkToken], function(req, res, next
 
 
 /* Query parsing modules */
-router.use(parseRequestMiddleware.parseFields)
+router.use(parseRequestMiddleware.parseFields);
+
+/* Read observation */
+router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
+    observationsHandler.getObservationById(req, res, next)
+})
+
+
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 

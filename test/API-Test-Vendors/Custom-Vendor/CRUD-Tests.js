@@ -313,8 +313,8 @@ describe('Vendors API Test - [CRUD-TESTS]', function() {
                                 else {
                                     var resultsUndeletedVendor = JSON.parse(body)
                                     response.statusCode.should.be.equal(200)
-                                    resultsUndeletedVendor.should.have.property("name")
-                                    resultsUndeletedVendor.should.have.property("description")
+                                    resultsUndeletedVendor.should.have.property("name");
+                                    resultsUndeletedVendor.should.have.property("description");
 
                                     Thing.deleteMany({},function(err){
                                         should(err).be.null();
