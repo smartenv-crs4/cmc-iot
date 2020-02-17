@@ -111,7 +111,7 @@ function validateAndUpdateObservationContent(id, observation, deviceStatus, call
                     Err.name = "DisabledError";
                     callback(Err)
                 }else{
-                    if (updateObservation.value) {
+                    if (!(updateObservation.value==undefined)) {
                         if (updateObservation.unitId) {
 
                             validateUnitAndValueRange(deviceStatus, updateObservation, function(err){
