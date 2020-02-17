@@ -78,7 +78,7 @@ function locationHandler(observation, deviceStatus, callback){
             callback(Err, null, null);
         }
     }else{ // it is a not mobile device
-        if(observation.location && observation.location.coordinates){ // has location
+        if(observation.location){ // has location
             var Err = new Error("Location field must be set only for mobile devices.");
             Err.name = "unprocessableError";
             callback(Err, null, null);
