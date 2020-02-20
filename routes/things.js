@@ -88,13 +88,13 @@ router.delete('/:id',[authorisationManager.checkToken], function(req, res, next)
 
 
 /* Update things. */
-router.put('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions],parseRequestMiddleware.validateBody(["thing"]),parseThingOwnerIdMiddleware.validateOwnerId(false), parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed"],conf.authorizationVerbToHandleDismissedStatus),function(req, res, next) {
+router.put('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions],parseRequestMiddleware.validateBody(["thing"]),parseThingOwnerIdMiddleware.validateOwnerId(false), parseRequestMiddleware.parseFieldsAndRemoveSome(["dismissed"],conf.cmcIoTOptions.authorizationVerbToHandleDismissedStatus),function(req, res, next) {
   thingsHandler.updateThing(req,res,next);
 });
 
 
 /* Read things. */
-router.get('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions], parseRequestMiddleware.parseFieldsAndRemoveSome(["direct","dismissed"],conf.authorizationVerbToHandleDismissedStatus), function(req, res, next) {
+router.get('/:id',[authorisationManager.checkToken,authorisationManager.ensureCanGetResourceAndReturnAllOtherPermissions], parseRequestMiddleware.parseFieldsAndRemoveSome(["direct","dismissed"],conf.cmcIoTOptions.authorizationVerbToHandleDismissedStatus), function(req, res, next) {
   thingsHandler.getThingById(req,res,next);
 });
 

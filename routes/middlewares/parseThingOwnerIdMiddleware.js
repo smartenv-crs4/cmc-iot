@@ -36,10 +36,10 @@ exports.validateOwnerId = function (mustBeSet) {
     return(
         function (req,res,next){
             if(req.body.thing.ownerId){ //if ownerIs is Set
-                if(conf.whoCanHandleThingsAndDevicesOwner.indexOf(req.decodedToken.type)>=0){ // this token type can handle device owner
+                if(conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner.indexOf(req.decodedToken.type)>=0){ // this token type can handle device owner
                     next();
                 }else{
-                    return res.boom.badRequest("Thing ownerId field must be set only by '" + conf.whoCanHandleThingsAndDevicesOwner + "' token types");
+                    return res.boom.badRequest("Thing ownerId field must be set only by '" + conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner + "' token types");
                 }
             }else{
                 if(mustBeSet){

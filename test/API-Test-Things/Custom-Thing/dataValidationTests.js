@@ -102,8 +102,8 @@ describe('Things API Test - [DATA VALIDATION]', function () {
 
     describe('POST /thing', function(){
         it('must test thing creation [user cannot handle thing ownerId]', function(done){
-            var oldConf=conf.whoCanHandleThingsAndDevicesOwner;
-            conf.whoCanHandleThingsAndDevicesOwner=["erwe"];
+            var oldConf=conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner;
+            conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner=["erwe"];
             var bodyParam=JSON.stringify({thing:{name:"name", description: "description",api:{url:"http://127.0.0.1"}, ownerId:Things.ObjectId(), vendorId:Things.ObjectId(), siteId:Things.ObjectId()}});
             var requestParams={
                 url:APIURL,
@@ -111,7 +111,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                 body:bodyParam
             };
             request.post(requestParams,function(error, response, body){
-                conf.whoCanHandleThingsAndDevicesOwner=oldConf;
+                conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner=oldConf;
                 if(error) consoleLogError.printErrorLog("POST /thing: 'must test thing creation [user cannot handle thing ownerId] -->" + error.message);
                 else{
                     var results = JSON.parse(body);
@@ -378,8 +378,8 @@ describe('Things API Test - [DATA VALIDATION]', function () {
 
     describe('POST /thing', function(){
         it('must test thing update [user cannot handle thing ownerId]', function(done){
-            var oldConf=conf.whoCanHandleThingsAndDevicesOwner;
-            conf.whoCanHandleThingsAndDevicesOwner=["erwe"];
+            var oldConf=conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner;
+            conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner=["erwe"];
 
             Things.findOne({}, null, function(err, thing){
                 should(err).be.null();
@@ -390,7 +390,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                     body:bodyParam
                 };
                 request.put(requestParams,function(error, response, body){
-                    conf.whoCanHandleThingsAndDevicesOwner=oldConf;
+                    conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner=oldConf;
                     if(error) consoleLogError.printErrorLog("PUT /thing: 'must test thing update [user cannot handle thing ownerId] -->" + error.message);
                     else{
                         var results = JSON.parse(body);

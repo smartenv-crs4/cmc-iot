@@ -28,6 +28,22 @@ let errorHeader="Error in authorisationMiddleware in function";
 
 
 
+exports.validateIfOptionIsActive= function(optionValue){
+
+    // Only for test waiting for ACL microservice
+
+    return (function(req,res,next){
+
+        if(conf.cmcIoTOptions[optionValue]){
+            next();
+        }else{
+            return res.boom.unauthorized("This resource is not accessible due to cmcIot Administrator disable it in microservice configuration.");
+        }
+    });
+
+
+};
+
 
 exports.checkToken = function(req, res, next) {
 
@@ -110,8 +126,6 @@ exports.ensureCanGetResourceAndReturnAllOtherPermissions = function(req,res,next
 
     next();
 };
-
-
 
 
 // exports.ensureUserIsAdminOrSelf = function(req,res,next){

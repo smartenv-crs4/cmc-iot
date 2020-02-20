@@ -38,13 +38,13 @@ router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.valid
 
 
 /* Update observation */
-router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
+router.put('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeUpdated"),authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.updateObservation(req, res, next)
 })
 
 
 /* Delete observation */
-router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
+router.delete('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeDeleted"),authorisationManager.checkToken], function(req, res, next) {
     observationsHandler.deleteObservation(req, res, next)
 })
 
