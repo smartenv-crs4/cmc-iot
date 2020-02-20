@@ -20,14 +20,49 @@
  ############################################################################
  */
 
-require('./Custom-Observation/dataValidationTests');
-require('./Custom-Observation/searchFilterTests');
-require('./Custom-Observation/CRUD-Tests');
-require('./Custom-Observation/crudOptionsTests');
-// require('./Custom-Observation/ApiActions/APIActionsTests');
-// require('./Custom-Observation/ApiActions/APIActionsObservationsTests');
-require('./From_Template/accessTokenSecurityTests');
-require('./From_Template/requestParserValidationTests');
-require('./From_Template/sqlInjectionSecurityTests');
-require('./From_Template/paginationTests');
-require('./From_Template/httpStatusCodeTests');
+
+var conf = require('propertiesmanager').conf;
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
+var Observations=require('../../../DBEngineHandler/drivers/observationDriver');
+
+require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"observations",Observations.ObjectId(),"location");
+
+
+/*
+
+UNCOMMENT to define other CUSTOM tests
+
+
+describe('Test Title eg. Observations API Tests', function () {
+
+    before(function (done) {
+       done();
+    });
+
+    after(function (done) {
+        done();
+    });
+
+
+
+    beforeEach(function (done) {
+      done();
+    });
+
+
+    afterEach(function (done) {
+       done();
+    });
+
+
+    describe('test Type : eg. POST /Observations', function(){
+
+        it('must test ...', function(done){
+           done();
+
+        });
+    });
+
+});
+ */
+

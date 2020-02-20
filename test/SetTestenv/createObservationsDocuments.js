@@ -34,7 +34,7 @@ module.exports.createDocuments=function(numbers,callback){
 
     deviceCreateDocuments.createDocuments(1,function(err,deviceForeignKey){
        if(!err){
-           unitCreateDocuments.createDocuments(1,function(err,unitForeignKey){
+           unitCreateDocuments.createDocuments(1,deviceForeignKey.observedPropertyId,function(err,unitForeignKey){
                if(!err){
                    async.each(range, function(e,cb){
 
@@ -50,7 +50,16 @@ module.exports.createDocuments=function(numbers,callback){
                        });
 
                    }, function(err){
-                       callback(err,{observationId:observationId, deviceId:deviceForeignKey.deviceId, unitId:unitForeignKey.unitId});
+                       callback(err,{
+                           observationId:observationId,
+                           deviceId:deviceForeignKey.deviceId,
+                           unitId:unitForeignKey.unitId,
+                           thingId:deviceForeignKey.thingId,
+                           deviceTypeId:deviceForeignKey.deviceTypeId,
+                           vendorId:deviceForeignKey.vendorId,
+                           siteId:deviceForeignKey.siteId,
+                           observedPropertyId:deviceForeignKey.observedPropertyId
+                       });
                    });
 
                } else{

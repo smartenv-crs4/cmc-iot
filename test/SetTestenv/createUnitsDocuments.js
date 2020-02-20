@@ -24,29 +24,43 @@
 var _ = require('underscore')._
 var async = require('async')
 var Unit = require('../../DBEngineHandler/drivers/unitDriver')
+var observerdProperyDocuments = require('./createObservedPropertiesDocuments')
 
 
-module.exports.createDocuments = function(numbers, callback) {
+module.exports.createDocuments = function(numbers,observedPropertyId, callback) {
+
+    if(!callback) {
+        callback = observedPropertyId;
+        observedPropertyId=null;
+    }
+
 
     var range = _.range(numbers)
     var unitId
 
     try {
-        async.each(range, function(e, cb) {
-            Unit.create({
-                name: "name" + e,
-                symbol: "symbol" + e,
-                minValue: 0 + e,
-                maxValue: 0 + e,
-                observedPropertyId: Unit.ObjectId()
-            }, function(err, newUnit) {
-                if (err) throw err
-                if (e === 0) unitId = newUnit._id
-                cb()
-            })
-        }, function(err) {
-            callback(err, {unitId:unitId})
-        })
+        observerdProperyDocuments.createDocuments(1,function(err,foreignKey){
+            if(!err) {
+                async.each(range, function (e, cb) {
+                    Unit.create({
+                        name: "name" + e,
+                        symbol: "symbol" + e,
+                        minValue: 0 + e,
+                        maxValue: 1 + e,
+                        observedPropertyId: observedPropertyId || foreignKey.observedPropertyId
+                    }, function (err, newUnit) {
+                        if (err) throw err
+                        if (e === 0) unitId = newUnit._id
+                        cb()
+                    })
+                }, function (err) {
+                    callback(err, {unitId: unitId})
+                })
+            }else{
+                callback(err);
+            }
+        });
+
     }
     catch (e) {
         callback (e)
@@ -55,9 +69,16 @@ module.exports.createDocuments = function(numbers, callback) {
 
 
 module.exports.deleteDocuments=function(callback){
-    Unit.deleteMany({},function(err){
-        callback(err);
+    observerdProperyDocuments.deleteDocuments(function(err){
+        if(!err) {
+            Unit.deleteMany({}, function (err) {
+                callback(err);
+            });
+        }else{
+            callback(err);
+        }
     });
+
 };
 
 
