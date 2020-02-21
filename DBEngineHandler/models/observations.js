@@ -27,7 +27,7 @@ var Schema = mongoose.Schema
 var conf = require('propertiesmanager').conf
 
 var observation = conf.customSchema.observationSchema || {
-    timestamp: {type: Number, index: true, required: true, default:new Date()},
+    timestamp: {type: Number, index: true, required: true},
     value: {type: Number, index: true, required: true},
     location: {
         type: {type: String, enum: ['Point']},
@@ -39,6 +39,16 @@ var observation = conf.customSchema.observationSchema || {
 
 
 var observationSchema = new Schema(observation, {strict: "throw"});
+
+
+observationSchema.pre('validate', function(next) {
+
+    if (!this.timestamp) {
+        this.timestamp=new Date().getTime();
+
+    }
+    next();
+});
 
 
 // Static method to retrieve resource WITH metadata

@@ -41,8 +41,8 @@ var unitSchema = new Schema(unit, {strict: "throw"})
 unitSchema.pre('validate', function(next) {
 
     if (this.minValue > this.maxValue) {
-        var err = new Error('unit validation failed: range (minValue-maxValue) not allowed')
-        err.name = "ValidatorError"
+        var err = new Error('unit validation failed: range (minValue-maxValue) not allowed');
+        err.name = "ValidatorError";
         next(err)
     }
     else next()
