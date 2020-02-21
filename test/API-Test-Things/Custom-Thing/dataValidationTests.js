@@ -221,7 +221,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("dovrebbe farlo perchè è mobile e non ha una posizine");
+                    results.message.should.be.equal("thing validation failed: siteId: Path `siteId` is required.");
                 }
                 done();
             });
@@ -376,7 +376,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
 
 
 
-    describe('POST /thing', function(){
+    describe('PUT /thing', function(){
         it('must test thing update [user cannot handle thing ownerId]', function(done){
             var oldConf=conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner;
             conf.cmcIoTOptions.whoCanHandleThingsAndDevicesOwner=["erwe"];

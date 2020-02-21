@@ -161,7 +161,7 @@
     "cmcIoTOptions": {
       "observationsCanBeUpdated": true,
       "observationsCanBeDeleted": true,
-      "whoCanHandleThingsAndDevicesOwner": ["admin"],
+      "whoCanHandleThingsAndDevicesOwner": ["admin","webui"],
       "authorizationVerbToHandleDismissedStatus": ["admin"]
     }
   }
