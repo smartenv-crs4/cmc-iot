@@ -35,6 +35,7 @@ var should = require('should');
 var webUiToken;
 var observationId;
 var testObservationDef;
+var testUnit;
 
 
 describe('Observations API Test - [CRUD-TESTS]', function () {
@@ -64,6 +65,7 @@ describe('Observations API Test - [CRUD-TESTS]', function () {
             observationId=ForeignKeys.observationId;
             Unit.findById(ForeignKeys.unitId,function(err,unit){
                 if (err) consoleLogError.printErrorLog("Observation CRUD-Tests.js - beforeEach - Observations.create ---> " + err);
+                testUnit=unit;
                 testObservationDef= {
                     timestamp: new Date().getTime(),
                     value:unit.minValue+1,
@@ -231,9 +233,7 @@ describe('Observations API Test - [CRUD-TESTS]', function () {
                     response.statusCode.should.be.equal(201);
                     results.should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                 }
-
-
-                var nameUpdated=testObservationDef.value+0.5;
+                var nameUpdated=(testUnit.minValue+testUnit.maxValue)/2;
                 bodyParam=JSON.stringify({observation:{value:nameUpdated}, access_token:webUiToken});
                 requestParams={
                     url:APIURL+"/" + results._id,

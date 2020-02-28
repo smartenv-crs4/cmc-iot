@@ -53,4 +53,5 @@ require('./API-Test-Sites/sites-api');
 require('./API-Test-ObservedProperties/observedProperties-api');
 require('./API-Test-ApiActions/apiActions-api');
 require('./API-Test-Domains/domains-api');
+require('./API-Test-Observations/observations-api');
 

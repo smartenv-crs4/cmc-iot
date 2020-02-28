@@ -20,9 +20,9 @@
  ############################################################################
  */
 
-
 var observationDriver = require('../../DBEngineHandler/drivers/observationDriver');
 var observationUtility = require('../routesHandlers/handlerUtility/observationUtility');
+var async=require("async")
 
 
 /* Create Observation */
@@ -40,7 +40,6 @@ module.exports.postCreateObservation = function(req, res, next) {
         });
     }
 };
-
 
 /* GET Observations list */
 module.exports.getObservations = function(req, res, next) {
@@ -60,12 +59,11 @@ module.exports.getObservationById = function(req, res, next) {
 
 
 /* Update Observation */
-module.exports.updateObservation = function(req, res, next) {
-    observationDriver.findByIdAndUpdate(req.params.id, req.body.observation, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-};
-
+// module.exports.updateObservation = function(req, res, next) {
+//     observationDriver.findByIdAndUpdate(req.params.id, req.body.observation, function(err, results) {
+//         res.httpResponse(err, null, results)
+//     })
+// };
 
 /* Delete Observation */
 module.exports.deleteObservation = function(req, res, next) {
@@ -75,3 +73,34 @@ module.exports.deleteObservation = function(req, res, next) {
     })
 };
 
+
+function composeObservation(currentObservation,observationUpdate,callbackFunction){
+    var observationCopy=currentObservation.toObject();
+    async.eachOf(observationUpdate, function(observationValue,observationField, callback) {
+        observationCopy[observationField]=observationUpdate[observationField];
+            callback();
+    }, function(err) {
+        callbackFunction(err,observationCopy);
+    });
+}
+
+
+/* Update Observation */
+module.exports.updateObservation = function(req, res, next) {
+    observationDriver.findById(req.params.id,null,null,function(err,observatonToUpdate){
+        if(err || (!observatonToUpdate)){
+            return res.httpResponse(err,null,null);
+        } else{
+            composeObservation(observatonToUpdate,req.body.observation,function(err,newObservation){
+                observationUtility.validateObservationsBeforeUpdate(newObservation, function (err, validityTestResult) {
+                    if (err) return res.httpResponse(err, null, null);
+                    else {
+                        observationDriver.findByIdAndUpdate(req.params.id, newObservation, function(err, results) {
+                            res.httpResponse(err, null, results)
+                        })
+                    }
+                });
+            });
+        }
+    });
+};

@@ -23,6 +23,7 @@
 
 var should = require('should/should');
 var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
+var Unit = require('../../../DBEngineHandler/drivers/unitDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
@@ -33,6 +34,7 @@ var observationDocuments=require('../../SetTestenv/createObservationsDocuments')
 
 var webUiToken;
 var observationId;
+var testObservationDef;
 
 
 describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
@@ -64,7 +66,18 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
         observationDocuments.createDocuments(100,function(err,ForeignKeys){
             if (err) consoleLogError.printErrorLog("Observation searchFilterTests.js - beforreEach - Observations.create ---> " + err);
             observationId=ForeignKeys.observationId;
-            done();
+            Unit.findById(ForeignKeys.unitId,function(err,unit){
+                if (err) consoleLogError.printErrorLog("Observation CRUD-Tests.js - beforeEach - Observations.create ---> " + err);
+                //testUnit=unit;
+                testObservationDef= {
+                    timestamp: new Date().getTime(),
+                    value:unit.minValue+1,
+                    deviceId: ForeignKeys.deviceId,
+                    unitId: ForeignKeys.unitId
+                };
+                done();
+            })
+
         });
     });
 
@@ -84,11 +97,10 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
 
     describe(testMessageMessage, function(){
         testMessage='must test update observation resource enabled';
-
         it(testMessage, function(done){
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({observation:{timestamp:new Date().getTime()}});
+                var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
                     url:APIURL+"/" + observation._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
@@ -97,6 +109,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
                 request.put(requestParams,function(error, response, body){
                     if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                     else{
+
                         var results = JSON.parse(body);
                         response.statusCode.should.be.equal(200);
                         results.should.have.properties('value','location','timestamp','deviceId','unitId');
@@ -109,8 +122,6 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
 
     describe(testMessageMessage, function(){
         testMessage='must test update observation resource disabled';
-
-
         it(testMessage, function(done){
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();

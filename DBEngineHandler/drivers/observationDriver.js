@@ -97,3 +97,7 @@ module.exports.ObjectId = function(ObjectId) {
 module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
 }
+
+module.exports.getModel = function() {
+    return (observations);
+}

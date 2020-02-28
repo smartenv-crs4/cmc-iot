@@ -120,13 +120,12 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                     should(updatedSite.locatedInSiteId).be.eql(null);
                                     updatedSite.location.coordinates[0].should.be.eql(2);
                                     updatedSite.location.coordinates[1].should.be.eql(2);
-
-
                                     request.post({
                                         url: APIURL,
                                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
                                         body: JSON.stringify({observation:testObservationDef})
                                     }, function (error, response, body) {
+
                                         if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
                                         else {
                                             response.statusCode.should.be.equal(201);
@@ -138,8 +137,9 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                             results.timestamp.should.be.not.eql(null);
                                             results.location.coordinates[0].should.be.eql(updatedSite.location.coordinates[0]);
                                             results.location.coordinates[1].should.be.eql(updatedSite.location.coordinates[1]);
-                                            done();
                                         }
+
+                                        done();
                                     });
                                 }
                             })
@@ -729,7 +729,9 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
 
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
-                var bodyParam=JSON.stringify({observation:{noschemaField:"invalid"}});
+                testObservationDef["noschemaField"]="invalid";
+                testObservationDef["location"]={coordinates:[0,0]};
+                var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
                     url:APIURL+"/" + observation._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
@@ -758,6 +760,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef.deviceId="deviceId";
+
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
                     url:APIURL+"/" + observation._id,
@@ -772,7 +775,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"deviceId\" at path \"deviceId\"");
+                        results.message.should.be.eql("deviceId is a not valid ObjectId");
                     }
                     done();
                 });
@@ -785,6 +788,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function(done){
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
+                testObservationDef["location"]={coordinates:[0,0]};
                 testObservationDef.unitId="unitId";
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
@@ -796,11 +800,11 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                     if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                     else{
                         var results = JSON.parse(body);
-                        response.statusCode.should.be.equal(400);
+                        response.statusCode.should.be.equal(422);
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"unitId\" at path \"unitId\"");
+                        results.message.should.be.eql("Not a valid unitId for this device type.");
                     }
                     done();
                 });
@@ -814,7 +818,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function(done){
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
-                testObservationDef.location="deviceId";
+                testObservationDef["location"]="deviceId";
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
                     url:APIURL+"/" + observation._id,
@@ -825,11 +829,11 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                     if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                     else{
                         var results = JSON.parse(body);
-                        response.statusCode.should.be.equal(422);
+                        response.statusCode.should.be.equal(400);
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Location field must be set only for mobile devices.");
+                        results.message.should.be.eql("Invalid location format");
                     }
                     done();
                 });
@@ -838,79 +842,18 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     });
 
 
-    // From Here test to Fix
-
-    describe(testMessageMessage, function () {
-        var testMessage="must test update observation [device in site hierarchy]";
-        it(testMessage, function (done) {
-
-            siteDocuments.createDocuments(1,function(error,foreignKey){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else {
-                    siteDriver.findByIdAndUpdate(associateSiteId,{location:null,locatedInSiteId:foreignKey.siteId},function(error,updatedSite){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else {
-
-                            updatedSite=JSON.parse(JSON.stringify(updatedSite));
-                            should(updatedSite.location).be.eql(null);
-                            siteDriver.ObjectId(updatedSite.locatedInSiteId).should.be.eql(foreignKey.siteId);
+    
 
 
-                            siteDriver.findByIdAndUpdate(foreignKey.siteId,{locatedInSiteId:null,location:{coordinates:[2,2]}},function(error,updatedSite){
-                                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                                else {
-                                    updatedSite.location.should.be.not.eql(null);
-                                    should(updatedSite.locatedInSiteId).be.eql(null);
-                                    updatedSite.location.coordinates[0].should.be.eql(2);
-                                    updatedSite.location.coordinates[1].should.be.eql(2);
-
-
-                                    Observations.findOne({}, null, function(err, observation){
-                                        should(err).be.null();
-                                        testObservationDef.location="deviceId";
-                                        var bodyParam=JSON.stringify({observation:{deviceId:testObservationDef.deviceId}});
-                                        var requestParams={
-                                            url:APIURL+"/" + observation._id,
-                                            headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                            body:bodyParam
-                                        };
-                                        request.put(requestParams,function(error, response, body){
-                                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                            else{
-                                                response.statusCode.should.be.equal(200);
-                                                var results = JSON.parse(body);
-                                                results.should.have.properties("unitId","deviceId","location","value","timestamp","_id");
-                                                Unit.ObjectId(results.unitId).should.be.eql(testObservationDef.unitId);
-                                                results.value.should.be.eql(testObservationDef.value);
-                                                deviceDriver.ObjectId(results.deviceId).should.be.eql(testObservationDef.deviceId);
-                                                results.timestamp.should.be.not.eql(null);
-                                                results.location.coordinates[0].should.be.eql(updatedSite.location.coordinates[0]);
-                                                results.location.coordinates[1].should.be.eql(updatedSite.location.coordinates[1]);
-                                                done();
-                                            }
-                                            done();
-                                        });
-                                    });
-                                }
-                            })
-                        }
-                    });
-                }
-            });
-        });
-    });
 
 
     describe(testMessageMessage, function () {
-        var testMessage="must test update Observations [error due to location set for not mobile device]";
+        var testMessage="must test update Observations [valid observation for mobile device]";
         it(testMessage, function (done) {
-
-
-
             Observations.findOne({}, null, function(err, observation){
                 should(err).be.null();
-                testObservationDef.location="deviceId";
-                var bodyParam=JSON.stringify({observation:{location: {coordinates:[1,1]}}});
+                testObservationDef.location={coordinates:[0,0]};
+                var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
                     url:APIURL+"/" + observation._id,
                     headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
@@ -919,12 +862,42 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                 request.put(requestParams,function(error, response, body){
                     if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                     else{
+                        response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
-                        response.statusCode.should.be.equal(422);
+                        results.should.have.properties("unitId","deviceId","location","value","timestamp","_id");
+                        results.timestamp.should.be.not.eql(null);
+                        results.location.should.be.eql(testObservationDef.location);
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+    describe(testMessageMessage, function () {
+        var testMessage="must test update Observations [invalid observation due to invalid location]";
+        it(testMessage, function (done) {
+
+            Observations.findOne({}, null, function(err, observation){
+                should(err).be.null();
+                testObservationDef["location"]={coordinates:[360,90]};
+                var bodyParam=JSON.stringify({observation:testObservationDef});
+                var requestParams={
+                    url:APIURL+"/" + observation._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        response.statusCode.should.be.equal(400);
+                        var results = JSON.parse(body);
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Location field must be set only for mobile devices.");
+                        results.message.indexOf('Invalid location coordinates: longitude must be in range [-180,180]').should.be.greaterThanOrEqual(0);
+
                     }
                     done();
                 });
@@ -933,131 +906,33 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         });
     });
 
-
-    describe(testMessageMessage, function () {
-        var testMessage="must test update Observations [valid observation for mobile device]";
-        it(testMessage, function (done) {
-
-
-            deviceDriver.findById(testObservationDef.deviceId,function(error,deviceFound){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else{
-                    thingDriver.findByIdAndUpdate(deviceFound.thingId,{mobile:true},function(error,updatedThing){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else{
-                            testObservationDef.location= {coordinates:[1,1]};
-
-                            Observations.findOne({}, null, function(err, observation){
-                                should(err).be.null();
-                                testObservationDef.location="deviceId";
-                                var bodyParam=JSON.stringify({observation:{location: {coordinates:[1,1]}}});
-                                var requestParams={
-                                    url:APIURL+"/" + observation._id,
-                                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                    body:bodyParam
-                                };
-                                request.put(requestParams,function(error, response, body){
-                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                    else{
-                                        response.statusCode.should.be.equal(200);
-                                        var results = JSON.parse(body);
-                                        results.should.have.properties("unitId","deviceId","location","value","timestamp","_id");
-                                        results.timestamp.should.be.not.eql(null);
-                                        results.location.should.be.eql(testObservationDef.location);
-                                    }
-                                    done();
-                                });
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-
     describe(testMessageMessage, function () {
         var testMessage="must test update Observations [invalid observation due to invalid location]";
         it(testMessage, function (done) {
 
 
-            deviceDriver.findById(testObservationDef.deviceId,function(error,deviceFound){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else{
-                    thingDriver.findByIdAndUpdate(deviceFound.thingId,{mobile:true},function(error,updatedThing){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else{
+            Observations.findOne({}, null, function(err, observation){
+                should(err).be.null();
+                testObservationDef["location"]={coordinates:[90,360]};
+                var bodyParam=JSON.stringify({observation:testObservationDef});
+                var requestParams={
+                    url:APIURL+"/" + observation._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        response.statusCode.should.be.equal(400);
+                        var results = JSON.parse(body);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.indexOf('Invalid location coordinates: latitude must be in range [-90,90]').should.be.greaterThanOrEqual(0);
 
-
-                            Observations.findOne({}, null, function(err, observation){
-                                should(err).be.null();
-                                testObservationDef.location="deviceId";
-                                var bodyParam=JSON.stringify({observation:{location: {coordinates:[360,90]}}});
-                                var requestParams={
-                                    url:APIURL+"/" + observation._id,
-                                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                    body:bodyParam
-                                };
-                                request.put(requestParams,function(error, response, body){
-                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                    else{
-                                        response.statusCode.should.be.equal(400);
-                                        var results = JSON.parse(body);
-                                        results.should.have.property('statusCode');
-                                        results.should.have.property('error');
-                                        results.should.have.property('message');
-                                        results.message.indexOf('Invalid location coordinates: longitude must be in range [-180,180]').should.be.greaterThanOrEqual(0);
-
-                                    }
-                                    done();
-                                });
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-    describe(testMessageMessage, function () {
-        var testMessage="must test update Observations [invalid observation due to invalid location]";
-        it(testMessage, function (done) {
-
-
-            deviceDriver.findById(testObservationDef.deviceId,function(error,deviceFound){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else{
-                    thingDriver.findByIdAndUpdate(deviceFound.thingId,{mobile:true},function(error,updatedThing){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else{
-
-
-                            Observations.findOne({}, null, function(err, observation){
-                                should(err).be.null();
-                                testObservationDef.location="deviceId";
-                                var bodyParam=JSON.stringify({observation:{location: {coordinates:[90,360]}}});
-                                var requestParams={
-                                    url:APIURL+"/" + observation._id,
-                                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                    body:bodyParam
-                                };
-                                request.put(requestParams,function(error, response, body){
-                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                    else{
-                                        response.statusCode.should.be.equal(400);
-                                        var results = JSON.parse(body);
-                                        results.should.have.property('statusCode');
-                                        results.should.have.property('error');
-                                        results.should.have.property('message');
-                                        results.message.indexOf('Invalid location coordinates: latitude must be in range [-90,90]').should.be.greaterThanOrEqual(0);
-
-                                    }
-                                    done();
-                                });
-                            });
-                        }
-                    });
-                }
+                    }
+                    done();
+                });
             });
         });
     });
@@ -1069,40 +944,28 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
 
-            deviceDriver.findById(testObservationDef.deviceId,function(error,deviceFound){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else{
-                    thingDriver.findByIdAndUpdate(deviceFound.thingId,{mobile:true},function(error,updatedThing){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else{
-                            testObservationDef.location="Ciao";
+            Observations.findOne({}, null, function(err, observation){
+                should(err).be.null();
+                testObservationDef["location"]="deviceId";
+                var bodyParam=JSON.stringify({observation:testObservationDef});
+                var requestParams={
+                    url:APIURL+"/" + observation._id,
+                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
+                    body:bodyParam
+                };
+                request.put(requestParams,function(error, response, body){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        response.statusCode.should.be.equal(400);
+                        var results = JSON.parse(body);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.indexOf('Invalid location format').should.be.greaterThanOrEqual(0);
 
-                            Observations.findOne({}, null, function(err, observation){
-                                should(err).be.null();
-                                testObservationDef.location="deviceId";
-                                var bodyParam=JSON.stringify({observation:testObservationDef});
-                                var requestParams={
-                                    url:APIURL+"/" + observation._id,
-                                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                    body:bodyParam
-                                };
-                                request.put(requestParams,function(error, response, body){
-                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                    else{
-                                        response.statusCode.should.be.equal(400);
-                                        var results = JSON.parse(body);
-                                        results.should.have.property('statusCode');
-                                        results.should.have.property('error');
-                                        results.should.have.property('message');
-                                        results.message.indexOf('Location:{ coordinates: [lon, lat]} is a mandatory field for mobile devices').should.be.greaterThanOrEqual(0);
-
-                                    }
-                                    done();
-                                });
-                            });
-                        }
-                    });
-                }
+                    }
+                    done();
+                });
             });
         });
     });
@@ -1126,85 +989,11 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                     if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                     else{
                         var results = JSON.parse(body);
-                        response.statusCode.should.be.equal(422);
-                        results.should.have.property('statusCode');
-                        results.should.have.property('error');
-                        results.should.have.property('message');
-                        results.message.should.be.eql("Location field must be set only for mobile devices.");
-                    }
-                    done();
-                });
-            });
-        });
-    });
-
-
-
-    describe(testMessageMessage, function () {
-        var testMessage="must test update Observations [observation without location for mobile device]";
-        it(testMessage, function (done) {
-
-
-            deviceDriver.findById(testObservationDef.deviceId,function(error,deviceFound){
-                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                else{
-                    thingDriver.findByIdAndUpdate(deviceFound.thingId,{mobile:true},function(error,updatedThing){
-                        if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
-                        else{
-                            testObservationDef.location=undefined;
-                            Observations.findOne({}, null, function(err, observation){
-                                should(err).be.null();
-                                var bodyParam=JSON.stringify({observation:testObservationDef});
-                                var requestParams={
-                                    url:APIURL+"/" + observation._id,
-                                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                                    body:bodyParam
-                                };
-                                request.put(requestParams,function(error, response, body){
-                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                                    else{
-                                        response.statusCode.should.be.equal(400);
-                                        var results = JSON.parse(body);
-                                        results.should.have.property('statusCode');
-                                        results.should.have.property('error');
-                                        results.should.have.property('message');
-                                        results.message.indexOf('Location:{ coordinates: [lon, lat]} is a mandatory field for mobile devices').should.be.greaterThanOrEqual(0);
-
-                                    }
-                                    done();
-                                });
-                            });
-                        }
-                    });
-                }
-            });
-        });
-    });
-
-
-
-    describe(testMessageMessage, function () {
-        var testMessage="must test update Observations [error due to undefined value field]";
-        it(testMessage, function (done) {
-
-            testObservationDef.value=undefined;
-            Observations.findOne({}, null, function(err, observation){
-                should(err).be.null();
-                var bodyParam=JSON.stringify({observation:testObservationDef});
-                var requestParams={
-                    url:APIURL+"/" + observation._id,
-                    headers:{'content-type': 'application/json','Authorization' : "Bearer "+ webUiToken},
-                    body:bodyParam
-                };
-                request.put(requestParams,function(error, response, body){
-                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
-                    else{
                         response.statusCode.should.be.equal(400);
-                        var results = JSON.parse(body);
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.indexOf("Observation 'value' field missing").should.be.greaterThanOrEqual(0);
+                        results.message.indexOf('Invalid location format').should.be.greaterThanOrEqual(0);
                     }
                     done();
                 });
@@ -1299,7 +1088,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                 results.should.have.property('statusCode');
                                 results.should.have.property('error');
                                 results.should.have.property('message');
-                                results.message.indexOf("The device/thing not exist.").should.be.greaterThanOrEqual(0);
+                                results.message.indexOf("The device not exist.").should.be.greaterThanOrEqual(0);
                             }
                             done();
                         });
@@ -1340,7 +1129,10 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                 results.should.have.property('unitId');
                                 results.should.have.property('deviceId');
                                 results.should.have.property('timestamp');
-                                results.should.be.eql(testObservationDef);
+                                results.value.should.be.eql(testObservationDef.value);
+                                Observations.ObjectId(results.unitId).should.be.eql(Observations.ObjectId(testObservationDef.unitId));
+                                Observations.ObjectId(results.deviceId).should.be.eql(Observations.ObjectId(testObservationDef.deviceId));
+                                results.timestamp.should.be.eql(testObservationDef.timestamp);
                             }
                             done();
                         });
@@ -1379,7 +1171,10 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                 results.should.have.property('unitId');
                                 results.should.have.property('deviceId');
                                 results.should.have.property('timestamp');
-                                results.should.be.eql(testObservationDef);
+                                results.value.should.be.eql(testObservationDef.value);
+                                Observations.ObjectId(results.unitId).should.be.eql(Observations.ObjectId(testObservationDef.unitId));
+                                Observations.ObjectId(results.deviceId).should.be.eql(Observations.ObjectId(testObservationDef.deviceId));
+                                results.timestamp.should.be.eql(testObservationDef.timestamp);
                             }
                             done();
                         });

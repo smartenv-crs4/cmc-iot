@@ -74,7 +74,7 @@ module.exports.getDeviceLocation =function (deviceInfo,callback){
 }
 
 
-module.exports.getDeviceStatus=function getDeviceStatus(deviceId,callback){
+module.exports.getDeviceStatus=function getDeviceStatus(deviceId,extractLocation,callback){
     // check if Resdis store device Stutus Information. If yes return It otherwise check info into Database
 
     var redis = false; //TODO: change with redis check
@@ -148,7 +148,10 @@ module.exports.getDeviceStatus=function getDeviceStatus(deviceId,callback){
                 }
             ], function (err, results) {
                 if(!err){
-                    getDevLocation(results[0] || null ,callback);
+                    if(extractLocation)
+                        getDevLocation(results[0] || null ,callback);
+                    else
+                        callback(null,results[0]|| null)
                 }else{
                     callback(err);
                 }

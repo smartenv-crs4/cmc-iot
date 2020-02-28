@@ -30,7 +30,6 @@ var roles=require('./testconfig');
 var setupEnvironmentDefaults=require('../../bin/environmentDefaults/setupDefault');
 var errorHandler=require('../Utility/errorLogs');
 
-
 var authHost = conf.authUrl;
 
 

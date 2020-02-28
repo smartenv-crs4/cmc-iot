@@ -87,4 +87,6 @@ module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
 }
 
-module.exports.locationValidator=sites.locationValidator;
+module.exports.locationValidator= function(location,callback){
+    sites.locationValidator(location,callback);
+}

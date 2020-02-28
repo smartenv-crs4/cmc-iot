@@ -35,26 +35,33 @@ function validateUnitAndValueRange(deviceStatus, observation, callback) {
 
     var valid = false;
     var interval = false;
-    deviceStatus.units.forEach(function (unit) {
 
-        if (unit._id.toString() === observation.unitId.toString()) {
-            valid = true;
-            if ((observation.value >= unit.minValue) && (observation.value <= unit.maxValue))
-                interval = true;
-        }
-    });
-    if (valid) {
-        if (interval) { // it pass all verification tests
-            callback(null);
-        } else { // observation out of range
-            var Err = new Error("The observation value is out of range.");
-            Err.name = "outOfRangeError";
+    if(deviceStatus.units) {
+        deviceStatus.units.forEach(function (unit) {
+
+            if (unit._id.toString() === observation.unitId.toString()) {
+                valid = true;
+                if ((observation.value >= unit.minValue) && (observation.value <= unit.maxValue))
+                    interval = true;
+            }
+        });
+        if (valid) {
+            if (interval) { // it pass all verification tests
+                callback(null);
+            } else { // observation out of range
+                var Err = new Error("The observation value is out of range.");
+                Err.name = "outOfRangeError";
+                callback(Err);
+            }
+
+        } else { // not valid unitId for this device Type
+            var Err = new Error("Not a valid unitId for this device type.");
+            Err.name = "DeviceTypeError";
             callback(Err);
         }
-
-    } else { // not valid unitId for this device Type
-        var Err = new Error("Not a valid unitId for this device type.");
-        Err.name = "DeviceTypeError";
+    }else{
+        var Err = new Error("No observed property measure unit associated to this device. You must set it before send observation");
+        Err.name = "ConflictError";
         callback(Err);
     }
 }
@@ -279,7 +286,7 @@ function validateAndUpdateObservationContent(id, observation, deviceStatus, call
 
 function validateAndUpdateDeviceObservations(thingId,deviceId,observations,callback){
 
-    thingAndDeviceHandlerUtility.getDeviceStatus(deviceId,function(err,deviceStatus){
+    thingAndDeviceHandlerUtility.getDeviceStatus(deviceId,true,function(err,deviceStatus){
         if(!err){
 
             if(thingId && thingId!=deviceStatus.thing._id){
@@ -297,23 +304,48 @@ function validateAndUpdateDeviceObservations(thingId,deviceId,observations,callb
                             updatedObservations.push(validationResults.updatedObservation);
                         }
                         callbackfunction(err);
-
                     });
                 }, function (err) {
                     callback(err,updatedObservations,deviceStatus);
                 });
             }
-
-
         }else{
             err.observation=null;
             callback(err);
         }
-
     });
-
-
 }
+
+
+function validateObservationsBeforeUpdate(updateObservation,callback){
+
+
+    thingAndDeviceHandlerUtility.getDeviceStatus(updateObservation.deviceId,false,function(err,deviceStatus){
+        if(!err){
+            if(deviceStatus){
+                validateUnitAndValueRange(deviceStatus, updateObservation, function(err){
+                    if(!err){
+                        siteDriver.locationValidator(updateObservation.location,function(err){
+                            callback(err,{authorized:true,updatedObservation:updateObservation})
+                        });
+                    }else {
+                        callback(err);
+                    }
+                });
+            }else{
+                Err = new Error("The device not exist.");
+                Err.name = "NotExistError";
+                callback(Err, null);
+            }
+        }else{
+            err.observation=null;
+            callback(err);
+        }
+    });
+}
+
+
+
 
 
 
@@ -430,6 +462,9 @@ function validateThingObservations(thingId, thingStatus,deviceId,observations,ca
 //         });
 //     }
 // }
+
+
+module.exports.validateObservationsBeforeUpdate = validateObservationsBeforeUpdate;
 
 module.exports.validateAndCreateObservations = function (deviceId, observations, callback) {
 

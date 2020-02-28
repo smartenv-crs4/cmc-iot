@@ -94,18 +94,25 @@ siteSchema.statics.locationValidator = function(location, callback) {
 
 var validateLocation = function(location,callback) {
 
-    if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
-        var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
-        err.name = "ValidatorError";
-        callback(err);
-    }else {
-        if (location.coordinates[1] > 90 || location.coordinates[1] < -90) {
-            var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
+    if(location && location.coordinates) {
+        if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
+            var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
             err.name = "ValidatorError";
-            return callback(err);
-        }else{
-            callback(null);
+            callback(err);
+        } else {
+            if (location.coordinates[1] > 90 || location.coordinates[1] < -90) {
+                var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
+                err.name = "ValidatorError";
+                return callback(err);
+            } else {
+                callback(null);
+            }
         }
+    }else{
+        var err = new Error('Invalid location format');
+        err.name = "ValidatorError";
+        return callback(err);
+
     }
 
 };

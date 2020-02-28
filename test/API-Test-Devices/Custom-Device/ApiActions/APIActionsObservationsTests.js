@@ -199,9 +199,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
                 else {
-                    //TODO: Remove
-                    console.log("BODY");
-                    console.log(body);
                     response.statusCode.should.be.equal(422);
                     var results = JSON.parse(body);
                     results.should.have.property('statusCode');
@@ -246,8 +243,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('message');
                     results.message.indexOf("The observation value is out of range.").should.be.greaterThanOrEqual(0);
                     results.message.indexOf(deviceId).should.be.greaterThanOrEqual(0);
-                    //TODO: Remove
-                    console.log(results.message);
                     results.message.indexOf(validUnits.first.maxValue+1).should.be.greaterThanOrEqual(0);
 
                 }
