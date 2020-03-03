@@ -24,10 +24,14 @@
 //Middleware to parse sort option from request
 //Adds sort to request
 exports.parseForOperators = function (req, res, next) {
-    if(JSON.stringify(req.query).match(/\$\w+"?\\?"?:/igm))
-        return res.boom.badRequest('mongoDb operator "$..." are not allowed in query filter');
-
+    if(req.query) {
+        if (JSON.stringify(req.query).match(/\$\w+"?\\?"?:/igm))
+            return res.boom.badRequest('mongoDb operator "$..." are not allowed in query filter');
+    }
+    if(req.body) {
+        if (JSON.stringify(req.body).match(/\$\w+"?\\?"?:/igm))
+            return res.boom.badRequest('mongoDb operator "$..." are not allowed in query filter');
+    }
     next();
-
 };
 

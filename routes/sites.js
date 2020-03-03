@@ -26,8 +26,14 @@ var router = express.Router()
 var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
 var authorisationManager = require('./middlewares/authorisationMiddleware')
 var sitesHandler = require('./routesHandlers/siteHandler')
-var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
+var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 
+
+
+router.post('/actions/getLinkedSites',parseRequestMiddleware.validateBody(["sites"]),mongosecurity.parseForOperators,function(req, res, next) {
+    req.statusCode=200;
+    sitesHandler.getLinkedSites(req,res,next);
+});
 
 /* Create site */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {

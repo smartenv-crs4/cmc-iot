@@ -151,6 +151,37 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
     })
 
 
+
+    describe('POST /sites', function() {
+        it('must test site creation [data validation error due to site with locatedInSiteId not exists]', function(done) {
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    location: {type: "Point", coordinates: [1,1]},
+                    locatedInSiteId: Sites.ObjectId()
+                }
+            })
+            var requestParams = {
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: bodyParam
+            }
+            request.post(requestParams, function(error, response, body) {
+                if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due to invalid field locatedInSiteId] -->" + error.message)
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(400)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("site validation failed: locatedInSiteId: Cast to ObjectID failed for value \"locatedInSiteId\" at path \"locatedInSiteId\"")
+                }
+                done()
+            })
+        })
+    })
+
     describe('POST /sites', function() {
         it('must test site creation [data validation error due coordinates not in range]', function(done) {
             var bodyParam = JSON.stringify({

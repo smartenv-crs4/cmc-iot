@@ -192,7 +192,7 @@ exports.validateBody = function (mandatoryFields) {
             }else{
                 var noMandatoryFields="";
                 mandatoryFields.forEach(function(value,index){
-                    if(!req.body[value] || _.isEmpty(req.body[value])) noMandatoryFields+=value+", ";
+                    if(req.body[value]==undefined || (_.isObject(req.body[value]) && _.isEmpty(req.body[value]))) noMandatoryFields+=value+", ";
                 });
 
                 if(noMandatoryFields.length>0){

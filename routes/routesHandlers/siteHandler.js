@@ -21,8 +21,10 @@
  */
 
 
-var siteDriver = require('../../DBEngineHandler/drivers/siteDriver')
-var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
+var siteDriver = require('../../DBEngineHandler/drivers/siteDriver');
+var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
+var siteUtility= require('./handlerUtility/siteHandlerUtility');
+var _=require("underscore");
 
 
 //Begin macro
@@ -162,6 +164,18 @@ module.exports.postCreateSite = function(req, res, next) {
     siteDriver.create(req.body.site, function(err, results) {
         res.httpResponse(err, null, results)
     })
+}
+
+module.exports.getLinkedSites = function(req, res, next) {
+    var sites=req.body.sites;
+
+    if(_.isArray(sites)){
+        siteUtility.getLinkedSites(_.uniq(sites),[],function(err,linkedSites){
+           res.httpResponse(err,req.statusCode,{linkedSites:linkedSites});
+        });
+    }else{
+        res.httpResponse(null, 400, "sites body field must be an array list of sites id");
+    }
 }
 
 

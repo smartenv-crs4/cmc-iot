@@ -20,44 +20,38 @@
  ############################################################################
  */
 
+var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
+var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
+var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
+var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
+var async = require('async');
 
-var _ = require('underscore')._
-var async = require('async')
-var Site = require('../../DBEngineHandler/drivers/siteDriver')
+var _ = require('underscore');
 
 
-module.exports.createDocuments = function(numbers,locatedInSiteId, callback) {
+module.exports.getLinkedSites=function getLinkedSites(siteIdsToCheck,linkedSitesList,returnCallback) {
 
-    if(!callback){
-        callback=locatedInSiteId;
-        locatedInSiteId=null;
+    if(siteIdsToCheck.length>0){
+        var sitesIdsFound=[];
+
+        siteDriver.find({locatedInSiteId:{ "$in": siteIdsToCheck }},"_id",null,function(err,siteInfo){
+
+            if(siteInfo){
+                for(var count=0; count< siteInfo.length;++count){
+                    if(linkedSitesList.indexOf(siteInfo[count]._id.toString())==-1){
+                        sitesIdsFound.push(siteInfo[count]._id);
+                    }
+                }
+            }
+            linkedSitesList=linkedSitesList.concat(siteIdsToCheck);
+            getLinkedSites(sitesIdsFound,linkedSitesList,function(err,subList){
+                returnCallback(err,subList);
+            })
+        });
+
+    }else{
+        returnCallback(null,linkedSitesList);
     }
-
-
-
-    var range = _.range(numbers)
-    var siteId
-
-    async.each(range, function(e, cb) {
-        Site.create({
-            name: "name" + e,
-            description: "description" + e,
-            location: {type: "Point", coordinates: [0, 0]},
-            locatedInSiteId: locatedInSiteId || Site.ObjectId()
-        }, function(err, newSite) {
-            if (err) throw err
-            if (e === 0) siteId = newSite._id;
-            cb()
-        })
-    }, function(err) {
-        callback(err, {siteId:siteId})
-    })
-
-}
-
-
-module.exports.deleteDocuments=function(callback){
-    Site.deleteMany({},function(err){
-        callback(err);
-    });
 };
+
+

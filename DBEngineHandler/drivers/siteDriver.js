@@ -21,9 +21,9 @@
  */
 
 
-var sites = require('../models/sites').Site
-var mongooseError = require('../../routes/utility/mongooseError')
-var mongoose = require('mongoose')
+var sites = require('../models/sites').Site;
+var mongooseError = require('../../routes/utility/mongooseError');
+var mongoose = require('mongoose');
 
 
 /* GET site listing */
@@ -33,6 +33,12 @@ module.exports.findAll = function(conditions, fields, options, callback) {
     })
 }
 
+/* GET site listing */
+module.exports.find = function(conditions, fields, options, callback) {
+    sites.find(conditions, fields, options, function(err, results) {
+        callback(err, results)
+    })
+}
 
 /* Create Site */
 module.exports.create = function(site, callback) {

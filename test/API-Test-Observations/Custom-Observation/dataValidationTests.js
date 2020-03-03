@@ -842,10 +842,6 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     });
 
 
-    
-
-
-
 
     describe(testMessageMessage, function () {
         var testMessage="must test update Observations [valid observation for mobile device]";

@@ -30,6 +30,8 @@ var _ = require('underscore');
 
 
 
+
+
 function getDevLocation(deviceInfo,callback){
     //{type: "Point", coordinates: [1, 1]},
     if(deviceInfo){
@@ -68,9 +70,6 @@ function getDevLocation(deviceInfo,callback){
 
 module.exports.getDeviceLocation =function (deviceInfo,callback){
     getDevLocation(deviceInfo,callback);
-
-
-
 }
 
 
@@ -187,5 +186,4 @@ module.exports.getThingStatus=function getThingStatus(thingId,callback){
         Err.name = "BadRequestError";
         callback(Err);
     }
-}
-
+};
