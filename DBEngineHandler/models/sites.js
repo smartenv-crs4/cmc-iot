@@ -21,10 +21,11 @@
  */
 
 
-var mongoose = require('mongoose')
-var findAllFn = require('./metadata').findAll
-var Schema = mongoose.Schema
+var mongoose = require('mongoose');
+var findAllFn = require('./metadata').findAll;
+var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
+var _=require('underscore');
 
 
 var site = conf.customSchema.siteSchema || {
@@ -48,8 +49,12 @@ siteSchema.pre('validate', function(next) {
             var retErr = new Error('One between location or locatedInSiteId field must be set');
             retErr.name = "ValidatorError";
             return next(retErr);
+        }else{
+            this.location=undefined;
         }
     }
+
+
 
     if(this.location) {
         if (this.location.coordinates) {
@@ -94,7 +99,7 @@ siteSchema.statics.locationValidator = function(location, callback) {
 
 var validateLocation = function(location,callback) {
 
-    if(location && location.coordinates) {
+    if(location && location.coordinates && _.isArray(location.coordinates)) {
         if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
             var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
             err.name = "ValidatorError";

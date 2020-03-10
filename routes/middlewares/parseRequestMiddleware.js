@@ -143,7 +143,7 @@ exports.parsePagination = function (req, res, next) {
 
 
 
-    var paginateInfo=pagination(req.query);
+    var paginateInfo=pagination(req.query || req.body);
 
     if(paginateInfo.error){
         return res.boom.badRequest(paginateInfo.error);

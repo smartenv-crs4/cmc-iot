@@ -21,11 +21,11 @@
  */
 
 
-var express = require('express')
-var router = express.Router()
-var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
-var authorisationManager = require('./middlewares/authorisationMiddleware')
-var sitesHandler = require('./routesHandlers/siteHandler')
+var express = require('express');
+var router = express.Router();
+var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware');
+var authorisationManager = require('./middlewares/authorisationMiddleware');
+var sitesHandler = require('./routesHandlers/siteHandler');
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 
 
@@ -34,6 +34,13 @@ router.post('/actions/getLinkedSites',parseRequestMiddleware.validateBody(["site
     req.statusCode=200;
     sitesHandler.getLinkedSites(req,res,next);
 });
+
+router.post('/actions/searchSitesByLocation',parseRequestMiddleware.validateBody(["location","distance","distanceOptions"]),mongosecurity.parseForOperators,function(req, res, next) {
+    req.statusCode=200;
+    sitesHandler.searchSitesByLocation(req,res,next);
+});
+
+
 
 /* Create site */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {

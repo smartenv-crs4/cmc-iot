@@ -36,15 +36,21 @@ module.exports.createDocuments = function(numbers,locatedInSiteId, callback) {
 
 
     var range = _.range(numbers)
-    var siteId
+    var siteId;
+    var location= locatedInSiteId ? null : {type: "Point", coordinates: [0, 0]};
+    var currentSite;
+
+
 
     async.each(range, function(e, cb) {
-        Site.create({
+        currentSite={
             name: "name" + e,
             description: "description" + e,
-            location: {type: "Point", coordinates: [0, 0]},
             locatedInSiteId: locatedInSiteId || Site.ObjectId()
-        }, function(err, newSite) {
+        };
+        if(location) currentSite["location"]=location;
+
+        Site.create(currentSite, function(err, newSite) {
             if (err) throw err
             if (e === 0) siteId = newSite._id;
             cb()

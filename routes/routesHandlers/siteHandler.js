@@ -27,6 +27,7 @@ var siteUtility= require('./handlerUtility/siteHandlerUtility');
 var _=require("underscore");
 
 
+
 //Begin macro
 /**
  * @apiDefine SiteBodyParams
@@ -176,7 +177,19 @@ module.exports.getLinkedSites = function(req, res, next) {
     }else{
         res.httpResponse(null, 400, "sites body field must be an array list of sites id");
     }
-}
+};
+
+module.exports.searchSitesByLocation = function(req, res, next) {
+    var mode= req.body.distanceOptions.mode ? req.body.distanceOptions.mode.match(/^BBOX$/i) ? 1 :req.body.distanceOptions.mode.match(/^RADIUS$/i) ? 2 : 0 :  0;
+    if(mode) {
+        req.body.distanceOptions.mode=mode;
+        siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, req.dbPagination, function (err, results) {
+            res.httpResponse(err, req.statusCode, results);
+        });
+    }else{
+        res.httpResponse(null, 400, "distanceOptions must be an {mode:'BBOX || RADIUS', returndistance:'boolean'}. mode field must be set to BBOX or RADIUS");
+    }
+};
 
 
 /**
@@ -206,7 +219,7 @@ module.exports.getSites = function(req, res, next) {
     siteDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
     })
-}
+};
 
 
 /**
