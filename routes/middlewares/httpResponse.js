@@ -32,6 +32,9 @@ function customResp(res,statusCode,body){
         case 400:
             res.boom.badRequest(body);
             break;
+        case 422:
+            res.boom.badData(body);
+            break;
         default:
             res.status(statusCode).send(body);
     }

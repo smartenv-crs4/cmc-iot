@@ -31,6 +31,7 @@ var siteDocuments = require('../../SetTestenv/createSitesDocuments')
 var should = require('should/should');
 
 var webUiToken
+var siteId;
 
 describe('Sites API Test - [DATA VALIDATION]', function () {
 
@@ -57,8 +58,9 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
 
 
     beforeEach(function(done) {
-        siteDocuments.createDocuments(100, function(err) {
+        siteDocuments.createDocuments(100, function(err,fk) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - beforeEach - Sites.create ---> " + err)
+            siteId=fk.siteId;
             done()
         })
     })
@@ -122,13 +124,14 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
 
     describe('POST /sites', function() {
         it('must test site creation [data validation error due to invalid field locatedInSiteId]', function(done) {
+            var site={
+                name: "name",
+                description: "description",
+                location: {type: "Point", coordinates: [1,1]},
+                locatedInSiteId: "locatedInSiteId"
+            };
             var bodyParam = JSON.stringify({
-                site: {
-                    name: "name",
-                    description: "description",
-                    location: {type: "Point", coordinates: [1,1]},
-                    locatedInSiteId: "locatedInSiteId"
-                }
+                site: site
             })
             var requestParams = {
                 url: APIURL,
@@ -139,11 +142,11 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                 if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due to invalid field locatedInSiteId] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
-                    response.statusCode.should.be.equal(400)
-                    results.should.have.property('statusCode')
-                    results.should.have.property('error')
-                    results.should.have.property('message')
-                    results.message.should.be.equal("site validation failed: locatedInSiteId: Cast to ObjectID failed for value \"locatedInSiteId\" at path \"locatedInSiteId\"")
+                    response.statusCode.should.be.equal(422);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " not exist or isn't a valid site identifier");
                 }
                 done()
             })
@@ -154,14 +157,15 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
 
     describe('POST /sites', function() {
         it('must test site creation [data validation error due to site with locatedInSiteId not exists]', function(done) {
+            var site= {
+                name: "name",
+                description: "description",
+                location: {type: "Point", coordinates: [1,1]},
+                locatedInSiteId: Sites.ObjectId()
+            };
             var bodyParam = JSON.stringify({
-                site: {
-                    name: "name",
-                    description: "description",
-                    location: {type: "Point", coordinates: [1,1]},
-                    locatedInSiteId: Sites.ObjectId()
-                }
-            })
+                site:site
+            });
             var requestParams = {
                 url: APIURL,
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
@@ -171,11 +175,11 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                 if (error) consoleLogError.printErrorLog("POST /sites: 'must test site creation [data validation error due to invalid field locatedInSiteId] -->" + error.message)
                 else {
                     var results = JSON.parse(body)
-                    response.statusCode.should.be.equal(400)
-                    results.should.have.property('statusCode')
-                    results.should.have.property('error')
-                    results.should.have.property('message')
-                    results.message.should.be.equal("site validation failed: locatedInSiteId: Cast to ObjectID failed for value \"locatedInSiteId\" at path \"locatedInSiteId\"")
+                    response.statusCode.should.be.equal(422);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " not exist or isn't a valid site identifier")
                 }
                 done()
             })
@@ -327,6 +331,155 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                 }
                 done()
             })
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site update [data validation error due cyclic locatedInSite S2->S1->SiteId->S2]', function(done) {
+
+
+            siteDocuments.createDocuments(1, siteId,function (error, s1) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                siteDocuments.createDocuments(1, s1.siteId,function (error, s2) {
+                    if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                    var bodyParam = JSON.stringify({
+                        site: {
+                            name: "name",
+                            description: "description",
+                            locatedInSiteId:s2.siteId
+                        }
+                    });
+
+
+                   var requestParams = {
+                        url: APIURL+"/"+siteId,
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        body: bodyParam
+                    }
+                    request.put(requestParams, function(error, response, body) {
+                        if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                        else {
+                            var results = JSON.parse(body)
+                            response.statusCode.should.be.equal(422)
+                            results.should.have.property('statusCode')
+                            results.should.have.property('error')
+                            results.should.have.property('message')
+                            results.message.should.be.equal("A site cannot be located inside a children site. Set a valid locatedInSiteId")
+                        }
+                        done()
+                    })
+
+                });
+            });
+
+
+        })
+    })
+
+
+    describe('POST /sites', function() {
+        it('must test site update [data validation error due cyclic locatedInSite SiteId->S1->SiteId]', function(done) {
+
+
+            siteDocuments.createDocuments(1, siteId,function (error, s1) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                var bodyParam = JSON.stringify({
+                    site: {
+                        name: "name",
+                        description: "description",
+                        locatedInSiteId:s1.siteId
+                    }
+                });
+
+
+                var requestParams = {
+                    url: APIURL+"/"+siteId,
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    body: bodyParam
+                }
+                request.put(requestParams, function(error, response, body) {
+                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                    else {
+                        var results = JSON.parse(body)
+                        response.statusCode.should.be.equal(422)
+                        results.should.have.property('statusCode')
+                        results.should.have.property('error')
+                        results.should.have.property('message')
+                        results.message.should.be.equal("A site cannot be located inside a children site. Set a valid locatedInSiteId")
+                    }
+                    done()
+                })
+            });
+        })
+    })
+
+
+
+    describe('POST /sites', function() {
+        it('must test site update [data validation error due invalid siteId]', function(done) {
+
+
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description",
+                    locatedInSiteId:siteId
+                }
+            });
+
+
+            var requestParams = {
+                url: APIURL+"/invalidSite",
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }
+            request.put(requestParams, function(error, response, body) {
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(422)
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("invalidSite is a not valid ObjectId")
+                }
+                done()
+            })
+
+
+        })
+    })
+
+    describe('POST /sites', function() {
+        it('must test site update [data validation error due invalid siteId without locatedInSiteId]', function(done) {
+
+            var bodyParam = JSON.stringify({
+                site: {
+                    name: "name",
+                    description: "description"
+                }
+            });
+
+            var requestParams = {
+                url: APIURL+"/invalidSite",
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }
+            request.put(requestParams, function(error, response, body) {
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    var results = JSON.parse(body)
+                    response.statusCode.should.be.equal(422);
+                    results.should.have.property('statusCode')
+                    results.should.have.property('error')
+                    results.should.have.property('message')
+                    results.message.should.be.equal("invalidSite is a not valid ObjectId")
+                }
+                done()
+            })
+
+
         })
     })
 

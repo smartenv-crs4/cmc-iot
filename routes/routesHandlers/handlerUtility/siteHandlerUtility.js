@@ -46,7 +46,7 @@ function getLinkedSites (siteIdsToCheck,linkedSitesList,fields,returnCallback) {
             if(siteInfo){
                 for(var count=0; count< siteInfo.length;++count){
                     if(linkedSitesList.indexOf(siteInfo[count]._id.toString())==-1){
-                        sitesIdsFound.push(siteInfo[count]._id);
+                        sitesIdsFound.push(siteInfo[count]._id.toString());
                     }
                 }
             }

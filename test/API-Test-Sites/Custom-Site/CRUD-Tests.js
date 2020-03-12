@@ -30,6 +30,7 @@ var APIURL_things = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +
 var commonFunctionTest = require("../../SetTestenv/testEnvironmentCreation")
 var consoleLogError = require('../../Utility/errorLogs')
 var siteDocuments = require('../../SetTestenv/createSitesDocuments')
+var should=require("should");
 
 var webUiToken
 var siteId
@@ -87,7 +88,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -98,7 +99,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
             request.post(requestParams, function(error, response, body) {
                 if (error) consoleLogError.printErrorLog("POST /sites: 'must test Site creation [create Site] -->" + error.message)
                 else {
-                    var results = JSON.parse(body)
+                    var results = JSON.parse(body);
                     response.statusCode.should.be.equal(201)
                     results.should.have.property('name')
                     results.should.have.property('description')
@@ -124,7 +125,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -173,7 +174,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -222,7 +223,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -282,7 +283,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -340,7 +341,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {
@@ -433,7 +434,7 @@ describe('Sites API Test - [GENERAL TESTS]', function() {
                     name: "name",
                     description: "description",
                     location: {type: "Point", coordinates: [1, 1]},
-                    locatedInSiteId: Sites.ObjectId()
+                    locatedInSiteId: siteId
                 }
             })
             var requestParams = {

@@ -25,6 +25,7 @@ var siteDriver = require('../../DBEngineHandler/drivers/siteDriver');
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var siteUtility= require('./handlerUtility/siteHandlerUtility');
 var _=require("underscore");
+var async=require("async");
 
 
 
@@ -162,10 +163,33 @@ var _=require("underscore");
  * @apiSampleRequest off
  */
 module.exports.postCreateSite = function(req, res, next) {
-    siteDriver.create(req.body.site, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
-}
+
+    async.series([
+            function(callback) {
+                if(req.body.site && req.body.site.locatedInSiteId){
+                    siteDriver.findById(req.body.site.locatedInSiteId,"_id",function(err,result){
+                        callback(null,result);
+                    });
+                }else callback(null, true);
+            }
+        ],
+        function(err, isValid) {
+        if(err){
+            res.httpResponse(err);
+        }else {
+            if (isValid[0]) {
+                siteDriver.create(req.body.site, function (err, results) {
+                    return res.httpResponse(err, null, results);
+                })
+            } else {
+                return res.httpResponse(null, 422, "locatedInSiteId " + req.body.site.locatedInSiteId + " not exist or isn't a valid site identifier");
+            }
+        }
+        });
+
+
+
+};
 
 module.exports.getLinkedSites = function(req, res, next) {
     var sites=req.body.sites;
@@ -187,7 +211,7 @@ module.exports.searchSitesByLocation = function(req, res, next) {
             res.httpResponse(err, req.statusCode, results);
         });
     }else{
-        res.httpResponse(null, 400, "distanceOptions must be an {mode:'BBOX || RADIUS', returndistance:'boolean'}. mode field must be set to BBOX or RADIUS");
+        res.httpResponse(null, 400, "distanceOptions must be {mode:'BBOX || RADIUS', returndistance:'boolean'}. mode field must be set to BBOX or RADIUS");
     }
 };
 
@@ -279,9 +303,63 @@ module.exports.getSiteById = function(req, res, next) {
  * @apiSampleRequest off
  */
 module.exports.updateSite = function(req, res, next) {
-    siteDriver.findByIdAndUpdate(req.params.id, req.body.site, function(err, results) {
-        res.httpResponse(err, null, results)
-    })
+
+    async.series([
+            function(callback) {
+                if(siteDriver.ObjectIdIsValid(req.params.id)){
+                    if(req.body.site.locatedInSiteId){
+                        if(siteDriver.ObjectIdIsValid(req.params.id)){
+                            if(siteDriver.ObjectIdIsValid(req.body.site.locatedInSiteId)){
+
+                                siteUtility.getLinkedSites([req.params.id],[],function(err,linkedSited){
+                                    if(err){
+                                        callback(err);
+                                    }else{
+                                        if(linkedSited.indexOf(req.body.site.locatedInSiteId)>=0){
+                                            callback(null,false);
+                                        }else {
+                                            callback(null,true);
+                                        }
+                                    }
+                                });
+                            }else{
+                                var Err = new Error("locatedInSiteId: " + req.body.site.locatedInSiteId + " is a not valid ObjectId");
+                                Err.name = "BadDataError";
+                                callback(Err);
+                            }
+                        }else{
+                            var Err = new Error(req.params.id + " is a not valid ObjectId");
+                            Err.name = "BadDataError";
+                            callback(Err);
+                        }
+                    }else{
+                        callback(null,true);
+                    }
+                }else{
+                    var Err = new Error(req.params.id + " is a not valid ObjectId");
+                    Err.name = "BadDataError";
+                    callback(Err);
+                }
+
+            }
+        ],
+        function(err, isValid) {
+            if(err){
+                res.httpResponse(err);
+            }else {
+                if (isValid[0]) {
+                    siteDriver.findByIdAndUpdate(req.params.id, req.body.site, function(err, results) {
+                        res.httpResponse(err, null, results)
+                    });
+                } else {
+                    return res.httpResponse(null, 422, "A site cannot be located inside a children site. Set a valid locatedInSiteId");
+                }
+            }
+        });
+
+
+
+
 }
 
 

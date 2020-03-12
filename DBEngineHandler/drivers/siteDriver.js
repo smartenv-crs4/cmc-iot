@@ -87,6 +87,9 @@ module.exports.ObjectId = function(ObjectId) {
     return (mongoose.Types.ObjectId(ObjectId))
 }
 
+module.exports.ObjectIdIsValid = function(ObjectId) {
+    return(mongoose.Types.ObjectId.isValid(ObjectId));
+}
 
 /* Error handling */
 module.exports.errorResponse = function(res, err) {

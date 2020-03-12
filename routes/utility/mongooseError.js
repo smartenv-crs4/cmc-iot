@@ -34,6 +34,12 @@ function badRequestError(res,err,message,printError){
     res.boom.badRequest(message);
 }
 
+function badDataError(res,err,message,printError){
+    message=err.message || message || "The server cannot or will not process the request due to an apparent client error";
+    if(printError) errorLog.printErrorLog("mongooseError.js " + message);
+    res.boom.badData(message);
+}
+
 function unprocessableError(res,err,message,printError){
     message=err.message || message || "The server cannot or will not process the request due to semantic errors";
     if(printError) errorLog.printErrorLog("mongooseError.js " + message);
@@ -102,6 +108,9 @@ exports.handleError= function(res,err){
             break;
         case "BadRequestError":
             badRequestError(res,err," The server cannot or will not process the request due to an apparent client error");
+            break;
+        case "BadDataError":
+            badDataError(res,err," The server cannot or will not process the request due to an apparent client error");
             break;
         case "ConflictError":
             conflictError(res,err," Thrown The request could not be processed because of conflict in the current state of the resource");
