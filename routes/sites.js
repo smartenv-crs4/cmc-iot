@@ -77,5 +77,4 @@ router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseI
     sitesHandler.getSites(req, res, next)
 })
 
-
 module.exports = router

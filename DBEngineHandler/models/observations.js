@@ -37,9 +37,7 @@ var observation = conf.customSchema.observationSchema || {
     unitId: {type: mongoose.ObjectId, required: true, index: true}
 };
 
-
 var observationSchema = new Schema(observation, {strict: "throw"});
-
 
 observationSchema.pre('validate', function(next) {
 

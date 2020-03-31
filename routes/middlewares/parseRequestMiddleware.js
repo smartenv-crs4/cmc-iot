@@ -168,8 +168,6 @@ exports.parseOrder = function (req, res, next) {
 //Adds sort to request
 exports.parseOptions = function (req, res, next) {
 
-
-
     var options=pagination(req.query);
 
     if(options.error){

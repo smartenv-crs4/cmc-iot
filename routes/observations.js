@@ -29,6 +29,16 @@ var observationsHandler = require('./routesHandlers/observationHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 
+
+
+
+/* Search observation Action */
+
+router.post('/actions/search', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["searchFilters"]),mongosecurity.parseForOperators, function(req, res, next) {
+    req.statusCode=200;
+    observationsHandler.searchFilter(req, res, next)
+})
+
 /* Create observation */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.postCreateObservation(req, res, next)

@@ -203,17 +203,24 @@ module.exports.getLinkedSites = function(req, res, next) {
     }
 };
 
+
 module.exports.searchSitesByLocation = function(req, res, next) {
-    var mode= req.body.distanceOptions.mode ? req.body.distanceOptions.mode.match(/^BBOX$/i) ? 1 :req.body.distanceOptions.mode.match(/^RADIUS$/i) ? 2 : 0 :  0;
-    if(mode) {
-        req.body.distanceOptions.mode=mode;
-        siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, req.dbPagination, function (err, results) {
-            res.httpResponse(err, req.statusCode, results);
-        });
-    }else{
-        res.httpResponse(null, 400, "distanceOptions must be {mode:'BBOX || RADIUS', returndistance:'boolean'}. mode field must be set to BBOX or RADIUS");
-    }
+    siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, function (err, results) {
+        res.httpResponse(err, req.statusCode, results);
+    });
 };
+
+// module.exports.searchSitesByLocation = function(req, res, next) {
+//     var mode= req.body.distanceOptions.mode ? req.body.distanceOptions.mode.match(/^BBOX$/i) ? 1 :req.body.distanceOptions.mode.match(/^RADIUS$/i) ? 2 : 0 :  0;
+//     if(mode) {
+//         req.body.distanceOptions.mode=mode;
+//         siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, req.dbPagination, function (err, results) {
+//             res.httpResponse(err, req.statusCode, results);
+//         });
+//     }else{
+//         res.httpResponse(null, 400, "distanceOptions must be as {mode:'BBOX || RADIUS', returndistance:'boolean'}. mode field must be set to BBOX or RADIUS");
+//     }
+// };
 
 
 /**

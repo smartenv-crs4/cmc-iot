@@ -708,6 +708,31 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
         });
     });
 
+  describe(testTypeMessage, function () {
+        testMessage='must test API action searchSitesByLocation error due to location body field is not a valid location.coordinates';
+        it(testMessage, function (done) {
+            var bodyParam=JSON.stringify({location:{coordinates:[]},distance:1, distanceOptions:{mode:"bbox"}});
+            request.post({
+                url: APIURL + '/actions/searchSitesByLocation',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(400);
+                    var results = JSON.parse(body);
+                    results.should.have.property('statusCode');
+                    results.should.have.property('error');
+                    results.should.have.property('message');
+                    results.message.should.be.eql('Invalid location format');
+
+                }
+                done();
+            });
+        });
+    });
+
 
     describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation error due to location body field is not a valid location';
@@ -844,11 +869,10 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
     describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation error due to distanceOptions format is not valid';
         it(testMessage, function (done) {
-
             request.post({
                 url: APIURL + '/actions/searchSitesByLocation',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                body: JSON.stringify({location: [0,0],distance:1,distanceOptions:true})
+                body: JSON.stringify({location:{ coordinates:[0,0]},distance:1,distanceOptions:true})
             }, function (error, response, body) {
 
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
@@ -858,7 +882,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql('distanceOptions must be an {mode:\'BBOX || RADIUS\', returndistance:\'boolean\'}. mode field must be set to BBOX or RADIUS');
+                    results.message.should.be.eql('distanceOptions must be as {mode:\'BBOX || RADIUS\', returndistance:\'boolean\'}. mode field must be set to BBOX or RADIUS');
 
                 }
                 done();
@@ -874,7 +898,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
             request.post({
                 url: APIURL + '/actions/searchSitesByLocation',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                body: JSON.stringify({location: [0,0],distance:1,distanceOptions:{mode:"NOTMODE"}})
+                body: JSON.stringify({location:{ coordinates:[0,0]},distance:1,distanceOptions:{mode:"NOTMODE"}})
             }, function (error, response, body) {
 
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
@@ -884,7 +908,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql('distanceOptions must be an {mode:\'BBOX || RADIUS\', returndistance:\'boolean\'}. mode field must be set to BBOX or RADIUS');
+                    results.message.should.be.eql('distanceOptions must be as {mode:\'BBOX || RADIUS\', returndistance:\'boolean\'}. mode field must be set to BBOX or RADIUS');
 
                 }
                 done();
@@ -920,11 +944,35 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
     });
 
     describe(testTypeMessage, function () {
+        testMessage='must test API action searchSitesByLocation not error if returnDistance option is not set';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL + '/actions/searchSitesByLocation',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({location:{ coordinates:[0,0]},distance:1,distanceOptions:{mode:"RADIUS"}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('sites');
+                    results.sites.length.should.be.equal(0);
+
+                }
+                done();
+            });
+        });
+
+    });
+
+    describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation error due to distance as numerical text';
         it(testMessage, function (done) {
 
             var site=[38.990519,8.936253];
-            var test_distance="2700";
+            var test_distance="2700x";
             localizeSites(site,1,10,300,100,function(err,locations){
                 request.post({
                     url: APIURL + '/actions/searchSitesByLocation',
@@ -1088,7 +1136,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
     });
 
 
-    // Accura results with mode  option set to radius
+    // Accurate results with mode  option set to radius
 
     describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation [10 sites saved, get one site]';
@@ -1145,7 +1193,6 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
     describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation [10 sites saved, get 5 site]';
         it(testMessage, function (done) {
-
             var site=[38.990519,8.936253];
             localizeSites(site,1,10,300,100,function(err,locations){
                 request.post({
@@ -1185,9 +1232,10 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.not.have.property("distancies");
                         results.sites.length.should.be.equal(9);
                         for(res in results.sites){
-                            results.sites[res].should.have.property("siteId");
+                            results.sites[res].should.not.have.property("siteId");
                             results.sites[res].should.not.have.property("distance");
                         }
                     }
@@ -1216,11 +1264,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.greaterThanOrEqual(9);
-                        for(res in results.sites){
-                            results.sites[res].should.have.property("siteId");
-                            results.sites[res].should.have.property("distance");
-                        }
+                        results.distancies.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1247,11 +1293,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.greaterThanOrEqual(9);
-                        for(res in results.sites){
-                            results.sites[res].should.have.property("siteId");
-                            results.sites[res].should.have.property("distance");
-                        }
+                        results.distancies.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1263,7 +1307,6 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
     describe(testTypeMessage, function () {
         testMessage='must test API action searchSitesByLocation [10 sites saved, get 9 site and distance]';
         it(testMessage, function (done) {
-
             var site=[38.990519,8.936253];
             var test_distance=2700;
             localizeSites(site,1,10,300,100,function(err,locations){
@@ -1278,11 +1321,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.equal(9);
+                        results.distancies.length.should.be.equal(9);
                         for(res in results.sites){
-                            results.sites[res].should.have.property("siteId");
-                            results.sites[res].should.have.property("distance");
-                            results.sites[res].distance.should.be.lessThanOrEqual(test_distance);
+                            results.distancies[res].should.be.lessThanOrEqual(test_distance);
                         }
                     }
                     done();
@@ -1312,7 +1355,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         results.sites.length.should.be.equal(9);
 
 
-                        siteDocuments.createDocuments(1, results.sites[0].siteId,function (error, s2) {
+                        siteDocuments.createDocuments(1, results.sites[0],function (error, s2) {
                             if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                             request.post({
                                 url: APIURL + '/actions/searchSitesByLocation',
@@ -1325,11 +1368,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
+                                    resultsLs.should.have.property("distancies");
                                     resultsLs.sites.length.should.be.equal(10);
+                                    resultsLs.distancies.length.should.be.equal(10);
                                     for(res in resultsLs.sites){
-                                        resultsLs.sites[res].should.have.property("siteId");
-                                        resultsLs.sites[res].should.have.property("distance");
-                                        resultsLs.sites[res].distance.should.be.lessThanOrEqual(test_distance);
+                                        resultsLs.distancies[res].should.be.lessThanOrEqual(test_distance);
                                     }
                                 }
                                 done();
@@ -1361,10 +1404,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.equal(9);
 
 
-                        siteDocuments.createDocuments(1, results.sites[0].siteId,function (error, s2) {
+                        siteDocuments.createDocuments(1, results.sites[0],function (error, s2) {
                             if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                             request.post({
                                 url: APIURL + '/actions/searchSitesByLocation',
@@ -1377,11 +1421,8 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
+                                    resultsLs.should.not.have.property("distancies");
                                     resultsLs.sites.length.should.be.equal(10);
-                                    for(res in resultsLs.sites){
-                                        resultsLs.sites[res].should.have.property("siteId");
-                                        resultsLs.sites[res].should.not.have.property("distance");
-                                    }
                                 }
                                 done();
                             });
@@ -1411,10 +1452,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.greaterThanOrEqual(9);
 
 
-                        siteDocuments.createDocuments(1, results.sites[0].siteId,function (error, s2) {
+                        siteDocuments.createDocuments(1, results.sites[0],function (error, s2) {
                             if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                             request.post({
                                 url: APIURL + '/actions/searchSitesByLocation',
@@ -1427,11 +1469,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
+                                    results.should.have.property("distancies");
                                     resultsLs.sites.length.should.be.greaterThanOrEqual(10);
-                                    for(res in resultsLs.sites){
-                                        resultsLs.sites[res].should.have.property("siteId");
-                                        resultsLs.sites[res].should.have.property("distance");
-                                    }
+                                    resultsLs.distancies.length.should.be.greaterThanOrEqual(10);
                                 }
                                 done();
                             });
@@ -1462,10 +1502,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
+                        results.should.have.property("distancies");
                         results.sites.length.should.be.greaterThanOrEqual(9);
 
 
-                        siteDocuments.createDocuments(1, results.sites[0].siteId,function (error, s2) {
+                        siteDocuments.createDocuments(1, results.sites[0],function (error, s2) {
                             if (error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                             request.post({
                                 url: APIURL + '/actions/searchSitesByLocation',
@@ -1478,16 +1519,16 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
+                                    resultsLs.should.not.have.property("distancies");
                                     resultsLs.sites.length.should.be.greaterThanOrEqual(10);
                                     for(res in resultsLs.sites){
-                                        resultsLs.sites[res].should.have.property("siteId");
+                                        resultsLs.sites[res].should.not.have.property("siteId");
                                         resultsLs.sites[res].should.not.have.property("distance");
                                     }
                                 }
                                 done();
                             });
                         });
-
                     }
                 });
             });

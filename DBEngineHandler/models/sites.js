@@ -99,7 +99,7 @@ siteSchema.statics.locationValidator = function(location, callback) {
 
 var validateLocation = function(location,callback) {
 
-    if(location && location.coordinates && _.isArray(location.coordinates)) {
+    if(location && location.coordinates && _.isArray(location.coordinates) && (location.coordinates.length==2)) {
         if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
             var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
             err.name = "ValidatorError";

@@ -86,6 +86,12 @@ module.exports.findByIdAndRemove = function(id, options, callback) {
     observations.findByIdAndRemove(id, options, callback)
 }
 
+/* GET Observations list */
+module.exports.find = function(conditions, fields, options, callback) {
+    observations.find(conditions, fields, options, function(err, results) {
+        callback(err, results)
+    })
+}
 
 /* GET/SET Observations ObjectId. */
 module.exports.ObjectId = function(ObjectId) {

@@ -27,6 +27,7 @@ var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var async = require('async');
 var _ = require('underscore');
 var geoLatLon=require('./geoLatLon');
+var locationSearch=require("./locationSearchUtility");
 
 const heartMeasure=6378137;
 
@@ -68,22 +69,22 @@ function getLinkedSites (siteIdsToCheck,linkedSitesList,fields,returnCallback) {
     }
 };
 
-function calculateDistance(sites,centralPoint,maxDistance){
-   var distanceCalculated={};
-   var currentDistance;
-   var currentCoordinates;
-    for (r in sites) {
-        currentCoordinates=sites[r].location.coordinates;
-        if(currentCoordinates.length>0){
-            var sitePoint = new geoLatLon(currentCoordinates[0],currentCoordinates[1]);
-            currentDistance=centralPoint.rhumbDistanceTo(sitePoint);
-            if(!(maxDistance && currentDistance>maxDistance)){
-                distanceCalculated[sites[r]._id]=currentDistance
-            }
-        }
-    }
-    return(distanceCalculated);
-}
+// function calculateDistance(sites,centralPoint,maxDistance){
+//    var distanceCalculated={};
+//    var currentDistance;
+//    var currentCoordinates;
+//     for (r in sites) {
+//         currentCoordinates=sites[r].location.coordinates;
+//         if(currentCoordinates.length>0){
+//             var sitePoint = new geoLatLon(currentCoordinates[0],currentCoordinates[1]);
+//             currentDistance=centralPoint.rhumbDistanceTo(sitePoint);
+//             if(!(maxDistance && currentDistance>maxDistance)){
+//                 distanceCalculated[sites[r]._id]=currentDistance
+//             }
+//         }
+//     }
+//     return(distanceCalculated);
+// }
 
 function extractSites(sites,distanceOptions,centralPoint,distance,returnCallback){
     sites=_.map(sites, function(val){ return val._id; });
@@ -91,90 +92,78 @@ function extractSites(sites,distanceOptions,centralPoint,distance,returnCallback
         if(err){
             return returnCallback(err);
         }else{
-            var radius=(distanceOptions.mode>1);
-            var distanceCalculated=null;
-            if(radius || distanceOptions.returnDistance){
-                distanceCalculated=calculateDistance(linkedSites,centralPoint,radius && distance);
-            }
+            locationSearch.filterByOptions(linkedSites,distanceOptions,centralPoint,distance,["_id","locatedInSiteId"],"site",function (err,foundedSites) {
+                returnCallback(err,foundedSites);
+            });
 
-            // now we have all valid sites(valid coordinates or currrentDistance < maxdistance)
-            var  currentDistance;
-            var foundedSites=[];
-            for (r in linkedSites) {
-                if(distanceCalculated) {
-                    currentDistance = distanceCalculated[linkedSites[r]._id] || distanceCalculated[linkedSites[r].locatedInSiteId] || null;
-                    if (currentDistance) {
-                        foundedSites.push({
-                            siteId: linkedSites[r]._id,
-                            distance: (distanceOptions.returnDistance || undefined) && currentDistance
-                        });
-                    }
-                }else{
-                    foundedSites.push({
-                        siteId: linkedSites[r]._id
-                    });
-                }
-            }
-        returnCallback(null,{sites:foundedSites});
         }
     });
 }
+
+
+// function extractSites(sites,distanceOptions,centralPoint,distance,returnCallback){
+//     sites=_.map(sites, function(val){ return val._id; });
+//     getLinkedSites(sites,[],"_id location locatedInSiteId",function(err,linkedSites){
+//         if(err){
+//             return returnCallback(err);
+//         }else{
+//             var radius=(distanceOptions.mode>1);
+//             var distanceCalculated=null;
+//             if(radius || distanceOptions.returnDistance){
+//                 distanceCalculated=calculateDistance(linkedSites,centralPoint,radius && distance);
+//             }
+//
+//             // now we have all valid sites(valid coordinates or currrentDistance < maxdistance)
+//             var  currentDistance;
+//             var foundedSites=[];
+//             for (r in linkedSites) {
+//                 if(distanceCalculated) {
+//                     currentDistance = distanceCalculated[linkedSites[r]._id] || distanceCalculated[linkedSites[r].locatedInSiteId] || null;
+//                     if (currentDistance) {
+//                         foundedSites.push({
+//                             siteId: linkedSites[r]._id,
+//                             distance: (distanceOptions.returnDistance || undefined) && currentDistance
+//                         });
+//                     }
+//                 }else{
+//                     foundedSites.push({
+//                         siteId: linkedSites[r]._id
+//                     });
+//                 }
+//             }
+//             returnCallback(null,{sites:foundedSites});
+//         }
+//     });
+// }
 
 
 module.exports.getLinkedSites=function(siteIdsToCheck,linkedSitesList,fields,returnCallback){
     getLinkedSites (siteIdsToCheck,linkedSitesList,fields,returnCallback);
 };
 
-module.exports.searchSitesByLocation=function (location,distance,distanceOptions,pagination,returnCallback) {
+module.exports.searchSitesByLocation=function (location,distance,distanceOptions,returnCallback) {
 
-    siteDriver.locationValidator(location,function(err){
-       if(err){
-           returnCallback(err);
-       } else{
-           if(_.isNumber(distance)) {
-                var meters = parseInt(distance);
-                var lat = parseFloat(location.coordinates[1]);
-                var lng = parseFloat(location.coordinates[0]);
-                // var near = [ lng, lat ]; // near must be an array of [lng, lat]
-
-                var diag = meters * Math.sqrt(2);
-                var start = new geoLatLon(lng,lat);
-                var top_r = start.destinationPoint(diag,45,heartMeasure);
-                var bot_l = start.destinationPoint(diag,225,heartMeasure);
-
-
-                var min_lat = Math.min(top_r.lat, bot_l.lat);
-                var max_lat = Math.max(top_r.lat, bot_l.lat);
-                var min_lon = Math.min(top_r.lon, bot_l.lon);
-                var max_lon = Math.max(top_r.lon, bot_l.lon);
-
-                siteDriver.find({ "location.coordinates.1" : {$gt :min_lat , $lt : max_lat}, "location.coordinates.0" : {$gt:min_lon, $lt:max_lon} },"_id",{lean:true},function(err,results){
-                    //    Parking.geoNear({type:"Point", coordinates : near}, searchOptions, function(err,results){
-                    if(err){
-                        returnCallback(err);
-                    }else {
-
-
-                       extractSites(results,distanceOptions,start,distance,function(err,validsites){
-                           returnCallback(err,validsites);
-                       })
-                    }
-                });
-
-           }else{
-               var err = new Error('Invalid distance format. Must be a number');
-               err.name = "ValidatorError";
-               return returnCallback(err);
-           }
-       }
+    locationSearch.getSearchByLocationQuery(location,distance,distanceOptions,function(err,queryByLocation){
+        if(err){
+            returnCallback(err);
+        } else{
+            distanceOptions.mode=queryByLocation.mode;
+            siteDriver.find(queryByLocation.query,"_id",{lean:true},function(err,results){
+                if(err){
+                    returnCallback(err);
+                }else {
+                    extractSites(results,distanceOptions,queryByLocation.centre.point,distance,function(err,validsites){
+                        returnCallback(err,validsites);
+                    })
+                }
+            });
+        }
     });
 };
 
 
 
-
 // module.exports.searchSitesByLocation=function (location,distance,distanceOptions,pagination,returnCallback) {
-//
 //     siteDriver.locationValidator(location,function(err){
 //        if(err){
 //            returnCallback(err);
@@ -196,40 +185,14 @@ module.exports.searchSitesByLocation=function (location,distance,distanceOptions
 //                 var min_lon = Math.min(top_r.lon, bot_l.lon);
 //                 var max_lon = Math.max(top_r.lon, bot_l.lon);
 //
-//                var radius=distanceOptions.mode.toUpperCase()=="RADIUS";
-//                if(radius && pagination && pagination.limit) // to extract more results.. some should be sliced
-//                    pagination.limit=pagination.limit*2;
-//
-//                 siteDriver.findAll({ "location.coordinates.1" : {$gt :min_lat , $lt : max_lat}, "location.coordinates.0" : {$gt:min_lon, $lt:max_lon} },null,_.extend(pagination,{lean:true}),function(err,results){
+//                 siteDriver.find({ "location.coordinates.1" : {$gt :min_lat , $lt : max_lat}, "location.coordinates.0" : {$gt:min_lon, $lt:max_lon} },"_id",{lean:true},function(err,results){
 //                     //    Parking.geoNear({type:"Point", coordinates : near}, searchOptions, function(err,results){
 //                     if(err){
 //                         returnCallback(err);
 //                     }else {
-//
-//
-//                         if(distanceOptions.returnDistance || radius){
-//                             var sitesRes=results.sites;
-//                             results.sites=[];
-//                             var distances=[];
-//                             var currebtDist;
-//                             for (var r=0;r<sitesRes.length;++ r) {
-//                                 var point = new geoLatLon(sitesRes[r].location.coordinates[0],sitesRes[r].location.coordinates[1]);
-//                                 currebtDist=start.rhumbDistanceTo(point);
-//                                 if(radius && currebtDist<=meters){
-//                                     results.sites.push(sitesRes[r]);
-//                                     distances.push(currebtDist);
-//                                     if(pagination && pagination.limit && distances.length>= (pagination.limit))
-//                                         r=sitesRes.length+1;
-//                                 }else if(distanceOptions.returnDistance){
-//                                     distances.push(currebtDist);
-//                                 }
-//                             }
-//                         }
-//                         results["distances"]=distances;
-//                         if(radius){
-//                             results._metadata.
-//                         }
-//                         returnCallback(null,results);
+//                         extractSites(results,distanceOptions,start,distance,function(err,validsites){
+//                            returnCallback(err,validsites);
+//                        })
 //                     }
 //                 });
 //
@@ -241,6 +204,7 @@ module.exports.searchSitesByLocation=function (location,distance,distanceOptions
 //        }
 //     });
 // };
+
 
 
 

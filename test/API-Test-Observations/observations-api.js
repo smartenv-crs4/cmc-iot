@@ -24,6 +24,7 @@ require('./Custom-Observation/dataValidationTests');
 require('./Custom-Observation/searchFilterTests');
 require('./Custom-Observation/CRUD-Tests');
 require('./Custom-Observation/crudOptionsTests');
+require('./Custom-Observation/ApiActions/APIActionsTests');
 require('./From_Template/accessTokenSecurityTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');
