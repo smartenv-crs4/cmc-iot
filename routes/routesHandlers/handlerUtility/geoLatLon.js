@@ -42,10 +42,6 @@ module.exports = class geoLatLon {
      */
     destinationPoint(distance, bearing, radius) {
         radius = (radius === undefined) ? heartMeasure : Number(radius);
-
-        // //TODO: Remove
-        // console.log(distance);
-
         // see http://williams.best.vwh.net/avform.htm#LL
 
         var δ = Number(distance) / radius; // angular distance in radians

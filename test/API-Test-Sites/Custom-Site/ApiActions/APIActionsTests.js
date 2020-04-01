@@ -1009,9 +1009,6 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
             for (var bbox=0;bbox<bBNumber;++bbox){
                 distMin=(distance*bbox)+deltaDistance;
                 distMax=(distance*(bbox+1));
-                // //TODO: Remove
-                // console.log("Range");
-                // console.log("[" + distMin + "," + distMax +"]");
                 for (var site=0;site<numberForBB;++site){
                     tmpLatLon=start.destinationPoint(Math.floor(Math.random()*(distMax-distMin))+distMin,Math.floor(Math.random()*361));
                     currentLoc.push([tmpLatLon.lon,tmpLatLon.lat]);

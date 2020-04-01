@@ -42,7 +42,8 @@ module.exports.createDocuments=function(numbers,callback){
                            timestamp:new Date().getTime(),
                            value:e,
                            deviceId:deviceForeignKey.deviceId,
-                           unitId:unitForeignKey.unitId
+                           unitId:unitForeignKey.unitId,
+                           location: { coordinates: [0,0] }
                        },function(err,newObservation){
                            if (err) throw err;
                            if(e===0) observationId=newObservation._id;

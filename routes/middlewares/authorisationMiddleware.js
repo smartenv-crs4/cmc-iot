@@ -62,7 +62,6 @@ exports.checkToken = function(req, res, next) {
             }
 
             if (token) {
-
                 var path = (_.isEmpty(req.route)) ? req.path : req.route.path;
                 var URI = (_.isEmpty(req.baseUrl)) ? path : (req.baseUrl + path);
                 URI = URI.endsWith("/") ? URI : URI + "/";
