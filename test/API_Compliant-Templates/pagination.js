@@ -151,6 +151,40 @@ exports.paginationTests = function (APIURL,route,fields) {
 
         describe('GET /'+route, function () {
 
+            it('must test API pagination compliant: return 2 '+route+' and _metadata with totalCount and fields=fields[0]', function (done) {
+
+                request.get({
+                    url: APIURL + '?skip=0&limit=2&fields='+fields[0]+'&totalCount=true',
+                    headers: {'Authorization': "Bearer " + webUiToken}
+                }, function (error, response, body) {
+
+                    if (error) consoleLogError.printErrorLog("GET /"+route+": 'must test API pagination compliant: return 2 "+route+" and _metadata with totalCount' -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+
+                        results.should.have.property('_metadata');
+                        results.should.have.property(route);
+                        results._metadata.skip.should.be.equal(0);
+                        results._metadata.limit.should.be.equal(2);
+                        results._metadata.should.have.properties("totalCount");
+                        results._metadata.totalCount.should.be.equal(100);
+                        _.each(fields,function(value,index){
+                            if(index==0)
+                                should.exist(results[route][0][value]);
+                            else
+                                should.not.exist(results[route][0][value]);
+                        });
+
+                    }
+                    done();
+                });
+            });
+        });
+
+
+        describe('GET /'+route, function () {
+
             it('must test API compliant to skip and limit by default', function (done) {
 
 
@@ -205,6 +239,60 @@ exports.paginationTests = function (APIURL,route,fields) {
 
         describe('GET /'+route, function () {
 
+            it('must test API error compliant to limit -1', function (done) {
+
+                request.get({
+                    url: APIURL + '?limit=-1',
+                    headers: {'Authorization': "Bearer " + webUiToken}
+                }, function (error, response, body) {
+
+                    if (error) consoleLogError.printErrorLog("GET /"+route+": 'must test API compliant to limit check by default'  -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(400);
+                        var results = JSON.parse(body);
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.should.have.property('statusCode');
+                        results.message.should.be.equal("limit must be less then " + conf.pagination.limit);
+                    }
+                    done();
+                });
+
+            });
+
+        });
+
+
+        describe('GET /'+route, function () {
+
+            it('must test API error compliant to idslist search field', function (done) {
+
+                request.get({
+                    url: APIURL + '?fields=idslist',
+                    headers: {'Authorization': "Bearer " + webUiToken}
+                }, function (error, response, body) {
+
+                    if (error) consoleLogError.printErrorLog("GET /"+route+": 'must test API error compliant to idslist search field'  -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+                        results.should.have.property('_metadata');
+                        results.should.have.property(route);
+                        results[route].length.should.be.equal(100);
+                        results[route][0].should.not.have.property('_id');
+                        results._metadata.limit.should.be.eql(-1);
+                        results._metadata.skip.should.be.eql(0);
+                        results._metadata.totalCount.should.be.false;
+                    }
+                    done();
+                });
+
+            });
+
+        });
+
+        describe('GET /'+route, function () {
+
             it('must test API compliant to limit check by default', function (done) {
 
 
@@ -225,7 +313,41 @@ exports.paginationTests = function (APIURL,route,fields) {
                         var results = JSON.parse(body);
                         results.should.have.property('_metadata');
                         results._metadata.limit.should.be.eql(80);
+                        results[route].length.should.be.equal(80);
                         results._metadata.skip.should.be.eql(conf.pagination.skip);
+                        results._metadata.totalCount.should.be.eql(100);
+                    }
+                    done();
+                });
+
+            });
+
+        });
+
+        describe('GET /'+route, function () {
+
+            it('must test API compliant to limit check value equal to -1', function (done) {
+
+
+                var oldLimit = conf.pagination.allowLargerLimit;
+                conf.pagination.allowLargerLimit = true;//infinite
+
+
+                request.get({
+                    url: APIURL + '?limit=-1&totalCount=true',
+                    headers: {'Authorization': "Bearer " + webUiToken}
+                }, function (error, response, body) {
+
+                    conf.pagination.allowLargerLimit = oldLimit; // restore limit for next tests
+
+                    if (error) consoleLogError.printErrorLog("GET /"+route+": 'must test API compliant to limit check by default'  -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+                        results.should.have.property('_metadata');
+                        results._metadata.limit.should.be.eql(-1);
+                        results._metadata.skip.should.be.eql(conf.pagination.skip);
+                        results[route].length.should.be.equal(100);
                         results._metadata.totalCount.should.be.eql(100);
                     }
                     done();

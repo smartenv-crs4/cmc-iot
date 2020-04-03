@@ -45,13 +45,16 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
 
 
     var opt = options || {};
+    var idsList=((fields) && (fields.toUpperCase() =="IDSLIST"));
 
-    if(opt.limit==-1) {
+    if((opt.limit==-1) ||(idsList) ) {
         delete opt.skip;
+        delete opt.limit;
     }
 
-
     var query={};
+
+
 
     _.each(conditions,function(value,key){
 
@@ -68,10 +71,8 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
         }
     });
 
-
+    opt["lean"]=true;
     model.find(query, fields, opt, function (err, result) {
-
-
         if (!err) {
 
             var entities = entityName ? entityName : 'entities';
@@ -84,6 +85,11 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
                 }
             };
 
+            if(idsList){
+                result=_.map(result,function(value){
+                    return (value._id);
+                });
+            }
             results[entities] = result;
 
             if(options && options.totalCount){

@@ -42,10 +42,7 @@ describe('Pagination Filter Test', function(){
       done();
     });
   });
-
-
-
-
+  
   beforeEach(function(done){
 
       deviceDocuments.createDocuments(100,function(err,foreignKey){
@@ -150,6 +147,50 @@ describe('Pagination Filter Test', function(){
 
   });
 
+
+    describe('findAll() no pagination', function(){
+
+        it('must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false]', function(done){
+
+            Device.findAll({}, null, {limit:-1,skip:50}, function(err, results){
+
+                if (err) consoleLogError.printErrorLog("paginationFilter.js -  'must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false] ---> " + err);
+                else{
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(100);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(-1);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(false);
+                }
+                done();
+            });
+
+        });
+
+    });
+
+  describe('findAll() no pagination', function(){
+
+        it('must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false]', function(done){
+
+            Device.findAll({}, null, {limit:-1}, function(err, results){
+
+                if (err) consoleLogError.printErrorLog("paginationFilter.js -  'must include _metadata with default values -->[ skip:0, limit:-1, totalCount:false] ---> " + err);
+                else{
+                    results.should.have.property('_metadata');
+                    results.devices.length.should.be.equal(100);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.limit.should.be.equal(-1);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(false);
+                }
+                done();
+            });
+
+        });
+
+    });
 
   describe('findAll() no pagination', function(){
 

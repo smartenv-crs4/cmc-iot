@@ -32,7 +32,7 @@ function pagination(query){
     var limit = query.limit && !isNaN(parseInt(query.limit)) ? parseInt(query.limit): conf.pagination.limit;
 
 
-    if((!conf.pagination.allowLargerLimit) && limit>conf.pagination.limit){
+    if((!conf.pagination.allowLargerLimit) && ((limit>conf.pagination.limit)||(limit==-1))){
         paginateConf.error="limit must be less then " + conf.pagination.limit;
 
     }else{

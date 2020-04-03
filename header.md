@@ -50,6 +50,7 @@ Search
 All `GET /resource_name` endpoints,  which return a list, use `resource_name=resource_id_1,resource_id_2` parameters to return a list filtered by resource id. <br>
 Search strings can be a string (e.g. `devices=123456`), a string array (e.g. `devices=12345&devices=54321`) or a list of comma separated strings (e.g. `things=12345,54321`) <br>
 Searches can be performed in the same fashion filtering by a field, e.g. a string or a boolean (`name=MyDev`, `disabled=true`). <br>
+If you set fields equal to 'idslist' e.g. fields=idslist an array of object id is returned instead an array of objects
 Other endpoints returning a list of objects (such as search actions) provide a different way to perform searches, which will be described in the endpoint documentation.
 ***
  
