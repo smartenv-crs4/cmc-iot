@@ -58,8 +58,19 @@ router.post('/:id/actions/enable',[authorisationManager.checkToken],function(req
   devicesHandler.disableEnableDevice(req,res,next);
 });
 
-router.post('/:id/actions/sendObservations', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observations"]), function(req, res, next) {
+router.post('/:id/actions/sendObservations', [authorisationManager.checkToken],mongosecurity.parseForOperators, parseRequestMiddleware.validateBody(["observations"]), function(req, res, next) {
   devicesHandler.createObservations(req, res, next);
+});
+
+
+/* devices observations Search Filters*/
+// timestamp: {From:, To;}
+// value: {min:, max:}
+// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+// pagination: {skip: , limit: }
+router.post('/:id/actions/getObservations', [authorisationManager.checkToken],mongosecurity.parseForOperators,parseRequestMiddleware.parsePagination ,function(req, res, next) {
+  req.statusCode=200;
+  devicesHandler.getObservations(req, res, next);
 });
 
 // </Actions>

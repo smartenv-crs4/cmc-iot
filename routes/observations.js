@@ -34,6 +34,13 @@ var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
 /* Search observation Action */
 
+
+/* Observation Search Filters*/
+// timestamp: {From:, To;}
+// value: {min:, max:}
+// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+// devicesId: [ids]
+// unitsId: { ids:}
 router.post('/actions/search', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["searchFilters"]),mongosecurity.parseForOperators, function(req, res, next) {
     req.statusCode=200;
     observationsHandler.searchFilter(req, res, next)

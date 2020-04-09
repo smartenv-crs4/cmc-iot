@@ -22,10 +22,13 @@
 
 
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
+var observationDriver = require('../../DBEngineHandler/drivers/observationDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 var observationUtility=require('./handlerUtility/observationUtility');
 var thingAndDeviceHandlerUtility=require("./handlerUtility/thingAndDeviceHandlerUtility");
+var conf = require('propertiesmanager').conf;
+var _=require('underscore');
 
 
 
@@ -569,6 +572,40 @@ module.exports.deleteDevice = function (req, res, next) {
     });
 };
 
+
+
+/* Device Observation Search Filters*/
+// timestamp: {From:, To;}
+// value: {min:, max:}
+// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+// pagination: {skip: , limit: }
+//todo set documentation
+module.exports.getObservations = function (req, res, next) {
+    var deviceId=req.params.id;
+    if(req.body.searchFilters && !_.isEmpty(req.body.searchFilters)) {
+        req.body.searchFilters["devicesId"] = [deviceId];
+        observationUtility.searchFilter(req.body.searchFilters, false, function (err, foundedObservations) {
+
+           if(foundedObservations){
+               var totalCount=foundedObservations.observations.length;
+               foundedObservations.observations=foundedObservations.observations.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
+               if(foundedObservations.distancies){
+                   foundedObservations.distancies=foundedObservations.distancies.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
+               }
+               foundedObservations['_metadata']=req.dbPagination;
+               foundedObservations._metadata['totalCount']=totalCount;
+           }
+
+           res.httpResponse(err, req.statusCode, foundedObservations);
+
+        });
+    }else{ // grt from redis
+        //TODO: set query to redis instead database
+        observationDriver.find({deviceId:deviceId},null,{skip:0 ,limit:conf.cmcIoTOptions.observationsCacheItems, lean:true},function(err,data){
+            res.httpResponse(err, req.statusCode, {observations:data});
+        });
+    }
+};
 
 
 

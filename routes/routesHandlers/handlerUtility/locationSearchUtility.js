@@ -62,6 +62,60 @@ function calculateDistance(items,centralPoint,maxDistance){
     return(distanceCalculated);
 }
 
+
+module.exports.filterByOptions = function (items,distanceOptions,centralPoint,distance,keys,label,returnOnlyObservationsId,callbackFunction){
+
+    // distanceOptions.mode
+    // 0--> error sue to no mose set
+    // 1--> filter by bbbox
+    // 2--> filter by radius
+
+    if(!callbackFunction){
+        callbackFunction=returnOnlyObservationsId;
+        returnOnlyObservationsId=true;
+    }
+
+    var mode= distanceOptions.mode;
+    var distanceCalculated=null;
+    var filterByRadiusDistance=(mode=="2") ? distance : null;
+    var  currentDistanceKey;
+    var foundedItems=[];
+    var foundedItemsDistancies=[];
+
+    if(filterByRadiusDistance || distanceOptions.returnDistance){
+        distanceCalculated=calculateDistance(items,centralPoint,filterByRadiusDistance);
+        // now we have all valid sites(valid coordinates or currrentDistance < maxdistance)
+        for (r in items) {
+            currentDistanceKey = _.find(keys, function (val) {
+                    return (distanceCalculated[items[r][val]]);
+            });
+            if(currentDistanceKey){
+                foundedItemsDistancies.push(distanceCalculated[items[r][currentDistanceKey]]);
+                foundedItems.push(items[r]);
+            }
+        }
+    }else{
+        foundedItems=items;
+    }
+
+
+    if(returnOnlyObservationsId){
+        foundedItems=_.map(foundedItems,function(item){
+            return(item._id);
+        })
+    }
+
+    var resultsFounded={};
+    resultsFounded[label +"s"]=foundedItems;
+    if (distanceOptions.returnDistance) {
+        resultsFounded["distancies"]=foundedItemsDistancies;
+    }
+
+    callbackFunction(null,resultsFounded);
+};
+
+/*
+
 module.exports.filterByOptions = function (items,distanceOptions,centralPoint,distance,keys,label,callbackFunction){
 
     // distanceOptions.mode
@@ -103,7 +157,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
 
     callbackFunction(null,resultsFounded);
 };
-
+*/
 
 // module.exports.filterByOptions = function (items,distanceOptions,centralPoint,distance,keys,label,callbackFunction){
 //

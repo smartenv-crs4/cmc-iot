@@ -107,103 +107,97 @@ module.exports.updateObservation = function(req, res, next) {
     });
 };
 
-
-function setError(msg){
-    var customError = new Error(msg);
-    customError.name = "ValidatorError";
-    return(customError);
-}
-
-
-function isDefined(item){
- return (!(_.isUndefined(item) || _.isNull(item)));
-}
-
-
-function validateSearchFieldsAndGetQuery(searchFields,callback){
-
-    var queryObj={};
-
-    async.series({
-        one: function(cl) {
-            var customError;
-            if(searchFields.timestamp){
-                var from=searchFields.timestamp.from;
-                var to=searchFields.timestamp.to;
-                if(!from && !to){
-                    customError=setError("timestamp filter must be {from:'startDate' , to:'stopDate'}. if timestamp is set, the fields 'from' and 'to' cannot be both null");
-                }else{
-                    queryObj["timestamp"]={};
-                    if(from) queryObj.timestamp['$gte']=from;
-                    if(to) queryObj.timestamp['$lte']=to;
-                }
-            }
-            if(!customError) {
-                if (searchFields.value) {
-                    var min = searchFields.value.min;
-                    var max = searchFields.value.max;
-                    if (!_.isNumber(min) && !_.isNumber(max)) {
-                        customError = setError("value filter must be {min:'minValue' , max:'maxValue'}. if value is set, the fields 'min' and 'max' cannot be both null");
-                    } else {
-                        queryObj["value"] = {};
-                        if (_.isNumber(min)) queryObj.value['$gte'] = min;
-                        if (_.isNumber(max)) queryObj.value['$lte'] = max;
-                    }
-                }
-                if(!customError) {
-                    if (searchFields.devicesId) {
-                        if (!(_.isArray(searchFields.devicesId))) {
-                            customError = setError("devicesId must be an array of device id");
-                        } else {
-                            queryObj["deviceId"] = {"$in": searchFields.devicesId};
-                        }
-                    }
-
-                    if(!customError) {
-                        if (searchFields.unitsId) {
-                            if (!(_.isArray(searchFields.unitsId))) {
-                                customError = setError("unitsId must be an array of units id");
-                            } else {
-                                queryObj["unitId"] = {"$in": searchFields.unitsId};
-                            }
-                        }
-                    }
-                }
-            }
-
-            cl(customError,true);
-        },
-        two: function(cl){
-            if(isDefined(searchFields.location)){
-                if(searchFields.location.centre) {
-                    locationSearchUtility.getSearchByLocationQuery(searchFields.location.centre, searchFields.location.distance, searchFields.location.distanceOptions, function (err, locationQuery) {
-                        if (err){
-                            err.message+=". Location field must be: {centre:{coordinates:[lon,lat]}, distance:'number' ,  distanceOptions:{mode:'bbox|Radius', returnDistance:'true|false'}}"
-                            cl(err, null);
-                        } else {
-                            queryObj = _.extend(queryObj, locationQuery.query);
-                            cl(null, {centre: locationQuery.centre, mode: locationQuery.mode});
-                        }
-                    });
-                }else{
-                    cl(setError("location field must be: {centre:{coordinates:[lon,lat]}, distance:'number' ,  distanceOptions:{mode:'bbox|Radius', returnDistance:'true|false'}}"));
-                }
-
-            }else{
-                cl(null,false)
-            }
-        }
-    }, function(err, results) {
-        if(err) callback(err);
-        else callback(null,{query:queryObj,locationInfo:results.two});
-    });
-
-
-
-
-
-
-}
+//
+// function setError(msg){
+//     var customError = new Error(msg);
+//     customError.name = "ValidatorError";
+//     return(customError);
+// }
+//
+//
+// function isDefined(item){
+//  return (!(_.isUndefined(item) || _.isNull(item)));
+// }
+//
+//
+// function validateSearchFieldsAndGetQuery(searchFields,callback){
+//
+//     var queryObj={};
+//
+//     async.series({
+//         one: function(cl) {
+//             var customError;
+//             if(searchFields.timestamp){
+//                 var from=searchFields.timestamp.from;
+//                 var to=searchFields.timestamp.to;
+//                 if(!from && !to){
+//                     customError=setError("timestamp filter must be {from:'startDate' , to:'stopDate'}. if timestamp is set, the fields 'from' and 'to' cannot be both null");
+//                 }else{
+//                     queryObj["timestamp"]={};
+//                     if(from) queryObj.timestamp['$gte']=from;
+//                     if(to) queryObj.timestamp['$lte']=to;
+//                 }
+//             }
+//             if(!customError) {
+//                 if (searchFields.value) {
+//                     var min = searchFields.value.min;
+//                     var max = searchFields.value.max;
+//                     if (!_.isNumber(min) && !_.isNumber(max)) {
+//                         customError = setError("value filter must be {min:'minValue' , max:'maxValue'}. if value is set, the fields 'min' and 'max' cannot be both null");
+//                     } else {
+//                         queryObj["value"] = {};
+//                         if (_.isNumber(min)) queryObj.value['$gte'] = min;
+//                         if (_.isNumber(max)) queryObj.value['$lte'] = max;
+//                     }
+//                 }
+//                 if(!customError) {
+//                     if (searchFields.devicesId) {
+//                         if (!(_.isArray(searchFields.devicesId))) {
+//                             customError = setError("devicesId must be an array of device id");
+//                         } else {
+//                             queryObj["deviceId"] = {"$in": searchFields.devicesId};
+//                         }
+//                     }
+//
+//                     if(!customError) {
+//                         if (searchFields.unitsId) {
+//                             if (!(_.isArray(searchFields.unitsId))) {
+//                                 customError = setError("unitsId must be an array of units id");
+//                             } else {
+//                                 queryObj["unitId"] = {"$in": searchFields.unitsId};
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//
+//             cl(customError,true);
+//         },
+//         two: function(cl){
+//             if(isDefined(searchFields.location)){
+//                 if(searchFields.location.centre) {
+//                     locationSearchUtility.getSearchByLocationQuery(searchFields.location.centre, searchFields.location.distance, searchFields.location.distanceOptions, function (err, locationQuery) {
+//                         if (err){
+//                             err.message+=". Location field must be: {centre:{coordinates:[lon,lat]}, distance:'number' ,  distanceOptions:{mode:'bbox|Radius', returnDistance:'true|false'}}"
+//                             cl(err, null);
+//                         } else {
+//                             queryObj = _.extend(queryObj, locationQuery.query);
+//                             cl(null, {centre: locationQuery.centre, mode: locationQuery.mode});
+//                         }
+//                     });
+//                 }else{
+//                     cl(setError("location field must be: {centre:{coordinates:[lon,lat]}, distance:'number' ,  distanceOptions:{mode:'bbox|Radius', returnDistance:'true|false'}}"));
+//                 }
+//
+//             }else{
+//                 cl(null,false)
+//             }
+//         }
+//     }, function(err, results) {
+//         if(err) callback(err);
+//         else callback(null,{query:queryObj,locationInfo:results.two});
+//     });
+// }
 
 /* Observation Search Filters*/
 // timestamp: {From:, To;}
@@ -214,38 +208,50 @@ function validateSearchFieldsAndGetQuery(searchFields,callback){
 
 module.exports.searchFilter= function(req, res, next) {
 
-    var searchFields=req.body.searchFilters;
-    var observationLabel="observation";
-
-    validateSearchFieldsAndGetQuery(searchFields,function(err,queryObj){
-        if(err){
+    observationUtility.searchFilter(req.body.searchFilters,true,function(err,foundedObservations){
+        if(err) {
             return res.httpResponse(err,null,null);
         }else{
-            observationDriver.find(queryObj.query,"_id location",{lean:true},function(err,queryResults){
-                if(err){
-                    return res.httpResponse(err,null,null);
-                } else{
-                   if(queryObj.locationInfo){ // filter by location and distance is set
-                       var dstOpt=searchFields.location.distanceOptions;
-                       dstOpt.mode=queryObj.locationInfo.mode;
-                       locationSearchUtility.filterByOptions(queryResults,dstOpt,queryObj.locationInfo.centre.point,searchFields.location.distance,["_id"],observationLabel,function(err,foundedObservations){
-                            if(err) {
-                                return res.httpResponse(err,null,null);
-                            }else{
-                                res.httpResponse(null,req.statusCode,foundedObservations);
-                            }
-                       });
-                   } else{
-                       var resp={};
-                       var foundedItems=_.map(queryResults,function(item){
-                           return(item._id);
-                       })
-                       resp[observationLabel+"s"]=foundedItems;
-                       res.httpResponse(null,req.statusCode,resp);
-                   }
-                }
-            });
+            res.httpResponse(null,req.statusCode,foundedObservations);
         }
-
     });
 };
+
+
+// module.exports.searchFilter= function(req, res, next) {
+//
+//     var searchFields=req.body.searchFilters;
+//     var observationLabel="observation";
+//
+//     observationUtility.validateSearchFieldsAndGetQuery(searchFields,function(err,queryObj){
+//         if(err){
+//             return res.httpResponse(err,null,null);
+//         }else{
+//             observationDriver.find(queryObj.query,"_id location",{lean:true},function(err,queryResults){
+//                 if(err){
+//                     return res.httpResponse(err,null,null);
+//                 } else{
+//                    if(queryObj.locationInfo){ // filter by location and distance is set
+//                        var dstOpt=searchFields.location.distanceOptions;
+//                        dstOpt.mode=queryObj.locationInfo.mode;
+//                        locationSearchUtility.filterByOptions(queryResults,dstOpt,queryObj.locationInfo.centre.point,searchFields.location.distance,["_id"],observationLabel,function(err,foundedObservations){
+//                             if(err) {
+//                                 return res.httpResponse(err,null,null);
+//                             }else{
+//                                 res.httpResponse(null,req.statusCode,foundedObservations);
+//                             }
+//                        });
+//                    } else{
+//                        var resp={};
+//                        var foundedItems=_.map(queryResults,function(item){
+//                            return(item._id);
+//                        })
+//                        resp[observationLabel+"s"]=foundedItems;
+//                        res.httpResponse(null,req.statusCode,resp);
+//                    }
+//                 }
+//             });
+//         }
+//
+//     });
+// };

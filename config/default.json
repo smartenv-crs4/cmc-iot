@@ -44,7 +44,14 @@
       "observationsCanBeUpdated": true,
       "observationsCanBeDeleted": true,
       "whoCanHandleThingsAndDevicesOwner": ["admin"],
-      "authorizationVerbToHandleDismissedStatus": ["admin"]
+      "authorizationVerbToHandleDismissedStatus": ["admin"],
+      "observationsCacheItems":10
+    },
+    "redisCache":{
+      "host": "156.148.37.188",
+      "port":  6379,
+      "db": 0,
+      "password":null
     }
 
   },
@@ -93,7 +100,14 @@
       "observationsCanBeUpdated": true,
       "observationsCanBeDeleted": true,
       "whoCanHandleThingsAndDevicesOwner": ["admin"],
-      "authorizationVerbToHandleDismissedStatus": ["admin"]
+      "authorizationVerbToHandleDismissedStatus": ["admin"],
+      "observationsCacheItems":10
+    },
+    "redisCache":{
+      "host": "156.148.37.188",
+      "port":  6379,
+      "db": 0,
+      "password":null
     }
   },
   "test":{
@@ -162,7 +176,18 @@
       "observationsCanBeUpdated": true,
       "observationsCanBeDeleted": true,
       "whoCanHandleThingsAndDevicesOwner": ["admin","webui"],
-      "authorizationVerbToHandleDismissedStatus": ["admin"]
+      "authorizationVerbToHandleDismissedStatus": ["admin"],
+      "observationsCacheItems":2
+    },
+    "redisCache":{
+      "host": "156.148.37.188",
+      "port":  6379,
+      "db": 0,
+      "password":null
     }
   }
+
 }
+
+
+

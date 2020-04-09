@@ -23,22 +23,37 @@
 
 var should = require('should/should');
 var Observations = require('../../../../DBEngineHandler/drivers/observationDriver');
-var conf = require('propertiesmanager').conf;
-var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observations";
-var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
-var consoleLogError = require('../../../Utility/errorLogs');
-var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
-var geoLatLon=require('../../../../routes/routesHandlers/handlerUtility/geoLatLon');
-var async=require('async');
+var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
+var observationDriver = require('../../../../DBEngineHandler/drivers/observationDriver');
+var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
+var devicesDriver = require('../../../../DBEngineHandler/drivers/deviceDriver');
+var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
 var _=require('underscore');
 
-var webUiToken;
-var observationId,deviceId,unitId;
-var searchFilter;
-var From,To;
+var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
+var sitesDocuments = require('../../../SetTestenv/createSitesDocuments');
 
-describe('Observations API Test - [ACTIONS TESTS]', function () {
+var conf = require('propertiesmanager').conf;
+var request = require('request');
+var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
+var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
+var consoleLogError = require('../../../Utility/errorLogs');
+var async = require('async');
+var geoLatLon=require('../../../../routes/routesHandlers/handlerUtility/geoLatLon');
+
+var validUnits={first:null,second:null};
+
+var webUiToken;
+var associatedThingId, thingtypeId,observedPropertyId,associateSiteId;
+var testTypeMessage="POST /things/:id/actions/sendObservations";
+var testMessage;
+var observationId,thingId,unitId,voidThingId;
+var searchFilter;
+var From,To,Middle;
+
+
+
+describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
 
     before(function (done) {
         this.timeout(0);
@@ -63,13 +78,16 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
     beforeEach(function (done) {
         From=new Date().getTime();
-        observationDocuments.createDocuments(50, function (err, ForeignKeys) {
+        observationDocuments.createDocuments(40, function (err, ForeignKeys) {
+            var deviceToChange=ForeignKeys.deviceId;
+            voidThingId=ForeignKeys.thingId;
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - beforreEach - Observations.create ---> " + err);
             setTimeout(function(){ // to create other 50 with a different timestamo
-                observationDocuments.createDocuments(50, function (err, ForeignKeys) {
+                Middle=new Date().getTime();
+                observationDocuments.createDocuments(60, function (err, ForeignKeys) {
                     if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - beforreEach - Observations.create ---> " + err);
                     observationId = ForeignKeys.observationId;
-                    deviceId=ForeignKeys.deviceId;
+                    thingId=ForeignKeys.thingId;
                     unitId=ForeignKeys.unitId;
                     searchFilter={
                         timestamp:{
@@ -89,12 +107,14 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                                 mode:"BBOX",
                                 returnDistance:false
                             }
-                        },
-                        devicesId:[ForeignKeys.deviceId],
-                        unitsId:[ForeignKeys.unitId]
+                        }
                     };
                     To=new Date().getTime();
-                    done();
+                    devicesDriver.findByIdAndUpdate(deviceToChange,{thingId:thingId},function(err,update){
+                        if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - beforreEach - Observations.create ---> " + err);
+                        done();
+                    });
+
                 });
             },200);
 
@@ -111,61 +131,102 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
 
 
-    var testMessage;
-    var testTypeMessage='POST /observations/actions/search';
-
-
-
+    testTypeMessage="POST /things/:id/actions/getObservations";
 
     describe(testTypeMessage, function () {
-        testMessage='must test API action search error due to no body';
+        testMessage="must test access_token authentication";
         it(testMessage, function (done) {
-            request.post({
-                url: APIURL + '/actions/search',
-                headers: {'Authorization': "Bearer " + webUiToken}
-            }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
                 else {
                     response.statusCode.should.be.equal(400);
                     var results = JSON.parse(body);
-                    results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.eql('body missing');
+                    results.message.should.be.eql("Unauthorized: Access token required, you are not allowed to use the resource");
+                    done();
                 }
-                done();
             });
-        });
 
+        });
+    });
+
+    describe(testTypeMessage, function () {
+        testMessage="must test API action getObservations  [no body - from Redis]";
+        it(testMessage, function (done) {
+
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    done();
+                }
+            });
+
+        });
     });
 
 
     describe(testTypeMessage, function () {
-        testMessage='must test API action search error due to searchFilters body field missing';
+        testMessage='must test API action getObservations searchFilters body field missing [get from Redis]';
         it(testMessage, function (done) {
 
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: JSON.stringify({skip: 0})
             }, function (error, response, body) {
 
-                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
                 else {
-                    response.statusCode.should.be.equal(400);
+                    response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
-                    results.should.have.property('statusCode');
-                    results.should.have.property('error');
-                    results.should.have.property('message');
-                    results.message.should.be.eql('body fields \'searchFilters\' missing or empty');
-
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
                 }
                 done();
             });
         });
 
     });
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations searchFilters body field void [get from Redis]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                }
+                done();
+            });
+        });
+
+    });
+
+
+
 
 
 
@@ -175,7 +236,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
             searchFilter.timestamp="notValid";
             var bodyParam=JSON.stringify({searchFilters:searchFilter});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -200,7 +261,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
             searchFilter.timestamp={};
             var bodyParam=JSON.stringify({searchFilters:searchFilter});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -226,7 +287,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
             var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:From}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -236,7 +297,14 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(100);
+                    results.should.have.property('_metadata');
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(100);
                 }
                 done();
             });
@@ -245,13 +313,16 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
     });
 
 
+
+
+
     describe(testTypeMessage, function () {
         testMessage='must test API action search by timestamp={to} filter';
         it(testMessage, function (done) {
 
             var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -261,7 +332,14 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(100);
+                    results.should.have.property('_metadata');
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(100);
                 }
                 done();
             });
@@ -274,9 +352,9 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by timestamp={from:"" to:""} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:From, to:(From+ Math.ceil((To-From)/2))}}});
+            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:Middle, to:To}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -286,7 +364,15 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.lessThan(100);
+                    results.should.have.property('_metadata');
+                    results.observations.length.should.be.lessThanOrEqual(conf.pagination.limit);
+                    results.observations.length.should.be.greaterThan(0);
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results.observations.length.should.be.lessThanOrEqual(100);
                     results.observations.length.should.be.greaterThan(0);
                 }
                 done();
@@ -295,23 +381,82 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
     });
 
 
-
-
-
-
-
-
-
-    /* Observation Search Filters*/
-// timestamp: {From:, To;}
-// value: {min:, max:}
     describe(testTypeMessage, function () {
-        testMessage='must test API action search error due to value filter field is not valid';
+        testMessage='must test API action search timestamp order';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.should.have.property('_metadata');
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(100);
+                    for(req in results.observations) {
+                        if (results.observations[req + 1]) {
+                            results.observations[req].timestamp.should.be.greaterThanOrEqual(results.observations[req + 1].timestamp);
+                            results.observations[req]._id.should.be.greaterThanOrEqual(results.observations[req + 1]._id);
+                        }
+                    }
+                }
+                done();
+            });
+        });
+
+    });
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search [thing without devices] ';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            request.post({
+                url: APIURL +'/' + voidThingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.should.have.property('_metadata');
+                    results.observations.length.should.be.equal(0);
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(false);
+                }
+                done();
+            });
+        });
+
+    });
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations error due to value filter field is not valid';
         it(testMessage, function (done) {
             searchFilter.value="notValid";
             var bodyParam=JSON.stringify({searchFilters:searchFilter});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -336,7 +481,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
             searchFilter.value={};
             var bodyParam=JSON.stringify({searchFilters:searchFilter});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -362,7 +507,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
             var bodyParam=JSON.stringify({searchFilters:{value:{min:0}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -372,8 +517,17 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(100);
-                    results.observations[0].should.not.have.property("_id")
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results.observations[0].should.have.properties("_id","value","timestamp")
+                    results.should.have.property('_metadata');
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results.observations.length.should.be.lessThanOrEqual(100);
+                    results.observations.length.should.be.greaterThan(0);
+                    results._metadata.totalCount.should.be.equal(100);
                 }
                 done();
             });
@@ -388,7 +542,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
             var bodyParam=JSON.stringify({searchFilters:{value:{max:99}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -398,7 +552,17 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(100);
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results.observations[0].should.have.properties("_id","value","timestamp")
+                    results.should.have.property('_metadata');
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results.observations.length.should.be.lessThanOrEqual(100);
+                    results.observations.length.should.be.greaterThan(0);
+                    results._metadata.totalCount.should.be.equal(100);
                 }
                 done();
             });
@@ -413,7 +577,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
             var bodyParam=JSON.stringify({searchFilters:{value:{min:0, max:24}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -424,120 +588,30 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(50);
+                    results.should.have.property('_metadata');
+                    results._metadata.should.have.property('skip');
+                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                    results._metadata.should.have.property('limit');
+                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                    results._metadata.should.have.property('totalCount');
+                    results._metadata.totalCount.should.be.equal(50);
                 }
                 done();
             });
         });
     });
 
-// devicesId: [ids]
-describe(testTypeMessage, function () {
-    testMessage='must test API action search error due to devicesId filter field is not valid';
-    it(testMessage, function (done) {
-        searchFilter.devicesId="notValid";
-        var bodyParam=JSON.stringify({searchFilters:searchFilter});
-        request.post({
-            url: APIURL + '/actions/search',
-            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-            body: bodyParam
-        }, function (error, response, body) {
-
-            if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-            else {
-                response.statusCode.should.be.equal(400);
-                var results = JSON.parse(body);
-                results.should.have.property('statusCode');
-                results.should.have.property('error');
-                results.should.have.property('message');
-                results.message.should.be.eql("devicesId must be an array of device id");
-            }
-            done();
-        });
-    });
-});
 
 
-describe(testTypeMessage, function () {
-    testMessage='must test API action search by devicesId filter';
-    it(testMessage, function (done) {
-        var bodyParam=JSON.stringify({searchFilters:{devicesId:[deviceId]}});
-        request.post({
-            url: APIURL + '/actions/search',
-            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-            body: bodyParam
-        }, function (error, response, body) {
 
-            if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-            else {
-                response.statusCode.should.be.equal(200);
-                var results = JSON.parse(body);
-                results.should.have.property('observations');
-                results.observations.length.should.be.equal(50);
-            }
-            done();
-        });
-    });
-
-});
-
-// unitsId: [ ids]
-    describe(testTypeMessage, function () {
-        testMessage='must test API action search error due to unitsId filter field is not valid';
-        it(testMessage, function (done) {
-            searchFilter.unitsId="notValid";
-            var bodyParam=JSON.stringify({searchFilters:searchFilter});
-            request.post({
-                url: APIURL + '/actions/search',
-                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                body: bodyParam
-            }, function (error, response, body) {
-
-                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-                else {
-                    response.statusCode.should.be.equal(400);
-                    var results = JSON.parse(body);
-                    results.should.have.property('statusCode');
-                    results.should.have.property('error');
-                    results.should.have.property('message');
-                    results.message.should.be.eql("unitsId must be an array of units id");
-                }
-                done();
-            });
-        });
-    });
-
-    describe(testTypeMessage, function () {
-        testMessage='must test API action search by unitsId filter';
-        it(testMessage, function (done) {
-
-            var bodyParam=JSON.stringify({searchFilters:{unitsId:[unitId]}});
-            request.post({
-                url: APIURL + '/actions/search',
-                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                body: bodyParam
-            }, function (error, response, body) {
-
-                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-                else {
-                    response.statusCode.should.be.equal(200);
-                    var results = JSON.parse(body);
-                    results.should.have.property('observations');
-                    results.observations.length.should.be.equal(50);
-                }
-                done();
-            });
-        });
-
-    });
-
-// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+    // location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
 
     describe(testTypeMessage, function () {
         testMessage='must test API action search error due to location field is not a valid location';
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:""}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -563,7 +637,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -589,7 +663,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:""}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -615,7 +689,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -640,7 +714,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: ""}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -666,7 +740,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: []}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -691,7 +765,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [360,360]}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -716,7 +790,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -741,7 +815,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:""}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -767,7 +841,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"notValid"}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -793,7 +867,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:""}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -820,7 +894,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:{}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -845,7 +919,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:true}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -871,7 +945,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:{mode:""}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -896,7 +970,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:{mode:"bb"}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -922,7 +996,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
             var bodyParam=JSON.stringify({searchFilters:{location:{centre:{coordinates: [0,0]},distance:"1",distanceOptions:{mode:"bbox"}}}});
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: bodyParam
             }, function (error, response, body) {
@@ -943,7 +1017,7 @@ describe(testTypeMessage, function () {
         it(testMessage, function (done) {
 
             request.post({
-                url: APIURL + '/actions/search',
+                url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                 body: JSON.stringify({
                     searchFilters:{
@@ -1008,7 +1082,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1031,6 +1105,13 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.greaterThanOrEqual(1);
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.greaterThanOrEqual(1);
                     }
                     done();
                 });
@@ -1046,7 +1127,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1069,6 +1150,14 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.greaterThanOrEqual(2);
+                        results.observations.length.should.be.greaterThanOrEqual(1);
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.greaterThanOrEqual(2);
                     }
                     done();
                 });
@@ -1084,7 +1173,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1107,6 +1196,14 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.greaterThanOrEqual(5);
+                        results.observations.length.should.be.greaterThanOrEqual(1);
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.greaterThanOrEqual(5);
                     }
                     done();
                 });
@@ -1122,7 +1219,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1145,6 +1242,15 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.greaterThanOrEqual(9);
+                        results.observations.length.should.be.greaterThanOrEqual(1);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1152,10 +1258,8 @@ describe(testTypeMessage, function () {
         });
     });
 
-
-
-
     // Accurate results with mode  option set to radius
+
 
     describe(testTypeMessage, function () {
         testMessage='must test API action search [10 observations saved, get one observation]';
@@ -1164,7 +1268,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     body: JSON.stringify({
                         searchFilters: {
                             location: {
@@ -1187,6 +1291,14 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.equal(1);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(1);
                     }
                     done();
                 });
@@ -1202,7 +1314,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1225,6 +1337,14 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.equal(2);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(2);
                     }
                     done();
                 });
@@ -1239,7 +1359,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1262,6 +1382,14 @@ describe(testTypeMessage, function () {
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
                         results.observations.length.should.be.equal(5);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(5);
                     }
                     done();
                 });
@@ -1277,7 +1405,7 @@ describe(testTypeMessage, function () {
             var observation=[38.990519,8.936253];
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1301,9 +1429,20 @@ describe(testTypeMessage, function () {
                         results.should.have.property("observations");
                         results.should.not.have.property("distancies");
                         results.observations.length.should.be.equal(9);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(9);
                         for(res in results.observations){
                             results.observations[res].should.not.have.property("observationId");
                             results.observations[res].should.not.have.property("distance");
+                            if(results.observations[req+1]){
+                                results.observations[res].timestamp.should.be.lessThanOrEqual( results.observations[res+1].timestamp);
+                            }
                         }
                     }
                     done();
@@ -1321,90 +1460,7 @@ describe(testTypeMessage, function () {
             var test_distance=2700;
             localizeObservations(observation,1,10,300,100,function(err,locations){
                 request.post({
-                    url: APIURL + '/actions/search',
-                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                    body: JSON.stringify({
-                        searchFilters: {
-                            location: {
-                                centre: {
-                                    coordinates: observation
-                                },
-                                distance: test_distance,
-                                distanceOptions: {
-                                    mode: "radius",
-                                    returnDistance:true
-                                }
-                            }
-                        }
-                    })
-                }, function (error, response, body) {
-
-                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-                    else {
-                        response.statusCode.should.be.equal(200);
-                        var results = JSON.parse(body);
-                        results.should.have.property("observations");
-                        results.should.have.property("distancies");
-                        results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
-                    }
-                    done();
-                });
-            });
-        });
-    });
-
-
-    describe(testTypeMessage, function () {
-        testMessage='must test API action search [10 observations saved, get 9 or more observation and distance]';
-        it(testMessage, function (done) {
-
-            var observation=[38.990519,8.936253];
-            var test_distance=2700;
-            localizeObservations(observation,1,10,300,100,function(err,locations){
-                request.post({
-                    url: APIURL + '/actions/search',
-                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
-                    body: JSON.stringify({
-                        searchFilters: {
-                            location: {
-                                centre: {
-                                    coordinates: observation
-                                },
-                                distance: test_distance,
-                                distanceOptions: {
-                                    mode: "bbox",
-                                    returnDistance:true
-                                }
-                            }
-                        }
-                    })
-                }, function (error, response, body) {
-
-                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
-                    else {
-                        response.statusCode.should.be.equal(200);
-                        var results = JSON.parse(body);
-                        results.should.have.property("observations");
-                        results.should.have.property("distancies");
-                        results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
-                    }
-                    done();
-                });
-            });
-        });
-    });
-
-
-    describe(testTypeMessage, function () {
-        testMessage='must test API action search [10 observations saved, get 9 observation and distance]';
-        it(testMessage, function (done) {
-            var observation=[38.990519,8.936253];
-            var test_distance=2700;
-            localizeObservations(observation,1,10,300,100,function(err,locations){
-                request.post({
-                    url: APIURL + '/actions/search',
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
                         searchFilters: {
@@ -1430,6 +1486,169 @@ describe(testTypeMessage, function () {
                         results.should.have.property("distancies");
                         results.observations.length.should.be.equal(9);
                         results.distancies.length.should.be.equal(9);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(9);
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search pagination[10 observations saved, get 9 or more observation and correct distance]';
+        it(testMessage, function (done) {
+
+            var observation=[38.990519,8.936253];
+            var test_distance=2700;
+            localizeObservations(observation,1,10,300,100,function(err,locations){
+                request.post({
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    body: JSON.stringify({
+                        pagination:{
+                            skip:0,
+                            limit:5
+                        },
+                        searchFilters: {
+                            location: {
+                                centre: {
+                                    coordinates: observation
+                                },
+                                distance: test_distance,
+                                distanceOptions: {
+                                    mode: "radius",
+                                    returnDistance:true
+                                }
+                            }
+                        }
+                    })
+                }, function (error, response, body) {
+
+                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+                        results.should.have.property("observations");
+                        results.should.have.property("distancies");
+                        results.observations.length.should.be.equal(5);
+                        results.distancies.length.should.be.equal(5);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(0);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(5);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(9);
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search [10 observations saved, get 9 or more observation and distance]';
+        it(testMessage, function (done) {
+
+            var observation=[38.990519,8.936253];
+            var test_distance=2700;
+            localizeObservations(observation,1,10,300,100,function(err,locations){
+                request.post({
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    body: JSON.stringify({
+                        searchFilters: {
+                            location: {
+                                centre: {
+                                    coordinates: observation
+                                },
+                                distance: test_distance,
+                                distanceOptions: {
+                                    mode: "bbox",
+                                    returnDistance:true
+                                }
+                            }
+                        }
+                    })
+                }, function (error, response, body) {
+
+                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+                        results.should.have.property("observations");
+                        results.should.have.property("distancies");
+                        results.observations.length.should.be.greaterThanOrEqual(9);
+                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search [10 observations saved, get 9 observation and distance]';
+        it(testMessage, function (done) {
+            var observation=[38.990519,8.936253];
+            var test_distance=2700;
+            localizeObservations(observation,1,10,300,100,function(err,locations){
+                request.post({
+                    url: APIURL +'/' + thingId +'/actions/getObservations',
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                    body: JSON.stringify({
+                        searchFilters: {
+                            location: {
+                                centre: {
+                                    coordinates: observation
+                                },
+                                distance: test_distance,
+                                distanceOptions: {
+                                    mode: "radius",
+                                    returnDistance:true
+                                }
+                            }
+                        }
+                    })
+                }, function (error, response, body) {
+
+                    if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                    else {
+                        response.statusCode.should.be.equal(200);
+                        var results = JSON.parse(body);
+                        results.should.have.property("observations");
+                        results.should.have.property("distancies");
+                        results.observations.length.should.be.equal(9);
+                        results.distancies.length.should.be.equal(9);
+                        results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                        results.should.have.property('_metadata');
+                        results._metadata.should.have.property('skip');
+                        results._metadata.skip.should.be.equal(conf.pagination.skip);
+                        results._metadata.should.have.property('limit');
+                        results._metadata.limit.should.be.equal(conf.pagination.limit);
+                        results._metadata.should.have.property('totalCount');
+                        results._metadata.totalCount.should.be.equal(9);
                         for(res in results.observations){
                             results.distancies[res].should.be.lessThanOrEqual(test_distance);
                         }
@@ -1439,6 +1658,7 @@ describe(testTypeMessage, function () {
             });
         });
     });
+
 
 
     function setObservationsUpdate(number,updateRecord,returnCallback){
@@ -1461,6 +1681,8 @@ describe(testTypeMessage, function () {
         });
     }
 
+
+
     describe(testTypeMessage, function () {
         testMessage='must test API action search [10 observations by timestamp]';
         it(testMessage, function (done) {
@@ -1472,7 +1694,7 @@ describe(testTypeMessage, function () {
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
                     request.post({
-                        url: APIURL + '/actions/search',
+                        url: APIURL +'/' + thingId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
                             searchFilters: {
@@ -1489,6 +1711,14 @@ describe(testTypeMessage, function () {
                             var results = JSON.parse(body);
                             results.should.have.property("observations");
                             results.observations.length.should.be.equal(nUpdate);
+                            results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                            results.should.have.property('_metadata');
+                            results._metadata.should.have.property('skip');
+                            results._metadata.skip.should.be.equal(conf.pagination.skip);
+                            results._metadata.should.have.property('limit');
+                            results._metadata.limit.should.be.equal(conf.pagination.limit);
+                            results._metadata.should.have.property('totalCount');
+                            results._metadata.totalCount.should.be.equal(nUpdate);
                         }
                         done();
                     });
@@ -1509,7 +1739,7 @@ describe(testTypeMessage, function () {
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
                     request.post({
-                        url: APIURL + '/actions/search',
+                        url: APIURL +'/' + thingId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
                             searchFilters: {
@@ -1527,6 +1757,14 @@ describe(testTypeMessage, function () {
                             var results = JSON.parse(body);
                             results.should.have.property("observations");
                             results.observations.length.should.be.equal(nUpdate);
+                            results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                            results.should.have.property('_metadata');
+                            results._metadata.should.have.property('skip');
+                            results._metadata.skip.should.be.equal(conf.pagination.skip);
+                            results._metadata.should.have.property('limit');
+                            results._metadata.limit.should.be.equal(conf.pagination.limit);
+                            results._metadata.should.have.property('totalCount');
+                            results._metadata.totalCount.should.be.equal(nUpdate);
                         }
                         done();
                     });
@@ -1547,7 +1785,7 @@ describe(testTypeMessage, function () {
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
                     request.post({
-                        url: APIURL + '/actions/search',
+                        url: APIURL +'/' + thingId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
                             searchFilters: {
@@ -1564,6 +1802,14 @@ describe(testTypeMessage, function () {
                             var results = JSON.parse(body);
                             results.should.have.property("observations");
                             results.observations.length.should.be.equal(nUpdate);
+                            results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                            results.should.have.property('_metadata');
+                            results._metadata.should.have.property('skip');
+                            results._metadata.skip.should.be.equal(conf.pagination.skip);
+                            results._metadata.should.have.property('limit');
+                            results._metadata.limit.should.be.equal(conf.pagination.limit);
+                            results._metadata.should.have.property('totalCount');
+                            results._metadata.totalCount.should.be.equal(nUpdate);
                         }
                         done();
                     });
@@ -1586,7 +1832,7 @@ describe(testTypeMessage, function () {
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
                     request.post({
-                        url: APIURL + '/actions/search',
+                        url: APIURL +'/' + thingId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
                             searchFilters: {
@@ -1604,6 +1850,14 @@ describe(testTypeMessage, function () {
                             var results = JSON.parse(body);
                             results.should.have.property("observations");
                             results.observations.length.should.be.equal(nUpdate);
+                            results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                            results.should.have.property('_metadata');
+                            results._metadata.should.have.property('skip');
+                            results._metadata.skip.should.be.equal(conf.pagination.skip);
+                            results._metadata.should.have.property('limit');
+                            results._metadata.limit.should.be.equal(conf.pagination.limit);
+                            results._metadata.should.have.property('totalCount');
+                            results._metadata.totalCount.should.be.equal(nUpdate);
                         }
                         done();
                     });
@@ -1629,7 +1883,7 @@ describe(testTypeMessage, function () {
                         if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                         else{
                             request.post({
-                                url: APIURL + '/actions/search',
+                                url: APIURL +'/' + thingId +'/actions/getObservations',
                                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                 body: JSON.stringify({
                                     searchFilters: {
@@ -1650,6 +1904,14 @@ describe(testTypeMessage, function () {
                                     var results = JSON.parse(body);
                                     results.should.have.property("observations");
                                     results.observations.length.should.be.equal(nUpdate);
+                                    results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                                    results.should.have.property('_metadata');
+                                    results._metadata.should.have.property('skip');
+                                    results._metadata.skip.should.be.equal(conf.pagination.skip);
+                                    results._metadata.should.have.property('limit');
+                                    results._metadata.limit.should.be.equal(conf.pagination.limit);
+                                    results._metadata.should.have.property('totalCount');
+                                    results._metadata.totalCount.should.be.equal(nUpdate);
                                 }
                                 done();
                             });
@@ -1680,7 +1942,7 @@ describe(testTypeMessage, function () {
                                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                                 else{
                                     request.post({
-                                        url: APIURL + '/actions/search',
+                                        url: APIURL +'/' + thingId +'/actions/getObservations',
                                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                         body: JSON.stringify({
                                             searchFilters: {
@@ -1702,6 +1964,14 @@ describe(testTypeMessage, function () {
                                             var results = JSON.parse(body);
                                             results.should.have.property("observations");
                                             results.observations.length.should.be.equal(nUpdate);
+                                            results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                                            results.should.have.property('_metadata');
+                                            results._metadata.should.have.property('skip');
+                                            results._metadata.skip.should.be.equal(conf.pagination.skip);
+                                            results._metadata.should.have.property('limit');
+                                            results._metadata.limit.should.be.equal(conf.pagination.limit);
+                                            results._metadata.should.have.property('totalCount');
+                                            results._metadata.totalCount.should.be.equal(nUpdate);
                                         }
                                         done();
                                     });
@@ -1737,7 +2007,7 @@ describe(testTypeMessage, function () {
                                 else{
                                     localizeObservations(observation,1,10,300,100,function(err,locations){
                                         request.post({
-                                            url: APIURL + '/actions/search',
+                                            url: APIURL +'/' + thingId +'/actions/getObservations',
                                             headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                             body: JSON.stringify({
                                                 searchFilters: {
@@ -1771,6 +2041,14 @@ describe(testTypeMessage, function () {
                                                 results.should.have.property("distancies");
                                                 results.observations.length.should.be.equal(9);
                                                 results.distancies.length.should.be.equal(9);
+                                                results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
+                                                results.should.have.property('_metadata');
+                                                results._metadata.should.have.property('skip');
+                                                results._metadata.skip.should.be.equal(conf.pagination.skip);
+                                                results._metadata.should.have.property('limit');
+                                                results._metadata.limit.should.be.equal(conf.pagination.limit);
+                                                results._metadata.should.have.property('totalCount');
+                                                results._metadata.totalCount.should.be.equal(9);
                                                 for(res in results.observations){
                                                     results.distancies[res].should.be.lessThanOrEqual(test_distance);
                                                 }
@@ -1786,4 +2064,8 @@ describe(testTypeMessage, function () {
             });
         });
     });
+
+
+
 });
+

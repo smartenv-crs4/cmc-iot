@@ -69,6 +69,17 @@ router.post('/:id/actions/addDevices', [authorisationManager.checkToken], parseR
 });
 
 
+/* Things observations Search Filters*/
+// timestamp: {From:, To;}
+// value: {min:, max:}
+// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+// pagination: {skip: , limit: }
+router.post('/:id/actions/getObservations', [authorisationManager.checkToken],mongosecurity.parseForOperators,parseRequestMiddleware.parsePagination ,function(req, res, next) {
+    req.statusCode=200;
+    thingsHandler.getObservations(req, res, next);
+});
+
+
 // </actions>
 
 
