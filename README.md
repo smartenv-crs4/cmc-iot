@@ -1,5 +1,5 @@
 # CMC IoT Microservice
-CMC IoT is the inthernet of Things microservice of the CMC (Crs4 Microservice Core) framework.
+CMC IoT is the Internet of Things microservice of the CMC (CRS4 Microservice Core) framework.
 It takes care of managing ...... <br>
 For API reference, see the service auto-generated online documentation at <code>http://service_base_url/doc</code>.
 
