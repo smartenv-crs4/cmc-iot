@@ -48,6 +48,16 @@ var async=require("async");
  * @apiParam (Query Parameter) {String[]}   [locatedInSiteId]           Filter by the "parent" site (where this site is located)
  */
 /**
+ * @apiDefine LocationBodyParams
+ * @apiParam (Body Parameter)   {Object}        location                        Geographical coordinates parent object
+ * @apiParam (Body Parameter)   {Number}        location.lat                    Latitude coordinate
+ * @apiParam (Body Parameter)   {Number}        location.lon                    Longitude coordinate
+ * @apiParam (Body Parameter)   {Number}        distance                        Radius of the search area (mode "radius"), or side of the square bounding box (mode "bbox")
+ * @apiParam (Body Parameter)   {Object}        distanceOptions                 Distance search options parent object
+ * @apiParam (Body Parameter)   {String}        distanceOptions.mode            Distance search mode; accepted values are "radius" or "bbox". Default is "radius"
+ * @apiParam (Body Parameter)   {Boolean}       distanceOptions.returnDistance  Option for returning an array of distances of each returned site from the location
+ */
+/**
  * @apiDefine PostSiteResource
  * @apiSuccess (201 - CREATED) {String} name                    Created site name
  * @apiSuccess (201 - CREATED) {String} description             Created site description
@@ -163,47 +173,97 @@ var async=require("async");
  * @apiSampleRequest off
  */
 module.exports.postCreateSite = function(req, res, next) {
-
     async.series([
             function(callback) {
-                if(req.body.site && req.body.site.locatedInSiteId){
-                    siteDriver.findById(req.body.site.locatedInSiteId,"_id",function(err,result){
-                        callback(null,result);
-                    });
-                }else callback(null, true);
+                if (req.body.site && req.body.site.locatedInSiteId) {
+                    siteDriver.findById(req.body.site.locatedInSiteId, "_id", function(err, result) {
+                        callback(null, result)
+                    })
+                } else callback(null, true)
             }
         ],
         function(err, isValid) {
-        if(err){
-            res.httpResponse(err);
-        }else {
-            if (isValid[0]) {
-                siteDriver.create(req.body.site, function (err, results) {
-                    return res.httpResponse(err, null, results);
-                })
+            if (err) {
+                res.httpResponse(err)
             } else {
-                return res.httpResponse(null, 422, "locatedInSiteId " + req.body.site.locatedInSiteId + " not exist or isn't a valid site identifier");
+                if (isValid[0]) {
+                    siteDriver.create(req.body.site, function(err, results) {
+                        return res.httpResponse(err, null, results)
+                    })
+                } else {
+                    return res.httpResponse(null, 422, "locatedInSiteId " + req.body.site.locatedInSiteId + " doesn't exist or isn't a valid site identifier")
+                }
             }
-        }
-        });
-
-
-
-};
-
+        })
+}
+/**
+ * @api {post} /actions/getLinkedSites Get all linked Sites
+ * @apiVersion 1.0.0
+ * @apiName GetLinkedSites
+ * @apiGroup Sites
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of all linked Sites
+ *
+ * @apiParam (Body Parameter)   {Object}        sites           Array of all Site ids which we want to get the linked sites from
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /sites/actions/getLinkedSites
+ * Body:{ "sites": ["543fdd60579e1281b8f6da64", "543fdd60579e1281b8f6db31"] }
+ *
+ * @apiSuccess                  {String[]}      linkedSites     An array of Site ids
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "linkedSites":[
+ *                      "543fdd60579e1281b8f6da92",
+ *                      "543fdd60579e1281saf6dc32"
+ *                     ]
+ *     }
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getLinkedSites = function(req, res, next) {
-    var sites=req.body.sites;
+    var sites = req.body.sites
 
-    if(_.isArray(sites)){
-        siteUtility.getLinkedSites(_.uniq(sites),[],function(err,linkedSites){
-           res.httpResponse(err,req.statusCode,{linkedSites:linkedSites});
-        });
-    }else{
-        res.httpResponse(null, 400, "sites body field must be an array list of sites id");
+    if (_.isArray(sites)) {
+        siteUtility.getLinkedSites(_.uniq(sites), [], function(err, linkedSites) {
+            res.httpResponse(err, req.statusCode, {linkedSites: linkedSites})
+        })
+    } else {
+        res.httpResponse(null, 400, "sites body field must be an array list of sites id")
     }
-};
+}
 
-
+/**
+ * @api {post} /actions/searchSitesByLocation Search Sites by location
+ * @apiVersion 1.0.0
+ * @apiName SearchSitesByLocation
+ * @apiGroup Sites
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of all Sites located around a particular location
+ *
+ * @apiUse LocationBodyParams
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /sites/actions/searchSitesByLocation
+ * Body:{"location": {"coordinates":[83.4,78.3]}, "distance": "100", "distanceOptions": {"mode":"bbox"}}
+ *
+ * @apiUse GetAllSiteResource
+ * @apiUse GetAllSiteResourceExample
+ *
+ * @apiUse Metadata
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+*/
 module.exports.searchSitesByLocation = function(req, res, next) {
     siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, function (err, results) {
         res.httpResponse(err, req.statusCode, results);
@@ -237,9 +297,10 @@ module.exports.searchSitesByLocation = function(req, res, next) {
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /sites?name=site1_Crs4,site2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
  *
- * @apiUse Metadata
  * @apiUse GetAllSiteResource
  * @apiUse GetAllSiteResourceExample
+ *
+ * @apiUse Metadata
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
