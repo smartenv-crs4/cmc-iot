@@ -20,9 +20,6 @@
  ############################################################################
  */
 
-
-var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
-var Device=require('../../../DBEngineHandler/drivers/deviceDriver');
 var Unit=require('../../../DBEngineHandler/drivers/unitDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');

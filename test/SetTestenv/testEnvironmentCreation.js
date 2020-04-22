@@ -23,7 +23,7 @@
 var conf = require('propertiesmanager').conf;
 var request=require('request');
 var async=require("async");
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var server;
 var app = require('../../app');
 var roles=require('./testconfig');

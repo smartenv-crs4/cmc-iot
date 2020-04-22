@@ -22,7 +22,7 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var Device = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceDocuments=require('../SetTestenv/createDevicesDocuments');
 var should = require('should/should');

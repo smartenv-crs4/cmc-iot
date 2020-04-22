@@ -23,10 +23,10 @@
 
 var express = require('express')
 var router = express.Router()
-var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware')
-var authorisationManager = require('./middlewares/authorisationMiddleware')
-var observationsHandler = require('./routesHandlers/observationHandler')
-var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
+var parseRequestMiddleware = require('./middlewares/parseRequestMiddleware');
+var authorisationManager = require('./middlewares/authorisationMiddleware');
+var observationsHandler = require('./routesHandlers/observationHandler');
+var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 
 
 

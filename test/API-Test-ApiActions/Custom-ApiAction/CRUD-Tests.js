@@ -22,7 +22,6 @@
 
 
 var ApiActions = require('../../../DBEngineHandler/drivers/apiActionDriver');
-var Observation = require('../../../DBEngineHandler/drivers/observationDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/apiActions" ;

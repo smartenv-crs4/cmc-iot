@@ -21,48 +21,17 @@
  */
 
 
+var redis = require('redis');
 var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
-var observationUtility=require('../../../routes/routesHandlers/handlerUtility/observationUtility');
+var redisClient=require("../DBEngineHandler/drivers/redisDriver");
 
-require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"observations",observationUtility.ObjectId(),"location");
-
-
-/*
-
-UNCOMMENT to define other CUSTOM tests
-
-
-describe('Test Title eg. Observations API Tests', function () {
-
-    before(function (done) {
-       done();
+exports.connect = function connect(callback) {
+    redisClient.connect(conf.redisCache,function(err,connectionLog){
+        if(callback) callback(err,connectionLog);
     });
-
-    after(function (done) {
-        done();
-    });
+};
 
 
-
-    beforeEach(function (done) {
-      done();
-    });
-
-
-    afterEach(function (done) {
-       done();
-    });
-
-
-    describe('test Type : eg. POST /Observations', function(){
-
-        it('must test ...', function(done){
-           done();
-
-        });
-    });
-
-});
- */
-
+exports.disconnect = function disconnect(callback) {
+    redisClient.disconnect(callback);
+};

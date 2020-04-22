@@ -20,15 +20,19 @@
  ############################################################################
  */
 
-var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
+
 var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
-var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var thingAndDeviceHandlerUtility=require("./thingAndDeviceHandlerUtility");
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var locationSearchUtility=require("./locationSearchUtility");
 var async = require('async');
 
 var _ = require('underscore');
+
+
+
+
+
 
 
 
@@ -604,6 +608,72 @@ module.exports.searchFilter= function(searchFields,returnOnlyObservationsId,call
 };
 
 
+/* GET Observations list */
+module.exports.findAll = function(conditions, fields, options, callback) {
+    observationsDriver.findAll(conditions, fields, options, callback);
+}
+
+
+/* Create Observations. */
+module.exports.create = function(observation, callback) {
+    observationsDriver.create(observation, callback);
+}
+
+/* Create Observations. */
+module.exports.insertMany = function(observationsArray, callback) {
+    observationsDriver.insertMany(observationsArray,callback);
+};
+
+
+/* delete Observations. */
+module.exports.deleteMany = function(conditions, options, callback) {
+    observationsDriver.deleteMany(conditions, options, callback);
+};
+
+
+/* findOne Observation */
+module.exports.findOne = function(conditions, projection, options, callback) {
+    observationsDriver.findOne(conditions, projection, options, callback);
+};
+
+
+/* findOne Observation by ID */
+module.exports.findById = function(id, projection, options, callback) {
+    observationsDriver.findById(id, projection, options, callback)
+}
+
+
+/* findOne Observation and update it */
+module.exports.findByIdAndUpdate = function(id, newFields, callback) {
+    observationsDriver.findByIdAndUpdate(id, newFields, callback);
+}
+
+
+/* findOne Observation by ID and remove it */
+module.exports.findByIdAndRemove = function(id, options, callback) {
+    observationsDriver.findByIdAndRemove(id, options, callback)
+};
+
+/* GET Observations list */
+module.exports.find = function(conditions, fields, options, callback) {
+    observationsDriver.find(conditions, fields, options, callback);
+};
+
+/* GET/SET Observations ObjectId. */
+module.exports.ObjectId = function(ObjectId) {
+    return (observationsDriver.ObjectId(ObjectId));
+}
+
+
+/* Create Observations. */
+module.exports.errorResponse = function(res, err) {
+    observationsDriver.errorResponse(res,err);
+};
+
+module.exports.getModel = function() {
+    return (observationsDriver.getModel());
+};
+
 module.exports.validateObservationsBeforeUpdate = validateObservationsBeforeUpdate;
 
 module.exports.validateAndCreateObservations = function (deviceId, observations, callback) {
@@ -620,7 +690,6 @@ module.exports.validateAndCreateObservations = function (deviceId, observations,
 };
 
 module.exports.checkIfValid = function (deviceId, observation, callback) {
-
 
     validateAndUpdateDeviceObservations(null,deviceId, [observation], function (err, validatedObservations,deviceStatus) {
         if (err){
@@ -673,3 +742,10 @@ module.exports.validateAndCreateThingObservations = function (thingId, observati
     });
 
 };
+
+
+
+
+
+
+

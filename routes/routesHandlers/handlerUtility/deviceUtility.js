@@ -22,13 +22,13 @@
 
 
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
-var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../routesHandlers/handlerUtility/observationUtility');
 
 
 /* Delete devices. */
 module.exports.deleteDevice = function (id,callback) {
 
-    observationsDriver.findAll({deviceId: id}, null, {totalCount: true}, function (err, results) {
+    observationUtility.findAll({deviceId: id}, null, {totalCount: true}, function (err, results) {
         if (err) {
             return callback(err);
         } else {

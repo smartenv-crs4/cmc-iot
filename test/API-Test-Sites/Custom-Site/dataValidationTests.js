@@ -146,7 +146,7 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " not exist or isn't a valid site identifier");
+                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " doesn't exist or isn't a valid site identifier");
                 }
                 done()
             })
@@ -179,7 +179,7 @@ describe('Sites API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " not exist or isn't a valid site identifier")
+                    results.message.should.be.equal("locatedInSiteId " + site.locatedInSiteId+ " doesn't exist or isn't a valid site identifier")
                 }
                 done()
             })

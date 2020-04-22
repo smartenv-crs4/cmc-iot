@@ -19,7 +19,7 @@
  *     along with CMC-IoT.  If not, see <http://www.gnu.org/licenses/>.     *
  ############################################################################
  */
-var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
@@ -40,7 +40,7 @@ describe('Observations API Test - [PAGINATION TESTS]', function () {
     });
 
     after(function (done) {
-        Observations.deleteMany({}, function (err,elm) {
+        observationUtility.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("Observation paginationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Observation paginationTests.js - after - resetAuthMsStatus ---> " + err);

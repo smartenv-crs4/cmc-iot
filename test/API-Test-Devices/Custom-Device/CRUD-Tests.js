@@ -23,7 +23,7 @@
 
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var thingsDriver = require('../../../DBEngineHandler/drivers/thingDriver');
-var Observation = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;
@@ -585,8 +585,8 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                 }
 
 
-                // create Observation
-                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: Observation.ObjectId()},function(err,observation){
+                // create observationUtility
+                observationUtility.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: observationUtility.ObjectId()},function(err,observation){
 
                     // DELETE Device
                     var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
@@ -621,7 +621,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                                 resultsDeleteById.dismissed.should.be.true();
                                 resultsDeleteById.disabled.should.be.true();
                             }
-                            Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
+                            observationUtility.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                 should(err).be.null();
                                 done();
                             });
@@ -658,7 +658,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
 
 
                 // create Observation
-                Observation.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: Observation.ObjectId()},function(err,observation){
+                observationUtility.create({timestamp: 0, value: 0, location: {type: "Point", coordinates: [1, 1]},deviceId:results._id,unitId: observationUtility.ObjectId()},function(err,observation){
 
                     // DELETE Device
                     var geByIdRequestUrl=APIURL+"/" + results._id + "?access_token="+ webUiToken;
@@ -726,7 +726,7 @@ describe('Devices API Test - [CRUD-TESTS]', function () {
                                             resultsDeleteById.dismissed.should.be.true();
                                             resultsDeleteById.disabled.should.be.true();
                                         }
-                                        Observation.findByIdAndRemove(observation._id,null,function(err, removedObs){
+                                        observationUtility.findByIdAndRemove(observation._id,null,function(err, removedObs){
                                             should(err).be.null();
                                             done();
                                         });

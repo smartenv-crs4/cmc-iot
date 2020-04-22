@@ -30,7 +30,9 @@ var app = require('../app');
 var debug = require('debug')('cmc-iot:server');
 var http = require('http');
 var conf = require('propertiesmanager').conf;
-var db = require("../DBEngineHandler/models/mongooseConnection");
+var db = require("../connectionsHandler/mongooseConnection");
+var redisConnection=require("../connectionsHandler/redisConnection");
+var redisPushNotificationConnection=require("../connectionsHandler/redisPushNotificationConnection");
 
 var setupEnvironmentDefaults=require('./environmentDefaults/setupDefault');
 var errorHandler=require('../routes/utility/error');
@@ -47,6 +49,7 @@ function disconnect(){
         else {
             console.log('Disconnected from database');
         }
+        redisConnection.disconnect();
         process.exit(1);
     });
 }
@@ -126,56 +129,108 @@ function onListening() {
     console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
 }
 
+function runServer(){
+    process.on('SIGINT', function (code) {
+        disconnect();
+    });
 
+    /**
+     * Get port from environment and store in Express.
+     */
+    var port = normalizePort(process.env.PORT || conf.microserviceConf.port || '3000');
+    app.set('port', port);
+
+    /**
+     * Create HTTP server.
+     */
+
+    server = http.createServer(app);
+
+    /**
+     * Listen on provided port, on all network interfaces.
+     */
+
+    server.listen(port);
+    server.on('error', onError);
+    server.on('listening', onListening);
+}
 
 setupEnvironmentDefaults.setupDefaults(function(err,cmc_IotDismissedID){
-   if(!err){
-       conf.cmcIoTThingsOwner._id=cmc_IotDismissedID;
+    try {
+        if(!err){
+            conf.cmcIoTThingsOwner._id=cmc_IotDismissedID;
 
 
-       // Connect to db: Open and initialise connection
-       db.connect(function(err){
-           if(err){
-               console.log("Unable to connect to DB, err:" +err);
-           }
-           else{
-               console.log("Connected to DB");
-           }
+            // Connect to db: Open and initialise connection
+            console.log("Waiting for DB connection ....");
+            db.connect(function(err){
+                if(err){
+                    console.log("Unable to connect to DB, err:" +err);
+                    errorHandler.printErrorLog("App can not start due to " + err );
+                }
+                else{
+                    console.log("Connected to DB");
+                    if(conf.redisCache.must) {
+                        console.log("Waiting for Redis connection ....");
+                        redisConnection.connect(function(err,logmsg){
+                            if (err) {
+                                console.log('Unable to connect to Redis, err:' + err);
+                                db.disconnect();
+                                errorHandler.printErrorLog("App can not start due to " + err);
+                            }else {
+                                console.log(logmsg);
 
-       });
+                                if(conf.redisPushNotification.must) {
+                                    console.log("Waiting for Redis Push MNotification connection ....");
+                                    redisPushNotificationConnection.connect(function(err,logmsg){
+                                        if (err) {
+                                            console.log('Unable to connect to Redis Push MNotification, err:' + err);
+                                            db.disconnect();
+                                            redisConnection.disconnect();
+                                            errorHandler.printErrorLog("App can not start due to Redis Push MNotification" + err);
+                                        }else {
+                                            console.log(logmsg);
+                                            runServer();
+                                        }
+                                    });
+                                }
+                                else{
+                                    redisPushNotificationConnection.connect();
+                                    runServer();
+                                }
 
+                            }
+                        });
+                    } else{
+                        redisConnection.connect();
+                        if(conf.redisPushNotification.must) {
+                            console.log("Waiting for Redis Push MNotification connection ....");
+                            redisPushNotificationConnection.connect(function(err,logmsg){
+                                if (err) {
+                                    console.log('Unable to connect to Redis Push MNotification, err:' + err);
+                                    db.disconnect();
+                                    errorHandler.printErrorLog("App can not start due to Redis Push MNotification " + err);
+                                }else {
+                                    console.log(logmsg);
+                                    runServer();
+                                }
+                            });
+                        }
+                        else{
+                            redisConnection.connect();
+                            redisPushNotificationConnection.connect();
+                            runServer();
+                        }
+                    }
+                }
+            });
+        } else{
+            errorHandler.printErrorLog("App can not start due to " + err );
+        }
+    }catch (ex) {
+        errorHandler.printErrorLog("App can not start due to " + ex );
+    }
 
-
-
-       process.on('SIGINT', function (code) {
-           disconnect();
-
-       });
-
-       /**
-        * Get port from environment and store in Express.
-        */
-       var port = normalizePort(process.env.PORT || conf.microserviceConf.port || '3000');
-       app.set('port', port);
-
-       /**
-        * Create HTTP server.
-        */
-
-       server = http.createServer(app);
-
-       /**
-        * Listen on provided port, on all network interfaces.
-        */
-
-       server.listen(port);
-       server.on('error', onError);
-       server.on('listening', onListening);
-
-
-   } else{
-       errorHandler.printErrorLog("App can not start due to " + err );
-   }
 });
 
 

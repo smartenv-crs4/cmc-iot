@@ -19,19 +19,9 @@
  *     along with CMC-IoT.  If not, see <http://www.gnu.org/licenses/>.     *
  ############################################################################
  */
-
-var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
-var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
-var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
-var async = require('async');
 var _ = require('underscore');
-var geoLatLon=require('./geoLatLon');
 var locationSearch=require("./locationSearchUtility");
-
-const heartMeasure=6378137;
-
-
 function getLinkedSites (siteIdsToCheck,linkedSitesList,fields,returnCallback) {
 
     if(!returnCallback){

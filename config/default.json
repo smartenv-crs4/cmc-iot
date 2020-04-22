@@ -1,6 +1,6 @@
 {
   "production":{
-    "dbHost":"156.148.37.192",
+    "dbHost":"127.0.0.1",
     "dbPort":"27017",
     "dbName":"cmc-IoT",
     "dbAuth": {
@@ -48,10 +48,26 @@
       "observationsCacheItems":10
     },
     "redisCache":{
-      "host": "156.148.37.188",
-      "port":  6379,
-      "db": 0,
-      "password":null
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "127.0.0.1",
+        "port":  6379,
+        "db": 0,
+        "password": null
+      }
+    },
+    "redisPushNotification":{
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "127.0.0.1",
+        "port":  6379,
+        "db": 1,
+        "password": null
+      }
     }
 
   },
@@ -104,10 +120,26 @@
       "observationsCacheItems":10
     },
     "redisCache":{
-      "host": "156.148.37.188",
-      "port":  6379,
-      "db": 0,
-      "password":null
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "156.148.22.111",
+        "port":  6379,
+        "db": 0,
+        "password": null
+      }
+    },
+    "redisPushNotification":{
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "127.0.0.1",
+        "port":  6379,
+        "db": 1,
+        "password": null
+      }
     }
   },
   "test":{
@@ -177,13 +209,29 @@
       "observationsCanBeDeleted": true,
       "whoCanHandleThingsAndDevicesOwner": ["admin","webui"],
       "authorizationVerbToHandleDismissedStatus": ["admin"],
-      "observationsCacheItems":2
+      "observationsCacheItems":5
     },
     "redisCache":{
-      "host": "156.148.37.188",
-      "port":  6379,
-      "db": 0,
-      "password":null
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "127.0.0.1",
+        "port":  6379,
+        "db": 0,
+        "password": null
+      }
+    },
+    "redisPushNotification":{
+      "must": true,
+      "totalRetryTime": 120000,
+      "maxRetryTime": 10000,
+      "connection": {
+        "host": "127.0.0.1",
+        "port":  6379,
+        "db": 1,
+        "password": null
+      }
     }
   }
 

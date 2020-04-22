@@ -22,16 +22,14 @@
 
 
 var should = require('should/should');
-var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var Unit = require('../../../DBEngineHandler/drivers/unitDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
-// var Observation = require('../../../DBEngineHandler/models/observations').Observation;
 var observationDocuments=require('../../SetTestenv/createObservationsDocuments');
-
 var webUiToken;
 var observationId;
 var testObservationDef;
@@ -50,7 +48,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
 
     after(function (done) {
         this.timeout(0);
-        Observations.deleteMany({}, function (err,elm) {
+        observationUtility.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("Observation searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Observation searchFilterTests.js - after - resetAuthMsStatus ---> " + err);
@@ -98,7 +96,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
     describe(testMessageMessage, function(){
         testMessage='must test update observation resource enabled';
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
@@ -123,7 +121,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
     describe(testMessageMessage, function(){
         testMessage='must test update observation resource disabled';
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:{timestamp:new Date()}});
                 var requestParams={
@@ -161,7 +159,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
         it(testMessage, function(done){
 
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var requestParams={
                     url:APIURL+"/" + observation._id,
@@ -175,7 +173,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
                         var resultsDeleteById = JSON.parse(body);
                         response.statusCode.should.be.equal(200);
                         resultsDeleteById.should.have.properties("_id","timestamp","value","location","deviceId","unitId");
-                        Observations.ObjectId(resultsDeleteById._id).should.be.eql(observation._id);
+                        observationUtility.ObjectId(resultsDeleteById._id).should.be.eql(observation._id);
                     }
 
                     //Search Observation to confirm delete
@@ -198,7 +196,7 @@ describe('Observations API Test - [CRUD OPTIONS TEST]', function () {
 
 
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var requestParams={
                     url:APIURL+"/" + observation._id,

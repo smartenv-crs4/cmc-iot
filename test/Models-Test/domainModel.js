@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var Domain = require('../../DBEngineHandler/drivers/domainDriver');
 var domainDocuments = require('../SetTestenv/createDomainsDocuments');
 var should = require('should/should');

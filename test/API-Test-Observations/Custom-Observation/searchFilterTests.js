@@ -22,13 +22,12 @@
 
 
 var should = require('should/should');
-var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");
 var consoleLogError=require('../../Utility/errorLogs');
-// var Observation = require('../../../DBEngineHandler/models/observations').Observation;
 var observationDocuments=require('../../SetTestenv/createObservationsDocuments');
 
 var webUiToken;
@@ -48,7 +47,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
 
     after(function (done) {
         this.timeout(0);
-        Observations.deleteMany({}, function (err,elm) {
+        observationUtility.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("Observation searchFilterTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("Observation searchFilterTests.js - after - resetAuthMsStatus ---> " + err);
@@ -117,7 +116,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -132,7 +131,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
                             var results = JSON.parse(body);
                             results.should.have.property("value");
                             results.should.have.property("location");
-                            id.should.be.eql(Observations.ObjectId(results._id));
+                            id.should.be.eql(observationUtility.ObjectId(results._id));
                             should(results.deviceId).be.eql(undefined);
                             should(results.unitId).be.eql(undefined);
                             should(results.timestamp).be.eql(undefined);
@@ -213,7 +212,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -231,8 +230,8 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('observations');
                             results._metadata.totalCount.should.be.equal(false);
                             results.observations.length.should.be.equal(2);
-                            observations.should.containEql(Observations.ObjectId(results.observations[0]._id));
-                            observations.should.containEql(Observations.ObjectId(results.observations[1]._id));
+                            observations.should.containEql(observationUtility.ObjectId(results.observations[0]._id));
+                            observations.should.containEql(observationUtility.ObjectId(results.observations[1]._id));
                         }
                         done();
                     });
@@ -251,7 +250,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -293,7 +292,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -313,7 +312,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('observations');
                             results._metadata.totalCount.should.be.equal(false);
                             results.observations.length.should.be.equal(1);
-                            Observations.ObjectId(results.observations[0]._id).should.be.eql(observations);
+                            observationUtility.ObjectId(results.observations[0]._id).should.be.eql(observations);
 
                         }
                         done();
@@ -330,7 +329,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -350,7 +349,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
                             results.should.have.property('observations');
                             results._metadata.totalCount.should.be.equal(false);
                             results.observations.length.should.be.equal(1);
-                            Observations.ObjectId(results.observations[0]._id).should.be.eql(observations);
+                            observationUtility.ObjectId(results.observations[0]._id).should.be.eql(observations);
 
                         }
                         done();
@@ -369,7 +368,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -409,7 +408,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -452,7 +451,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -490,7 +489,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{
@@ -527,7 +526,7 @@ describe('Observations API Test - [SEARCH FILTERS]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findAll({}, null, null, function(err, results){
+            observationUtility.findAll({}, null, null, function(err, results){
 
                 if(err) throw err;
                 else{

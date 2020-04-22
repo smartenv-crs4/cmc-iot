@@ -20,49 +20,24 @@
  ############################################################################
  */
 
-
-var conf = require('propertiesmanager').conf;
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
-var observationUtility=require('../../../routes/routesHandlers/handlerUtility/observationUtility');
-
-require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"observations",observationUtility.ObjectId(),"location");
-
-
-/*
-
-UNCOMMENT to define other CUSTOM tests
-
-
-describe('Test Title eg. Observations API Tests', function () {
-
-    before(function (done) {
-       done();
-    });
-
-    after(function (done) {
-        done();
-    });
-
-
-
-    beforeEach(function (done) {
-      done();
-    });
-
-
-    afterEach(function (done) {
-       done();
-    });
-
-
-    describe('test Type : eg. POST /Observations', function(){
-
-        it('must test ...', function(done){
-           done();
-
-        });
-    });
-
-});
- */
-
+exports.printLog= function(message){
+    console.log("");
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! LOG !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+    console.log("!!!                                                                           !!!");
+    var index=0;
+    var outputMessage;
+    var diff;
+    var space=" ";
+    var lng=62;
+    do{
+        outputMessage=message.substr(index,lng);
+        if(outputMessage.length < lng){
+            diff=lng-outputMessage.length;
+            outputMessage=space.repeat(parseInt(diff/2))+outputMessage+space.repeat(diff-parseInt(diff/2));
+        }
+        console.log("!!!       " + outputMessage + "      !!!");
+        index+=lng;
+    }while(index<message.length);
+    console.log("!!!                                                                           !!!");
+    console.log("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+};

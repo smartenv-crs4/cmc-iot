@@ -22,7 +22,7 @@
 
 
 var Things = require('../../../DBEngineHandler/drivers/thingDriver');
-var Observation = require('../../../DBEngineHandler/drivers/observationDriver');
+var Observation = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var Device=require('../../../DBEngineHandler/drivers/deviceDriver');
 var conf = require('propertiesmanager').conf;
 var request = require('request');

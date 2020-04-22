@@ -29,7 +29,6 @@ var thingAndDeviceHandlerUtility = require('./handlerUtility/thingAndDeviceHandl
 var async=require('async');
 var config = require('propertiesmanager').conf;
 var _=require('underscore');
-var observationDriver = require('../../DBEngineHandler/drivers/observationDriver');
 var observationUtility=require('./handlerUtility/observationUtility');
 var conf = require('propertiesmanager').conf;
 
@@ -734,7 +733,7 @@ module.exports.getObservations = function (req, res, next) {
                     });
                 } else { // grt from redis
                     //TODO: set query to redis instead database
-                    observationDriver.find({deviceId: {"$in": foundedDev}}, null, {
+                    observationUtility.find({deviceId: {"$in": foundedDev}}, null, {
                         skip: 0,
                         limit: conf.cmcIoTOptions.observationsCacheItems,
                         lean: true

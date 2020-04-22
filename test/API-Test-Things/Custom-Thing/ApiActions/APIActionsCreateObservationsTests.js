@@ -24,22 +24,17 @@
 var should = require('should/should');
 var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
 var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
-var observationDriver = require('../../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
 var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
 var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
-
 var deviceDocuments = require('../../../SetTestenv/createDevicesDocuments');
 var sitesDocuments = require('../../../SetTestenv/createSitesDocuments');
-
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
 var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
-var async = require('async');
-
 var validUnits={first:null,second:null};
-
 var webUiToken;
 var thingID;
 var associatedThingId, devicetypeId,observedPropertyId,associateSiteId;
@@ -64,7 +59,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         commonFunctioTest.setAuthMsMicroservice(function (err) {
             if (err) throw (err);
             webUiToken = conf.testConfig.myWebUITokenToSignUP;
-            observationDriver.deleteMany({}, function (err, elm) {
+            observationUtility.deleteMany({}, function (err, elm) {
                 if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - after - deleteMany ---> " + err);
                 done();
             });
@@ -73,7 +68,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
     after(function (done) {
         this.timeout(0);
-        observationDriver.deleteMany({}, function (err, elm) {
+        observationUtility.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - after - deleteMany ---> " + err);
             Devices.deleteMany({}, function (err, elm) {
                 if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - after - deleteMany ---> " + err);
@@ -121,7 +116,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
     afterEach(function (done) {
         deviceDocuments.deleteDocuments(function (err) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            observationDriver.deleteMany({}, function (err, elm) {
+            observationUtility.deleteMany({}, function (err, elm) {
                 if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
                 unitDriver.deleteMany({},function(err){
                     if (err) {
@@ -198,7 +193,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -239,7 +234,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -263,7 +258,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -320,7 +315,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -344,7 +339,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -385,7 +380,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -408,7 +403,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -443,7 +438,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('message');
                                         results.message.indexOf("The device/thing was removed from available devices/things.").should.be.greaterThanOrEqual(0);
                                         results.message.indexOf(deviceList[0]._id).should.be.greaterThanOrEqual(0);
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -469,7 +464,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -504,7 +499,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('message');
                                         results.message.indexOf("The device/thing was disable. It must be enabled to set observations.").should.be.greaterThanOrEqual(0);
                                         results.message.indexOf(deviceList[0]._id).should.be.greaterThanOrEqual(0);
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -531,7 +526,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -562,7 +557,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('message');
                                 results.message.indexOf("The device/thing not exist.").should.be.greaterThanOrEqual(0);
                                 results.message.indexOf(invalidDeviceID).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -591,7 +586,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -627,7 +622,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('message');
                                         results.message.indexOf("was removed from available devices/things.").should.be.greaterThanOrEqual(0);
                                         results.message.indexOf(thingID).should.be.greaterThanOrEqual(0);
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -651,7 +646,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -686,7 +681,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('message');
                                         results.message.indexOf(" was disable. It must be enabled to set observations.").should.be.greaterThanOrEqual(0);
                                         results.message.indexOf(thingID).should.be.greaterThanOrEqual(0);
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -712,7 +707,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -743,7 +738,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('message');
                                 results.message.indexOf("not exist.").should.be.greaterThanOrEqual(0);
                                 results.message.indexOf(thingIdFake).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -768,7 +763,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -874,7 +869,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results[deviceList[2]._id][0].location.coordinates[0].should.be.eql(0);
                                 results[deviceList[2]._id][0].location.coordinates[1].should.be.eql(0);
 
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -899,7 +894,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -940,7 +935,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -963,7 +958,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1004,7 +999,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -1029,7 +1024,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1062,7 +1057,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results[deviceList[0]._id].length.should.be.eql(1);
                                 results[deviceList[1]._id].length.should.be.eql(0);
                                 results[deviceList[2]._id].length.should.be.eql(1);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -1113,7 +1108,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
     describe(describeMessage, function () {
         var testType="must test API action sendObservations [observation with not valid field]";
         it(testType, function (done) {
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1157,7 +1152,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.should.be.eql("Field `noValidField` is not in schema and strict mode is set to throw.");
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -1181,7 +1176,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
         it(testType, function (done) {
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1225,7 +1220,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('error');
                                         results.should.have.property('message');
                                         results.message.indexOf("Location:{ coordinates: [lon, lat]} is a mandatory field for mobile devices").should.be.greaterThanOrEqual(0);
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -1251,7 +1246,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1297,7 +1292,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results[deviceList[0]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
                                         results[deviceList[1]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
                                         results[deviceList[2]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
-                                        observationDriver.findAll({},null,null,function(err,foundObs){
+                                        observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                             else {
                                                 foundObs.should.have.properties("observations", "_metadata");
@@ -1324,7 +1319,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         it(testType, function (done) {
 
 
-            observationDriver.findAll({},null,null,function(err,foundObs){
+            observationUtility.findAll({},null,null,function(err,foundObs){
                 if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                 else{
                     foundObs.should.have.properties("observations","_metadata");
@@ -1368,7 +1363,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.should.have.property('error');
                                 results.should.have.property('message');
                                 results.message.indexOf("Location field must be set only for mobile devices").should.be.greaterThanOrEqual(0);
-                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
@@ -1473,7 +1468,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                                 results[deviceList[2]._id][0].location.coordinates[1].should.be.eql(updatedSite.location.coordinates[1]);
 
 
-                                                observationDriver.findAll({},null,null,function(err,foundObs){
+                                                observationUtility.findAll({},null,null,function(err,foundObs){
                                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                                     else {
                                                         foundObs.should.have.properties("observations", "_metadata");

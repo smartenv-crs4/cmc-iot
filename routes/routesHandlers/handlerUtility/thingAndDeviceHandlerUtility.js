@@ -21,7 +21,6 @@
  */
 
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
-var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
 var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var async = require('async');

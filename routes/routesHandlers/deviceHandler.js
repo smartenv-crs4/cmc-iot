@@ -20,9 +20,6 @@
  ############################################################################
  */
 
-
-var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
-var observationDriver = require('../../DBEngineHandler/drivers/observationDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 var observationUtility=require('./handlerUtility/observationUtility');
@@ -601,7 +598,7 @@ module.exports.getObservations = function (req, res, next) {
         });
     }else{ // grt from redis
         //TODO: set query to redis instead database
-        observationDriver.find({deviceId:deviceId},null,{skip:0 ,limit:conf.cmcIoTOptions.observationsCacheItems, lean:true},function(err,data){
+        observationUtility.find({deviceId:deviceId},null,{skip:0 ,limit:conf.cmcIoTOptions.observationsCacheItems, lean:true},function(err,data){
             res.httpResponse(err, req.statusCode, {observations:data});
         });
     }

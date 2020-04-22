@@ -31,18 +31,16 @@ exports.printErrorLog= function(message){
     var outputMessage;
     var diff;
     var space=" ";
+    var lng=74;
     do{
-        outputMessage=message.substr(index,74);
-        if(outputMessage.length < 74){
-            diff=74-outputMessage.length;
-            outputMessage=space.repeat(diff/2)+outputMessage+space.repeat(diff-(diff/2));
+        outputMessage=message.substr(index,lng);
+        if(outputMessage.length < lng){
+            diff=lng-outputMessage.length;
+            outputMessage=space.repeat(parseInt(diff/2))+outputMessage+space.repeat(diff-parseInt(diff/2));
         }
         console.log("###       " + outputMessage + "      ###");
-        index+=75;
+        index+=lng;
     }while(index<message.length);
     console.log("###                                                                                       ###");
     console.log("### ************************************************************************************* ###");
 };
-
-
-

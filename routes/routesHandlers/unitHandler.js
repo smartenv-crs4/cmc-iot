@@ -22,7 +22,7 @@
 
 
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
-var observationDriver = require('../../DBEngineHandler/drivers/observationDriver')
+var observationUtility = require('./handlerUtility/observationUtility')
 
 
 /* Create unit */
@@ -61,7 +61,7 @@ module.exports.updateUnit = function(req, res, next) {
 /* Delete unit */
 module.exports.deleteUnit = function(req, res, next) {
     var id = req.params.id
-    observationDriver.findAll({unitId: id}, null, {totalCount: true}, function (err, results) {
+    observationUtility.findAll({unitId: id}, null, {totalCount: true}, function (err, results) {
         if (err)
             return next(err)
         else {

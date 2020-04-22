@@ -24,7 +24,7 @@
 var should = require('should/should');
 var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
 var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
-var observationDriver = require('../../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
 var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
 var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
 
@@ -36,8 +36,6 @@ var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/devices";
 var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
-var async = require('async');
-
 var validUnits={first:null,second:null};
 
 var webUiToken;
@@ -113,7 +111,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
                         throw (err);
                     }else{
-                        observationDriver.deleteMany({},function(err){
+                        observationUtility.deleteMany({},function(err){
                             should(err).be.null();
                             done();
                         });
@@ -688,11 +686,11 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('error');
                     results.should.have.property('message');
                     results.message.should.be.eql("Field `noValidField` is not in schema and strict mode is set to throw.");
-                    observationDriver.findAll({deviceId:deviceId}, null, null, function(err,data){
+                    observationUtility.findAll({deviceId:deviceId}, null, null, function(err,data){
                         should(err).be.null();
                         data.should.have.properties("_metadata","observations");
                         data.observations.length.should.be.eql(0);
-                        observationDriver.deleteMany({},function(err){
+                        observationUtility.deleteMany({},function(err){
                             should(err).be.null();
                             done();
                         });

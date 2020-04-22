@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var ApiAction = require('../../DBEngineHandler/drivers/apiActionDriver');
 var apiActionDocuments = require('../SetTestenv/createApiActionsDocuments');
 var should = require('should/should');

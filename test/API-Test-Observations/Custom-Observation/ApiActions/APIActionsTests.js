@@ -22,7 +22,7 @@
 
 
 var should = require('should/should');
-var Observations = require('../../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observations";
@@ -51,7 +51,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
     after(function (done) {
         this.timeout(0);
-        Observations.deleteMany({}, function (err, elm) {
+        observationUtility.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function (err) {
                 if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - after - resetAuthMsStatus ---> " + err);
@@ -973,7 +973,7 @@ describe(testTypeMessage, function () {
     function localizeObservations(centrePoint,numberForBB,bBNumber,distance,deltaDistance,returnCallback){
 
         var start=new geoLatLon(centrePoint[0],centrePoint[1]);
-        Observations.find({},function(err,results){
+        observationUtility.find({},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": localizeObservations -->" + err.message);
             var currentLoc=[];
             var tmpLatLon;
@@ -989,7 +989,7 @@ describe(testTypeMessage, function () {
 
             async.eachOf(currentLoc, function(location,index, callback) {
 
-                Observations.findByIdAndUpdate(results[index]._id,{location:{coordinates:location}},function(err,res){
+                observationUtility.findByIdAndUpdate(results[index]._id,{location:{coordinates:location}},function(err,res){
                     callback(err);
                 });
 
@@ -1443,14 +1443,14 @@ describe(testTypeMessage, function () {
 
     function setObservationsUpdate(number,updateRecord,returnCallback){
 
-        Observations.find({},function(err,results){
+        observationUtility.find({},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": setObservationsUpdate -->" + err.message);
 
             var range = _.range(number);
 
             async.eachOf(range, function(value,index, callback) {
 
-                Observations.findByIdAndUpdate(results[index]._id,updateRecord,function(err,res){
+                observationUtility.findByIdAndUpdate(results[index]._id,updateRecord,function(err,res){
                     callback(err);
                 });
 
@@ -1669,7 +1669,7 @@ describe(testTypeMessage, function () {
             var ts=(new Date()).getTime();
             var value=500;
             var nUpdate=10;
-            var unitId=Observations.ObjectId();
+            var unitId=observationUtility.ObjectId();
             setObservationsUpdate(nUpdate*3,{value:value},function(error){
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
@@ -1725,7 +1725,7 @@ describe(testTypeMessage, function () {
             var ts=(new Date()).getTime();
             var value=500;
             var nUpdate=10;
-            var unitId=Observations.ObjectId();
+            var unitId=observationUtility.ObjectId();
             setObservationsUpdate(nUpdate*3,{value:value},function(error){
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{

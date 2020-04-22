@@ -41,7 +41,6 @@ router.post('/actions/searchSitesByLocation',parseRequestMiddleware.validateBody
 });
 
 
-
 /* Create site */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {
     sitesHandler.postCreateSite(req, res, next)

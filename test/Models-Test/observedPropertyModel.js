@@ -22,7 +22,7 @@
 
 
 var _ = require('underscore')._
-var db = require("../../DBEngineHandler/models/mongooseConnection")
+var db = require("../../connectionsHandler/mongooseConnection")
 var ObservedProperty = require('../../DBEngineHandler/drivers/observedPropertyDriver')
 var observedPropertyDocuments = require('../SetTestenv/createObservedPropertiesDocuments')
 var should = require('should/should');

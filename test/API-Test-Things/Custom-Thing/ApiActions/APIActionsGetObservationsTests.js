@@ -22,17 +22,10 @@
 
 
 var should = require('should/should');
-var Observations = require('../../../../DBEngineHandler/drivers/observationDriver');
-var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
-var observationDriver = require('../../../../DBEngineHandler/drivers/observationDriver');
-var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
 var devicesDriver = require('../../../../DBEngineHandler/drivers/deviceDriver');
-var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
 var _=require('underscore');
-
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
-var sitesDocuments = require('../../../SetTestenv/createSitesDocuments');
-
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
@@ -40,11 +33,7 @@ var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
 var async = require('async');
 var geoLatLon=require('../../../../routes/routesHandlers/handlerUtility/geoLatLon');
-
-var validUnits={first:null,second:null};
-
 var webUiToken;
-var associatedThingId, thingtypeId,observedPropertyId,associateSiteId;
 var testTypeMessage="POST /things/:id/actions/sendObservations";
 var testMessage;
 var observationId,thingId,unitId,voidThingId;
@@ -66,7 +55,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
 
     after(function (done) {
         this.timeout(0);
-        Observations.deleteMany({}, function (err, elm) {
+        observationUtility.deleteMany({}, function (err, elm) {
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function (err) {
                 if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - after - resetAuthMsStatus ---> " + err);
@@ -446,7 +435,6 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                 done();
             });
         });
-
     });
 
 
@@ -1047,7 +1035,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
     function localizeObservations(centrePoint,numberForBB,bBNumber,distance,deltaDistance,returnCallback){
 
         var start=new geoLatLon(centrePoint[0],centrePoint[1]);
-        Observations.find({},function(err,results){
+        observationUtility.find({},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": localizeObservations -->" + err.message);
             var currentLoc=[];
             var tmpLatLon;
@@ -1063,7 +1051,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
 
             async.eachOf(currentLoc, function(location,index, callback) {
 
-                Observations.findByIdAndUpdate(results[index]._id,{location:{coordinates:location}},function(err,res){
+                observationUtility.findByIdAndUpdate(results[index]._id,{location:{coordinates:location}},function(err,res){
                     callback(err);
                 });
 
@@ -1663,14 +1651,14 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
 
     function setObservationsUpdate(number,updateRecord,returnCallback){
 
-        Observations.find({},function(err,results){
+        observationUtility.find({},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": setObservationsUpdate -->" + err.message);
 
             var range = _.range(number);
 
             async.eachOf(range, function(value,index, callback) {
 
-                Observations.findByIdAndUpdate(results[index]._id,updateRecord,function(err,res){
+                observationUtility.findByIdAndUpdate(results[index]._id,updateRecord,function(err,res){
                     callback(err);
                 });
 
@@ -1931,7 +1919,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
             var ts=(new Date()).getTime();
             var value=500;
             var nUpdate=10;
-            var unitId=Observations.ObjectId();
+            var unitId=observationUtility.ObjectId();
             setObservationsUpdate(nUpdate*3,{value:value},function(error){
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{
@@ -1995,7 +1983,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
             var ts=(new Date()).getTime();
             var value=500;
             var nUpdate=10;
-            var unitId=Observations.ObjectId();
+            var unitId=observationUtility.ObjectId();
             setObservationsUpdate(nUpdate*3,{value:value},function(error){
                 if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
                 else{

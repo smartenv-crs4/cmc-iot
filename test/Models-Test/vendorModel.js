@@ -22,7 +22,7 @@
 
 
 var _ = require('underscore')._
-var db = require("../../DBEngineHandler/models/mongooseConnection")
+var db = require("../../connectionsHandler/mongooseConnection")
 var Vendor = require('../../DBEngineHandler/drivers/vendorDriver')
 var vendorDocuments = require('../SetTestenv/createVendorsDocuments')
 var should = require('should/should')

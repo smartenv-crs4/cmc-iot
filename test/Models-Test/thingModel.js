@@ -21,7 +21,7 @@
  */
 
 var _ = require('underscore')._;
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var Thing = require('../../DBEngineHandler/drivers/thingDriver');
 var thingDocuments=require('../SetTestenv/createThingsDocuments');
 var should = require('should/should');

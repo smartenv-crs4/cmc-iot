@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var Observations = require('../../../DBEngineHandler/drivers/observationDriver');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
 var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
@@ -47,7 +47,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     });
 
     after(function (done) {
-        Observations.deleteMany({}, function (err,elm) {
+        observationUtility.deleteMany({}, function (err,elm) {
             if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - deleteMany ---> " + err);
             commonFunctioTest.resetAuthMsStatus(function(err){
                 if (err) consoleLogError.printErrorLog("dataValidationTests.js - after - resetAuthMsStatus ---> " + err);
@@ -727,7 +727,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         testMessage='must test observation update [no valid observation field - field is not in the schema]';
         it(testMessage, function(done){
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["noschemaField"]="invalid";
                 testObservationDef["location"]={coordinates:[0,0]};
@@ -757,7 +757,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     describe(testMessageMessage, function(){
         testMessage='must test observation update [data validation error due to invalid field deviceId]';
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef.deviceId="deviceId";
 
@@ -786,7 +786,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     describe(testMessageMessage, function(){
         testMessage='must test observation update [data validation error due to invalid field unitId]';
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["location"]={coordinates:[0,0]};
                 testObservationDef.unitId="unitId";
@@ -816,7 +816,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     describe(testMessageMessage, function(){
         testMessage='must test observation update [data validation error, set location as text value]';
         it(testMessage, function(done){
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["location"]="deviceId";
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -846,7 +846,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
     describe(testMessageMessage, function () {
         var testMessage="must test update Observations [valid observation for mobile device]";
         it(testMessage, function (done) {
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef.location={coordinates:[0,0]};
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -875,7 +875,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         var testMessage="must test update Observations [invalid observation due to invalid location]";
         it(testMessage, function (done) {
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["location"]={coordinates:[360,90]};
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -907,7 +907,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["location"]={coordinates:[90,360]};
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -940,7 +940,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef["location"]="deviceId";
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -972,7 +972,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 testObservationDef.location="invalid";
                 var bodyParam=JSON.stringify({observation:testObservationDef});
@@ -1002,7 +1002,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
             testObservationDef.deviceId="fakeID";
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
@@ -1033,7 +1033,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
 
             testObservationDef.unitId="fakeID";
 
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
@@ -1068,7 +1068,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                 else{
 
                     testObservationDef.deviceId=deviceDriver.ObjectId();
-                    Observations.findOne({}, null, function(err, observation){
+                    observationUtility.findOne({}, null, function(err, observation){
                         should(err).be.null();
                         var bodyParam=JSON.stringify({observation:testObservationDef});
                         var requestParams={
@@ -1106,7 +1106,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                 else{
 
 
-                    Observations.findOne({}, null, function(err, observation){
+                    observationUtility.findOne({}, null, function(err, observation){
                         should(err).be.null();
                         var bodyParam=JSON.stringify({observation:testObservationDef});
                         var requestParams={
@@ -1126,8 +1126,8 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                 results.should.have.property('deviceId');
                                 results.should.have.property('timestamp');
                                 results.value.should.be.eql(testObservationDef.value);
-                                Observations.ObjectId(results.unitId).should.be.eql(Observations.ObjectId(testObservationDef.unitId));
-                                Observations.ObjectId(results.deviceId).should.be.eql(Observations.ObjectId(testObservationDef.deviceId));
+                                observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                                observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
                                 results.timestamp.should.be.eql(testObservationDef.timestamp);
                             }
                             done();
@@ -1148,7 +1148,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                 else{
 
 
-                    Observations.findOne({}, null, function(err, observation){
+                    observationUtility.findOne({}, null, function(err, observation){
                         should(err).be.null();
                         var bodyParam=JSON.stringify({observation:testObservationDef});
                         var requestParams={
@@ -1168,8 +1168,8 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                                 results.should.have.property('deviceId');
                                 results.should.have.property('timestamp');
                                 results.value.should.be.eql(testObservationDef.value);
-                                Observations.ObjectId(results.unitId).should.be.eql(Observations.ObjectId(testObservationDef.unitId));
-                                Observations.ObjectId(results.deviceId).should.be.eql(Observations.ObjectId(testObservationDef.deviceId));
+                                observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                                observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
                                 results.timestamp.should.be.eql(testObservationDef.timestamp);
                             }
                             done();
@@ -1187,7 +1187,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
 
 
             testObservationDef.unitId=Unit.ObjectId();
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={
@@ -1217,7 +1217,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
             testObservationDef.value=unitCollection.maxValue+1;
-            Observations.findOne({}, null, function(err, observation){
+            observationUtility.findOne({}, null, function(err, observation){
                 should(err).be.null();
                 var bodyParam=JSON.stringify({observation:testObservationDef});
                 var requestParams={

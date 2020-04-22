@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var DeviceType_Domain = require('../../DBEngineHandler/drivers/deviceType_domainDriver');
 var deviceType_domainDocuments = require('../SetTestenv/createDeviceTypes_DomainsDocuments');
 var should = require('should/should');

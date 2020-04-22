@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var Observation = require('../../DBEngineHandler/drivers/observationDriver');
 var observationDocuments = require('../SetTestenv/createObservationsDocuments');
 var should = require('should/should');

@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var db = require("../../DBEngineHandler/models/mongooseConnection");
+var db = require("../../connectionsHandler/mongooseConnection");
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver');
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var observedPropertyDriver = require('../../DBEngineHandler/drivers/observedPropertyDriver.js');
