@@ -51,6 +51,8 @@
       "must": true,
       "totalRetryTime": 120000,
       "maxRetryTime": 10000,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -62,6 +64,8 @@
       "must": true,
       "totalRetryTime": 120000,
       "maxRetryTime": 10000,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -123,6 +127,8 @@
       "must": true,
       "totalRetryTime": 120000,
       "maxRetryTime": 10000,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "156.148.22.111",
         "port":  6379,
@@ -134,6 +140,8 @@
       "must": true,
       "totalRetryTime": 120000,
       "maxRetryTime": 10000,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -212,9 +220,11 @@
       "observationsCacheItems":5
     },
     "redisCache":{
-      "must": true,
-      "totalRetryTime": 120000,
-      "maxRetryTime": 10000,
+      "must": false,
+      "totalRetryTime": 0,
+      "maxRetryTime": 1,
+      "logError": false,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -224,8 +234,10 @@
     },
     "redisPushNotification":{
       "must": true,
-      "totalRetryTime": 120000,
-      "maxRetryTime": 10000,
+      "totalRetryTime": 100,
+      "maxRetryTime": 2,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": false,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
