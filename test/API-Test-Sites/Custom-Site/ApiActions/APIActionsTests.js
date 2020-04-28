@@ -1229,7 +1229,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.not.have.property("distancies");
+                        results.should.not.have.property("distances");
                         results.sites.length.should.be.equal(9);
                         for(res in results.sites){
                             results.sites[res].should.not.have.property("siteId");
@@ -1261,9 +1261,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1290,9 +1290,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1318,11 +1318,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.equal(9);
-                        results.distancies.length.should.be.equal(9);
+                        results.distances.length.should.be.equal(9);
                         for(res in results.sites){
-                            results.distancies[res].should.be.lessThanOrEqual(test_distance);
+                            results.distances[res].should.be.lessThanOrEqual(test_distance);
                         }
                     }
                     done();
@@ -1365,11 +1365,11 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
-                                    resultsLs.should.have.property("distancies");
+                                    resultsLs.should.have.property("distances");
                                     resultsLs.sites.length.should.be.equal(10);
-                                    resultsLs.distancies.length.should.be.equal(10);
+                                    resultsLs.distances.length.should.be.equal(10);
                                     for(res in resultsLs.sites){
-                                        resultsLs.distancies[res].should.be.lessThanOrEqual(test_distance);
+                                        resultsLs.distances[res].should.be.lessThanOrEqual(test_distance);
                                     }
                                 }
                                 done();
@@ -1401,7 +1401,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.equal(9);
 
 
@@ -1418,7 +1418,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
-                                    resultsLs.should.not.have.property("distancies");
+                                    resultsLs.should.not.have.property("distances");
                                     resultsLs.sites.length.should.be.equal(10);
                                 }
                                 done();
@@ -1449,7 +1449,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.greaterThanOrEqual(9);
 
 
@@ -1466,9 +1466,9 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
-                                    results.should.have.property("distancies");
+                                    results.should.have.property("distances");
                                     resultsLs.sites.length.should.be.greaterThanOrEqual(10);
-                                    resultsLs.distancies.length.should.be.greaterThanOrEqual(10);
+                                    resultsLs.distances.length.should.be.greaterThanOrEqual(10);
                                 }
                                 done();
                             });
@@ -1499,7 +1499,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("sites");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.sites.length.should.be.greaterThanOrEqual(9);
 
 
@@ -1516,7 +1516,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
                                     response.statusCode.should.be.equal(200);
                                     var resultsLs = JSON.parse(body);
                                     resultsLs.should.have.property("sites");
-                                    resultsLs.should.not.have.property("distancies");
+                                    resultsLs.should.not.have.property("distances");
                                     resultsLs.sites.length.should.be.greaterThanOrEqual(10);
                                     for(res in resultsLs.sites){
                                         resultsLs.sites[res].should.not.have.property("siteId");

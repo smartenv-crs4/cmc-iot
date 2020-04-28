@@ -1342,7 +1342,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.not.have.property("distancies");
+                        results.should.not.have.property("distances");
                         results.observations.length.should.be.equal(9);
                         results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                         results.should.have.property('_metadata');
@@ -1395,9 +1395,9 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                         results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                         results.should.have.property('_metadata');
                         results._metadata.should.have.property('skip');
@@ -1450,12 +1450,12 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.equal(5);
                         results.observations.length.should.be.equal(5);
                         results.observations.length.should.be.equal(5);
                         results.observations.length.should.be.equal(5);
-                        results.distancies.length.should.be.equal(5);
+                        results.distances.length.should.be.equal(5);
                         results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                         results.should.have.property('_metadata');
                         results._metadata.should.have.property('skip');
@@ -1504,9 +1504,9 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                         results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                         results.should.have.property('_metadata');
                         results._metadata.should.have.property('skip');
@@ -1553,9 +1553,9 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.equal(9);
-                        results.distancies.length.should.be.equal(9);
+                        results.distances.length.should.be.equal(9);
                         results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                         results.should.have.property('_metadata');
                         results._metadata.should.have.property('skip');
@@ -1565,7 +1565,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
                         for(res in results.observations){
-                            results.distancies[res].should.be.lessThanOrEqual(test_distance);
+                            results.distances[res].should.be.lessThanOrEqual(test_distance);
                         }
                     }
                     done();
@@ -1952,9 +1952,9 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                                 response.statusCode.should.be.equal(200);
                                                 var results = JSON.parse(body);
                                                 results.should.have.property("observations");
-                                                results.should.have.property("distancies");
+                                                results.should.have.property("distances");
                                                 results.observations.length.should.be.equal(9);
-                                                results.distancies.length.should.be.equal(9);
+                                                results.distances.length.should.be.equal(9);
                                                 results.observations[0].should.have.properties("_id","timestamp","value","location","deviceId","unitId");
                                                 results.should.have.property('_metadata');
                                                 results._metadata.should.have.property('skip');
@@ -1964,7 +1964,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                                 results._metadata.should.have.property('totalCount');
                                                 results._metadata.totalCount.should.be.equal(9);
                                                 for(res in results.observations){
-                                                    results.distancies[res].should.be.lessThanOrEqual(test_distance);
+                                                    results.distances[res].should.be.lessThanOrEqual(test_distance);
                                                 }
                                             }
                                             done();

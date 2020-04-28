@@ -1299,7 +1299,7 @@ describe(testTypeMessage, function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.not.have.property("distancies");
+                        results.should.not.have.property("distances");
                         results.observations.length.should.be.equal(9);
                         for(res in results.observations){
                             results.observations[res].should.not.have.property("observationId");
@@ -1344,9 +1344,9 @@ describe(testTypeMessage, function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1386,9 +1386,9 @@ describe(testTypeMessage, function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.greaterThanOrEqual(9);
-                        results.distancies.length.should.be.greaterThanOrEqual(9);
+                        results.distances.length.should.be.greaterThanOrEqual(9);
                     }
                     done();
                 });
@@ -1427,11 +1427,11 @@ describe(testTypeMessage, function () {
                         response.statusCode.should.be.equal(200);
                         var results = JSON.parse(body);
                         results.should.have.property("observations");
-                        results.should.have.property("distancies");
+                        results.should.have.property("distances");
                         results.observations.length.should.be.equal(9);
-                        results.distancies.length.should.be.equal(9);
+                        results.distances.length.should.be.equal(9);
                         for(res in results.observations){
-                            results.distancies[res].should.be.lessThanOrEqual(test_distance);
+                            results.distances[res].should.be.lessThanOrEqual(test_distance);
                         }
                     }
                     done();
@@ -1768,11 +1768,11 @@ describe(testTypeMessage, function () {
                                                 response.statusCode.should.be.equal(200);
                                                 var results = JSON.parse(body);
                                                 results.should.have.property("observations");
-                                                results.should.have.property("distancies");
+                                                results.should.have.property("distances");
                                                 results.observations.length.should.be.equal(9);
-                                                results.distancies.length.should.be.equal(9);
+                                                results.distances.length.should.be.equal(9);
                                                 for(res in results.observations){
-                                                    results.distancies[res].should.be.lessThanOrEqual(test_distance);
+                                                    results.distances[res].should.be.lessThanOrEqual(test_distance);
                                                 }
                                             }
                                             done();
