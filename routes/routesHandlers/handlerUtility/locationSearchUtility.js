@@ -80,7 +80,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
     var filterByRadiusDistance=(mode=="2") ? distance : null;
     var  currentDistanceKey;
     var foundedItems=[];
-    var foundedItemsDistancies=[];
+    var foundedItemsdistances=[];
 
     if(filterByRadiusDistance || distanceOptions.returnDistance){
         distanceCalculated=calculateDistance(items,centralPoint,filterByRadiusDistance);
@@ -90,7 +90,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
                     return (distanceCalculated[items[r][val]]);
             });
             if(currentDistanceKey){
-                foundedItemsDistancies.push(distanceCalculated[items[r][currentDistanceKey]]);
+                foundedItemsdistances.push(distanceCalculated[items[r][currentDistanceKey]]);
                 foundedItems.push(items[r]);
             }
         }
@@ -108,7 +108,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
     var resultsFounded={};
     resultsFounded[label +"s"]=foundedItems;
     if (distanceOptions.returnDistance) {
-        resultsFounded["distancies"]=foundedItemsDistancies;
+        resultsFounded["distances"]=foundedItemsdistances;
     }
 
     callbackFunction(null,resultsFounded);
@@ -129,7 +129,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
     var filterByRadiusDistance=(mode=="2") ? distance : null;
     var  currentDistanceKey;
     var foundedItems=[];
-    var foundedItemsDistancies=[];
+    var foundedItemsdistances=[];
 
     if(filterByRadiusDistance || distanceOptions.returnDistance){
         distanceCalculated=calculateDistance(items,centralPoint,filterByRadiusDistance);
@@ -139,7 +139,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
                     return (distanceCalculated[items[r][val]]);
             });
             if(currentDistanceKey){
-                foundedItemsDistancies.push(distanceCalculated[items[r][currentDistanceKey]]);
+                foundedItemsdistances.push(distanceCalculated[items[r][currentDistanceKey]]);
                 foundedItems.push(items[r]._id);
             }
         }
@@ -152,7 +152,7 @@ module.exports.filterByOptions = function (items,distanceOptions,centralPoint,di
     var resultsFounded={};
     resultsFounded[label +"s"]=foundedItems;
     if (distanceOptions.returnDistance) {
-        resultsFounded["distancies"]=foundedItemsDistancies;
+        resultsFounded["distances"]=foundedItemsdistances;
     }
 
     callbackFunction(null,resultsFounded);

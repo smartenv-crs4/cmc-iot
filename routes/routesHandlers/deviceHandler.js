@@ -586,8 +586,8 @@ module.exports.getObservations = function (req, res, next) {
            if(foundedObservations){
                var totalCount=foundedObservations.observations.length;
                foundedObservations.observations=foundedObservations.observations.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
-               if(foundedObservations.distancies){
-                   foundedObservations.distancies=foundedObservations.distancies.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
+               if(foundedObservations.distances){
+                   foundedObservations.distances=foundedObservations.distances.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
                }
                foundedObservations['_metadata']=req.dbPagination;
                foundedObservations._metadata['totalCount']=totalCount;
