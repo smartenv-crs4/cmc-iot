@@ -39,7 +39,7 @@ var options = {
 
 exports.connect = function connect(callback) {
 
-    mongoose.connect(dbUrl, {useNewUrlParser: true}, function (err, res) {
+    mongoose.connect(dbUrl, {useNewUrlParser: true , useFindAndModify: false }, function (err, res) {
 
         if (err) {
             console.log('Unable to connect to database ' + dbUrl);
