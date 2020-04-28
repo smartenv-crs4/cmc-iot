@@ -1307,9 +1307,8 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                     results.successfulAssociatedDevices.length.should.be.equal(2);
                     results.successfulAssociatedDevices[0].should.have.properties("_id","name","description");
                     results.successfulAssociatedDevices[1].should.have.properties("_id","name","description");
-                    results.successfulAssociatedDevices[0].name.should.be.equal(devList[0].name);
-                    results.successfulAssociatedDevices[1].name.should.be.equal(devList[1].name);
-
+                    results.successfulAssociatedDevices[0].name.should.be.equalOneOf(devList[0].name, devList[1].name);
+                    results.successfulAssociatedDevices[1].name.should.be.equalOneOf(devList[0].name,devList[1].name);
                 }
                 done();
             });

@@ -21,6 +21,8 @@
  */
 
 
+
+
 //Model
 require('./Models-Test/apiActionModel');
 require('./Models-Test/deviceModel');
@@ -36,6 +38,10 @@ require('./Models-Test/observations');
 
 // Utility
 require('./handlerUtility-Test/observationsUtility-Test');
+//TODO: Remove   uncomment redis test
+//require('./handlerUtility-Test/redisHandlerUtility-Test');
+
+
 
 
 //Middlewares
@@ -54,4 +60,5 @@ require('./API-Test-ObservedProperties/observedProperties-api');
 require('./API-Test-ApiActions/apiActions-api');
 require('./API-Test-Domains/domains-api');
 require('./API-Test-Observations/observations-api');
+
 
