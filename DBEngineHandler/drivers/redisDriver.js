@@ -28,7 +28,8 @@ var log=require('../../routes/utility/logHandlerUtility');
 
 var redisClient;
 var redisStatus=false;
-var observationsCacheItems=conf.cmcIoTOptions.observationsCacheItems;
+var redisOptions=null;
+var errorNotAvailable=new Error("Redis cache Service is not Available");
 
 
 //
@@ -64,6 +65,7 @@ module.exports.connect = function (connectionsOptions,callback) {
         var atemptSteeps=10;
         var total_retry_time= connectionsOptions.totalRetryTime;
         var max_retry_time=connectionsOptions.maxRetryTime;
+        redisOptions=connectionsOptions;
 
         options['url']="redis://:" +
                         connectionsOptions.connection.password +
@@ -100,39 +102,56 @@ module.exports.connect = function (connectionsOptions,callback) {
             redisClient = redis.createClient(options);
 
             redisClient.on("ready", function (error) {
+                redisStatus=true;
                 log.printLog('Connected to redis ' + connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
                 callback(null, 'Connected to redis ' +  connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
                 callback=function(){}; // close callback
             });
 
             redisClient.on("error", function (error) {
-                log.printLog('Redis connection Error ' +error);
-                callback(error);
-                callback=function(){}; // close callback
+                if(!(error instanceof redis.ReplyError)) {
+                    redisStatus=false;
+                    callback(error);
+                    callback = function () {}; // close callback
+                }
+                if(connectionsOptions.logError)
+                    log.printLog('Redis connection Error ' + error);
             });
         }catch (ex) {
            throw (ex);
         }
-
 };
 
-
+function redisNotAvalilable(callback){
+    if(callback) {
+        callback(errorNotAvailable);
+    }
+    if(redisOptions && redisOptions.logCommandsFailWhenRedisIsDown)
+        log.printLog("Redis cache Service is not Available");
+}
 
 module.exports.disconnect = function (callback) {
-    if(redisClient)
+    if(redisStatus) {
+        redisStatus=false;
         redisClient.quit(callback);
+    }
+    else{
+       redisNotAvalilable(callback);
+    }
 };
 
 
 module.exports.flushall = function (callback) {
-    if(redisClient)
+    if(redisStatus)
         redisClient.flushall(callback);
+    else{
+        redisNotAvalilable(callback);
+    }
 };
 
 
 module.exports.on = function (event,callback) {
     redisClient.on(event, callback);
-
 };
 
 
@@ -141,6 +160,69 @@ module.exports.getRedisStatus = function () {
     return (redisStatus);
 };
 
+module.exports.pushValuesToKey = function (key,values, callback) {
+    if(redisStatus)
+        redisClient.lpush(key,values,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+module.exports.getValuesFromKey = function (key,start,stop, callback) {
+    if(redisStatus)
+        redisClient.lrange(key,start,stop,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+module.exports.deleteKeys = function (keys,callback) {
+    if(redisStatus)
+        redisClient.del(keys,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+module.exports.trimKey = function (key,start,stop,callback) {
+    if(redisStatus)
+        redisClient.ltrim(key,start,stop,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+module.exports.getAllKey = function (key,callback) {
+    if(redisStatus)
+        redisClient.keys(key,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+module.exports.get = function (key,callback) {
+    if(redisStatus)
+        redisClient.get(key,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+
+module.exports.llen = function (key,callback) {
+    if(redisStatus)
+        redisClient.llen(key,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+/*
 module.exports.addObservations = function (deviceId,observations,callback) {
     observations=observations.slice(-observationsCacheItems);
 
@@ -188,6 +270,6 @@ module.exports.getObservations = function (deviceId,options,callbackFunction) {
     });
 };
 
-
+ */
 
 

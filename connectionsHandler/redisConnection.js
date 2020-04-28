@@ -20,8 +20,6 @@
  ############################################################################
  */
 
-
-var redis = require('redis');
 var conf = require('propertiesmanager').conf;
 var redisClient=require("../DBEngineHandler/drivers/redisDriver");
 
@@ -30,7 +28,6 @@ exports.connect = function connect(callback) {
         if(callback) callback(err,connectionLog);
     });
 };
-
 
 exports.disconnect = function disconnect(callback) {
     redisClient.disconnect(callback);

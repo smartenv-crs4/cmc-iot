@@ -64,9 +64,7 @@ module.exports.findOne = function(conditions,projection,options,callback){
 
 /* findOne DeviceType_Domain. */
 module.exports.findOneAndRemove = function(conditions,options,callback){
-    deviceType_domains.findOneAndRemove(conditions,options,function(err,results){
-        callback(err,results);
-    });
+    deviceType_domains.findOneAndRemove(conditions,options,callback);
 };
 
 

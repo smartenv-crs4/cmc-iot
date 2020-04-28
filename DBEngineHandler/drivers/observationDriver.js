@@ -21,9 +21,10 @@
  */
 
 
-var observations = require('../models/observations').Observation
+var observations = require('../models/observations').Observation;
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
+var async=require('async');
 
 
 /* GET Observations list */
@@ -41,24 +42,44 @@ module.exports.create = function(observation, callback) {
     })
 }
 
-/* Create Observations. */
-module.exports.insertMany = function(observationsArray, callback) {
-    try {
-        observations.insertMany(observationsArray,{ordered:false},function (err, createdObservation) {
-            callback(err, createdObservation)
-        });
-    }catch (exception) {
-        callback(exception,null);
-    }
-};
+// /* Create Observations. */
+// module.exports.insertMany = function(observationsArray, callback) {
+//     try {
+//         observations.insertMany(observationsArray,{ordered:false},function (err, createdObservation) {
+//             callback(err, createdObservation)
+//         });
+//     }catch (exception) {
+//         callback(exception,null);
+//     }
+// };
 
 
 /* delete Observations. */
 module.exports.deleteMany = function(conditions, options, callback) {
-    observations.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
-}
+
+    if(!callback){
+        callback=options;
+        options=null;
+    }
+    observations.find(conditions,"_id",options,function(err,obs){
+        if(err){
+            callback(err);
+        }else{
+            var deleted={};
+            async.each(obs, function(observation, clb) {
+                observations.findByIdAndRemove(observation._id,function(err,deletedObs){
+                    if(deletedObs){
+                        deleted[deletedObs.deviceId]=deleted[deletedObs.deviceId] || [];
+                        deleted[deletedObs.deviceId].push(deletedObs);
+                    }
+                    clb(err);
+                })
+            }, function(err) {
+                callback(err,deleted);
+            });
+        }
+    });
+};
 
 
 /* findOne Observation */

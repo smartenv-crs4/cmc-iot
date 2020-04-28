@@ -72,7 +72,7 @@ module.exports.findById = function(id, projection, options, callback) {
 
 /* findOne Site and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    sites.findByIdAndUpdate(id, newFields, {new: true,runValidators: true,useFindAndModify:false}, callback)
+    sites.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
 }
 
 
