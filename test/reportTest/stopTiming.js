@@ -21,49 +21,36 @@
  */
 
 
-
-// start Timing
-require('./reportTest/startTiming');
-
-//Model
-require('./Models-Test/apiActionModel');
-require('./Models-Test/deviceModel');
-require('./Models-Test/deviceType_DomainModel');
-require('./Models-Test/deviceTypeModel');
-require('./Models-Test/domainModel');
-require('./Models-Test/observedPropertyModel');
-require('./Models-Test/siteModel');
-require('./Models-Test/thingModel');
-require('./Models-Test/unitModel');
-require('./Models-Test/vendorModel');
-require('./Models-Test/observations');
-
-// Utility
-require('./handlerUtility-Test/observationsUtility-Test');
-//TODO: Remove   uncomment redis test
-//require('./handlerUtility-Test/redisHandlerUtility-Test');
+var timer=require('../Utility/TestTime');
 
 
+describe('Start Timer', function () {
+
+    before(function (done) {
+      console.log("!!!!!!!!!!!!!!!TIMER STOP!!!!!!!!!!!!!!!!!!");
+      done();
+    });
+
+    after(function (done) {
+       done();
+    });
 
 
-//Middlewares
-require('./Middlewares-Test/decodeTokenMiddleware');
-require('./Middlewares-Test/paginationFilter');
-require('./Middlewares-Test/searchFilter');
-
-//API
-require('./API-Test-Devices/devices-api');
-require('./API-Test-Things/things-api');
-require('./API-Test-DeviceTypes/deviceTypes-api');
-require('./API-Test-Vendors/vendors-api');
-require('./API-Test-Units/units-api');
-require('./API-Test-Sites/sites-api');
-require('./API-Test-ObservedProperties/observedProperties-api');
-require('./API-Test-ApiActions/apiActions-api');
-require('./API-Test-Domains/domains-api');
-require('./API-Test-Observations/observations-api');
+    beforeEach(function (done) {
+        done();
+    });
 
 
+    afterEach(function (done) {
+       done();
+    });
 
-// end timing and Report
-require('./reportTest/stopTiming');
+    describe('Stop', function () {
+        it('must stop Timer', function (done) {
+            timer.stopTime("TotalTime");
+            timer.printReport();
+            done();
+        });
+    });
+
+});
