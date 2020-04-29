@@ -95,16 +95,16 @@ var async = require("async")
  *                          "_id": "543fdd60579e1281b8f6da92",
  *                          "name": "My deviceType",
  *                          "description": "My deviceType description",
- *                          "observedPropertyId": "543fdd60579e1281b8f6da93",
+ *                          "observedPropertyId": "543fdd60579e1281b8f6da93"
  *                      },
  *                      {
  *                          "_id": "543fdd60579e1281sdaf6da92",
  *                          "name": "My other deviceType",
  *                          "description": "My other deviceType description",
  *                          "observedPropertyId": "543fdd60579e1281b8f6da94"
- *                     },
- *                    ...
- *                 ],
+ *                      },
+ *                      ...
+ *                     ],
  *       "_metadata":{
  *                   "skip":10,
  *                   "limit":50,
@@ -116,9 +116,10 @@ var async = require("async")
  * @apiDefine GetDeviceTypeResourceExample
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *     {
- *        "id": "543fdd60579e1281b8f6da92",
+ *        "_id": "543fdd60579e1281b8f6da92",
  *        "name": "Crs4DeviceType",
- *        "description": "Crs4 sensor deviceType"
+ *        "description": "Crs4 sensor deviceType",
+ *        "observedPropertyId": "543fdd60579e1281b8f6da94"
  *     }
  */
 /**
@@ -314,7 +315,7 @@ module.exports.getDomains = function(req, res, next) {
 
 
 /**
- * @api {post} /domains Create a new DeviceType
+ * @api {post} /deviceTypes Create a new DeviceType
  * @apiVersion 1.0.0
  * @apiName PostDeviceType
  * @apiGroup DeviceTypes
@@ -469,7 +470,7 @@ module.exports.updateDeviceType = function(req, res, next) {
  * @apiParam (URL Parameter) {String}  id The DeviceType identifier
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 DELETE /devices/543fdd60579e1281b8f6da92
+ * HTTP/1.1 DELETE /deviceTypes/543fdd60579e1281b8f6da92
  *
  * @apiUse GetDeviceTypeResource
  * @apiUse GetDeviceTypeResourceExample
