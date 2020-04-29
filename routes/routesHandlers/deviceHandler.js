@@ -176,7 +176,7 @@ var _=require('underscore');
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /devices
- *  Body:{ "name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4",}
+ *  Body: {"name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4"}
  *
  * @apiUse PostDeviceResource
  * @apiUse PostDeviceResourceExample
@@ -498,12 +498,86 @@ module.exports.deleteDevice = function (req, res, next) {
 
 
 
-/* Device Observation Search Filters*/
-// timestamp: {From:, To;}
-// value: {min:, max:}
-// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
-// pagination: {skip: , limit: }
-//todo set documentation
+/**
+ * @api {post} /devices/actions/getObservations Get Observations
+ * @apiVersion 1.0.0
+ * @apiName DeviceGetObservations
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of filtered Observations from a Device
+ *
+ * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ * @apiUse LocationCentreBodyParams
+ * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /devices/actions/getObservations
+ *  Body: {searchFilters: [
+ *                         {timestamp: {from: 1590364800, to: 1590364801},
+ *                          value: {0, 100},
+ *                          location: {centre:{coordinates: [0,0]},
+ *                                    distance: 1,
+ *                                    distanceOptions: {mode: "bbox"}
+ *                                    }
+ *                         }
+ *                        ]
+ *        }
+ *
+ * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
+ * @apiSuccess {String}     observations._id                    Observation id
+ * @apiSuccess {Number}     observations.timestamp              Observation timestamp
+ * @apiSuccess {Number}     observations.value                  Observation value
+ * @apiSuccess {Object}     observations.location               Observation location parent object
+ * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     observations.deviceId               Observation Device identifier
+ * @apiSuccess {String}     observations.unitId                 Observation Unit identifier
+ * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "observations": [
+ *                        {
+ *                         "_id": "1",
+ *                         "timestamp": 1590364800,
+ *                         "value": 1
+ *                         "location": {"coordinates": [83.4,78.3]},
+ *                         "deviceId": "543fdd60579e1281b8f6ce32",
+ *                         "unitId": "meter"
+ *                        },
+ *                        ...
+ *                       ],
+ *       "distancies": [
+ *                      "25",
+ *                      "33",
+ *                      ...
+ *                     ],
+ *       "_metadata": {
+ *                     "skip":10,
+ *                     "limit":50,
+ *                     "totalCount":100
+ *                    }
+ *      }
+ *
+ * @apiUse Metadata
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getObservations = function (req, res, next) {
     var deviceId=req.params.id;
     if(req.body.searchFilters && !_.isEmpty(req.body.searchFilters)) {
@@ -533,7 +607,56 @@ module.exports.getObservations = function (req, res, next) {
 
 
 
-//todo set documentation
+/**
+ * @api {post} /devices/actions/sendObservations Add Observations
+ * @apiVersion 1.0.0
+ * @apiName DeviceSendObservations
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Add one or more Observations associated with a Device. An Observation must be valid in compliance with its Unit-Value constraints
+ *
+ * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
+ * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /devices/actions/sendObservations
+ *  Body: {"observations": [
+ *                          {"unitId": "543fdd60579e1281b8f6da92",
+ *                           "value": 33,
+ *                          }
+ *                         ]
+ *        }
+ *
+ * @apiSuccess {JSONArray}  .                      JSONArray of Observation objects
+ * @apiSuccess {String}     _id                    Created Observation id
+ * @apiSuccess {Number}     timestamp              Created Observation timestamp
+ * @apiSuccess {Number}     value                  Created Observation value
+ * @apiSuccess {Object}     location               Created Observation location parent object
+ * @apiSuccess {Point}      location.coordinates   Created Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     deviceId               Created Observation Device identifier
+ * @apiSuccess {String}     unitId                 Created Observation Unit identifier
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *          [
+ *              {
+ *                  "_id": "1",
+ *                  "timestamp": 1590364800,
+ *                  "value": 1
+ *                  "location": {"coordinates": [83.4,78.3]},
+ *                  "deviceId": "123",
+ *                  "unitId": "meter"
+ *              },
+ *              ...
+ *          ]
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.createObservations = function (req, res, next) {
     var id = req.params.id;
     observationUtility.validateAndCreateObservations(id,req.body.observations,function(err, observations){

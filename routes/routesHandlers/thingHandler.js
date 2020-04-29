@@ -333,7 +333,7 @@ function enableDisableDeviceId(deviceId,thingId,action,callback){
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /things
- *  Body:{ "name": "customThing" , "description":"Weather station developed by crs4", "ownerId":"5d4044fc346a8f0277643ac42", "vendorId":"5d4044fc346a8f0277643bf2", "siteId":"5d4044fc346a8f0277643bf4",}
+ *  Body:{"name": "customThing" , "description":"Weather station developed by crs4", "ownerId":"5d4044fc346a8f0277643ac42", "vendorId":"5d4044fc346a8f0277643bf2", "siteId":"5d4044fc346a8f0277643bf4"}
  *
  * @apiUse PostThingResource
  * @apiUse PostThingResourceExample
@@ -738,26 +738,26 @@ module.exports.deleteThing = function (req, res, next) {
  * @apiDescription Add one or more Observations associated with a Thing. An Observation must be valid in compliance with its Unit-Value constraints
  *
  * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
- * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Unit id
+ * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
  * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /things/actions/sendObservations
- * Body: { observations: [
- *                        {unitId: "543fdd60579e1281b8f6da92",
- *                         value: 33,
- *                        }
- *                       ]
- *       }
+ *  Body: {"observations": [
+ *                          {"unitId": "543fdd60579e1281b8f6da92",
+ *                           "value": 33,
+ *                          }
+ *                         ]
+ *        }
  *
  * @apiSuccess {Object[]}   ObjectId                        Array data structure of Observation objects. The key is the Device id, the value is the Observation object
- * @apiSuccess {String}     ObjectId._id                    Observation id
- * @apiSuccess {Number}     ObjectId.timestamp              Observation timestamp
- * @apiSuccess {Number}     ObjectId.value                  Observation value
- * @apiSuccess {Object}     ObjectId.location               Observation location parent object
- * @apiSuccess {Point}      ObjectId.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiSuccess {String}     ObjectId.deviceId               Observation Device id
- * @apiSuccess {String}     ObjectId.unitId                 Observation Unit id
+ * @apiSuccess {String}     ObjectId._id                    Created Observation id
+ * @apiSuccess {Number}     ObjectId.timestamp              Created Observation timestamp
+ * @apiSuccess {Number}     ObjectId.value                  Created Observation value
+ * @apiSuccess {Object}     ObjectId.location               Created Observation location parent object
+ * @apiSuccess {Point}      ObjectId.location.coordinates   Created Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     ObjectId.deviceId               Created Observation Device identifier
+ * @apiSuccess {String}     ObjectId.unitId                 Created Observation Unit identifier
  *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *      {
@@ -804,16 +804,16 @@ module.exports.createObservations = function (req, res, next) {
  * @apiParam (Body Parameter) {Object[]}   devices         Array list of Device objects
  * @apiParam (Body Parameter) {String}     name            Added Device name
  * @apiParam (Body Parameter) {String}     description     Added Device description
- * @apiParam (Body Parameter) {String}     deviceTypeId    Added Device type ID
+ * @apiParam (Body Parameter) {String}     deviceTypeId    Added Device Foreign key to deviceType (See `/deviceTypes` API reference)
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/enable
- * Body: {
- *        [
- *         {name:"MyDev", description: "Home temp sensor", typeId:"543fdd60579e1281b8f6da92"},
- *         {name:"MyOtherDev", description: "Home pressure sensor", typeId:"543fdd60579e1281b8f6ba94"}
- *        ]
- *       }
+ *  Body: {
+ *         [
+ *          {name:"MyDev", description: "Home temp sensor", typeId:"543fdd60579e1281b8f6da92"},
+ *          {name:"MyOtherDev", description: "Home pressure sensor", typeId:"543fdd60579e1281b8f6ba94"}
+ *         ]
+ *        }
  *
  * @apiSuccess {Object[]}   results                                     Array data structure of add operation results
  * @apiSuccess {Number}     results.total                               Total number of added Devices
@@ -938,16 +938,16 @@ module.exports.addDevices = function (req, res, next) {
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /things/actions/getObservations
- * Body: {searchFilters: [
- *                        {timestamp: {from: 1590364800, to: 1590364801},
- *                         value: {0, 100},
- *                         location: {centre:{coordinates: [0,0]},
- *                                   distance: 1,
- *                                   distanceOptions: {mode: "bbox"}
- *                                   }
- *                        }
- *                       ]
- *       }
+ *  Body: {searchFilters: [
+ *                         {timestamp: {from: 1590364800, to: 1590364801},
+ *                          value: {0, 100},
+ *                          location: {centre:{coordinates: [0,0]},
+ *                                    distance: 1,
+ *                                    distanceOptions: {mode: "bbox"}
+ *                                    }
+ *                         }
+ *                        ]
+ *        }
  *
  * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
  * @apiSuccess {String}     observations._id                    Observation id
@@ -955,9 +955,10 @@ module.exports.addDevices = function (req, res, next) {
  * @apiSuccess {Number}     observations.value                  Observation value
  * @apiSuccess {Object}     observations.location               Observation location parent object
  * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiSuccess {String}     observations.deviceId               Observation Device id
- * @apiSuccess {String}     observations.unitId                 Observation Unit id
+ * @apiSuccess {String}     observations.deviceId               Observation Device identifier
+ * @apiSuccess {String}     observations.unitId                 Observation Unit identifier
  * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *      {
  *       "observations": [
