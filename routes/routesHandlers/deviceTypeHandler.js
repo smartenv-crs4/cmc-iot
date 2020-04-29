@@ -149,9 +149,9 @@ var async = require("async")
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /deviceTypes/543fdd60579e1281b8f6da92/actions/addDomains
- * Body:{
+ *  Body: {
  *          "domains": ["543fdd60579e1281b8f6ca66", "543fdd60579e1281b8f3dc69"]
- *      }
+ *        }
  *
  * @apiUse DeviceTypeDomainBodyParams
  * @apiUse GetDeviceTypeDomainResourceExample
@@ -194,9 +194,9 @@ module.exports.addDomains = function(req, res, next) {
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /deviceTypes/543fdd60579e1281b8f6da92/actions/removeDomains
- * Body:{
+ *  Body: {
  *          "domains": ["543fdd60579e1281b8f6ca66", "543fdd60579e1281b8f3dc69"]
- *      }
+ *        }
  *
  * @apiUse DeviceTypeDomainBodyParams
  * @apiUse GetDeviceTypeDomainResourceExample
@@ -239,9 +239,9 @@ module.exports.removeDomains = function(req, res, next) {
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /deviceTypes/543fdd60579e1281b8f6da92/actions/setDomains
- * Body:{
+ *  Body: {
  *          "domains": ["543fdd60579e1281b8f6ca66", "543fdd60579e1281b8f3dc69"]
- *      }
+ *        }
  *
  * @apiUse DeviceTypeDomainBodyParams
  * @apiUse GetDeviceTypeDomainResourceExample
@@ -326,10 +326,10 @@ module.exports.getDomains = function(req, res, next) {
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /deviceTypes
- * Body:{
+ *  Body: {
  *          "deviceType": { "name": "customDeviceType" , "description": "CRS4 sensor deviceType"},
  *          "domains": ["543fdd60579e1281b8f6ca66", "543fdd60579e1281b8f3dc69"]
- *      }
+ *        }
  *
  * @apiUse PostDeviceTypeResource
  * @apiUse PostDeviceTypeResourceExample
@@ -437,9 +437,9 @@ module.exports.getDeviceTypeById = function(req, res, next) {
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 PUT /deviceTypes/543fdd60579e1281b8f6da92
- * Body:{
+ *  Body: {
  *          "deviceType": {"name": "updatedCustomName" , "description": "a more detailed description"}
- *      }
+ *        }
  *
  * @apiUse PutDeviceTypeResource
  * @apiUse GetDeviceTypeResourceExample
@@ -457,7 +457,28 @@ module.exports.updateDeviceType = function(req, res, next) {
 }
 
 
-/* Delete deviceTypes */
+/**
+ * @api {delete} /devices/:id Delete DeviceType
+ * @apiVersion 1.0.0
+ * @apiName DeleteDeviceTypeById
+ * @apiGroup DeviceTypes
+ * @apiPermission Access Token
+ *
+ * @apiDescription Deletes a given DeviceType by its identifier and returns the deleted resource. <br>
+ *
+ * @apiParam (URL Parameter) {String}  id The DeviceType identifier
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 DELETE /devices/543fdd60579e1281b8f6da92
+ *
+ * @apiUse GetDeviceTypeResource
+ * @apiUse GetDeviceTypeResourceExample
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.deleteDeviceType = function(req, res, next) {
     var id = req.params.id
 
