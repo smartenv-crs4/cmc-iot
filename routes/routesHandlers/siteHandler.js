@@ -36,8 +36,7 @@ var async=require("async");
  * @apiParam (Body Parameter) {String}   site.name                      Site name
  * @apiParam (Body Parameter) {String}   site.description               Site description
  * @apiParam (Body Parameter) {Object}   site.location                  Object for geographical coordinates
- * @apiParam (Body Parameter) {String}   site.location.lon              Site longitude
- * @apiParam (Body Parameter) {String}   site.location.lat              Site latitude
+ * @apiParam (Body Parameter) {Point}    site.location.coordinates      Site coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
  * @apiParam (Body Parameter) {ObjectId} [site.locatedInSiteId]         Site Foreign Key to "parent" site (where this site is located) (e.g. a room inside a building)
  */
 /**
@@ -48,22 +47,11 @@ var async=require("async");
  * @apiParam (Query Parameter) {String[]}   [locatedInSiteId]           Filter by the "parent" site (where this site is located)
  */
 /**
- * @apiDefine LocationBodyParams
- * @apiParam (Body Parameter)   {Object}        location                        Geographical coordinates parent object
- * @apiParam (Body Parameter)   {Number}        location.lat                    Latitude coordinate
- * @apiParam (Body Parameter)   {Number}        location.lon                    Longitude coordinate
- * @apiParam (Body Parameter)   {Number}        distance                        Radius of the search area (mode "radius"), or side of the square bounding box (mode "bbox")
- * @apiParam (Body Parameter)   {Object}        distanceOptions                 Distance search options parent object
- * @apiParam (Body Parameter)   {String}        distanceOptions.mode            Distance search mode; accepted values are "radius" or "bbox". Default is "radius"
- * @apiParam (Body Parameter)   {Boolean}       distanceOptions.returnDistance  Option for returning an array of distances of each returned site from the location
- */
-/**
  * @apiDefine PostSiteResource
  * @apiSuccess (201 - CREATED) {String} name                    Created site name
  * @apiSuccess (201 - CREATED) {String} description             Created site description
  * @apiSuccess (201 - CREATED) {Object} location                Created site location object
- * @apiSuccess (201 - CREATED) {String} location.lon            Created site longitude
- * @apiSuccess (201 - CREATED) {String} location.lat            Created site latitude
+ * @apiSuccess (201 - CREATED) {Point}  location.coordinates    Created site coordinates
  * @apiSuccess (201 - CREATED) {String} [locatedInSiteId]       Created site identifier of "parent" location (where this site is located)
  */
 /**
@@ -71,8 +59,7 @@ var async=require("async");
  * @apiSuccess {String} name                    Updated site name
  * @apiSuccess {String} description             Updated site description
  * @apiSuccess {Object} location                Updated site location object
- * @apiSuccess {String} location.lon            Updated site longitude
- * @apiSuccess {String} location.lat            Updated site latitude
+ * @apiSuccess {Point} location.coordinates     Updated site coordinates
  * @apiSuccess {String} [locatedInSiteId]       Updated site identifier of "parent" location (where this site is located)
  */
 /**
@@ -81,9 +68,8 @@ var async=require("async");
  * @apiSuccess {String} site._id                    Site identifier
  * @apiSuccess {String} site.name                   Site name
  * @apiSuccess {String} site.description            Site description
- * @apiSuccess {Object} site.location               Object for location
- * @apiSuccess {String} site.location.lon           Location longitude
- * @apiSuccess {String} site.location.lat           Location latitude
+ * @apiSuccess {Object} site.location               Object for site location
+ * @apiSuccess {Point} site.location.coordinates    Location coordinates
  * @apiSuccess {String} [site.locatedInSiteId]      Identifier of "parent" location (where this site is located)
  */
 /**
@@ -91,9 +77,8 @@ var async=require("async");
  * @apiSuccess {String} _id                     Site identifier
  * @apiSuccess {String} name                    Site name
  * @apiSuccess {String} description             Site description
- * @apiSuccess {Object} location                Object for location
- * @apiSuccess {String} location.lon            Location longitude
- * @apiSuccess {String} location.lat            Location longitude
+ * @apiSuccess {Object} location                Object for site location
+ * @apiSuccess {Point}  location.coordinates    Location coordinates
  * @apiSuccess {String} [locatedInSiteId]       Identifier of "parent" location (where this site is located)
  */
 /**
@@ -103,7 +88,7 @@ var async=require("async");
  *      {
  *        "name": "My new site",
  *        "description": "This is my workplace",
- *        "location": {"lon": 8.9291082, "lat": 38.9979322},
+ *        "location": "coordinates": [8.9291082,38.9979322],
  *        "locatedInSiteId": "5d4044fc346a8f0277643bf4"
  *      }
  */
@@ -116,14 +101,14 @@ var async=require("async");
  *                          "_id": "543fdd60579e1281b8f6da92",
  *                          "name": "My site",
  *                          "description": "My site description",
- *                          "location": {"lon": 8.9291082, "lat": 38.9979322},
+ *                          "location": "coordinates": [8.9291082,38.9979322],
  *                          "locatedInSiteId": "5d4044fc346a8f0277643bf4"
  *                      },
  *                      {
  *                          "_id": "543fdd60579e1281sdaf6da92",
  *                          "name": "My other site",
  *                          "description": "My other site description",
- *                          "location": {"lon": 8.9291082, "lat": 38.9979322},
+ *                          "location": "coordinates": [8.9291082,38.9979322],
  *                          "locatedInSiteId": "5d4044fc346a8f0277643bf4"
  *                     },
  *                    ...
@@ -142,7 +127,7 @@ var async=require("async");
  *        "id": "543fdd60579e1281b8f6da92",
  *        "name": "Crs4Site",
  *        "description": "Crs4 main site",
- *        "location": {"lon": 8.9291082, "lat": 38.9979322},
+ *        "location": "coordinates": [8.9291082,38.9979322],
  *        "locatedInSiteId": "5d4044fc346a8f0277643bf4"
  *     }
  */
@@ -254,8 +239,27 @@ module.exports.getLinkedSites = function(req, res, next) {
  * HTTP/1.1 POST /sites/actions/searchSitesByLocation
  * Body:{"location": {"coordinates":[83.4,78.3]}, "distance": "100", "distanceOptions": {"mode":"bbox"}}
  *
- * @apiUse GetAllSiteResource
- * @apiUse GetAllSiteResourceExample
+ * @apiSuccess  {String[]}      linkedSites     A paginated array list of Site ids
+ * @apiSuccess  {String[]}      [distances]     A paginated array list of the distances of each returned Site from the search coordinates (if returnDistance is true)
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "sites": [
+ *                 "543fdd60579e1281b8f6da92",
+ *                 "543fdd60579e1281saf6dc32",
+ *                 ...
+ *                ],
+ *       "distancies": [
+ *                      "25",
+ *                      "33",
+ *                      ...
+ *                     ],
+ *       "_metadata": {
+ *                     "skip":10,
+ *                     "limit":50,
+ *                     "totalCount":100
+ *                    }
+ *     }
  *
  * @apiUse Metadata
  * @apiUse Unauthorized

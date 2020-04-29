@@ -245,7 +245,7 @@ describe('Sites API Test - [ACTIONS TESTS]', function () {
         it(testMessage, function (done) {
 
             siteDocuments.createDocuments(1, function (err, ForeignKeys) {
-                if (err) consoleLogError.printErrorLog("Site APIActionsTests.js - beforreEach - Sites.create ---> " + err);
+                if (err) consoleLogError.printErrorLog("Site APIActionsTests.js - beforeEach - Sites.create ---> " + err);
 
 
                 request.post({

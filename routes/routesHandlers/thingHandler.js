@@ -57,11 +57,30 @@ var conf = require('propertiesmanager').conf;
  * @apiParam (Query Parameter) {String[]}   [things]        Search by thing
  * @apiParam (Query Parameter) {String[]}   [name]          Filter by thing name
  * @apiParam (Query Parameter) {String[]}   [description]   Filter by thing description
- * @apiParam (Query Parameter) {Boolean}    [disabled]      Filter by thing status
+ * @apiParam (Query Parameter) {Boolean}    [disabled]      Filter by disabled status
  * @apiParam (Query Parameter) {Boolean}    [mobile]        Filter by mobile status
  * @apiParam (Query Parameter) {String[]}   [ownerId]       Filter by owner
  * @apiParam (Query Parameter) {String[]}   [vendorId]      Filter by Vendor. To get Vendor identifier look at `/vendors` API
  * @apiParam (Query Parameter) {String[]}   [siteId]        Filter by Site. To get Site identifier look at `/sites` API
+ */
+/**
+ * @apiDefine ThingSearchFilterParams
+ * @apiParam (Body Parameter)   {Object}        [searchFilters]                 Filters parent object
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.name]            Filter by thing name. It can be a string (e.g. `name=MyStation`),
+ * a string array (e.g. `name=Crs4Dev&name=dev2&name=dev3`) or a list of comma separated strings (e.g. `name=thing1,thing2,thing3`)
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.description]     Filter by thing description. It can be a string (e.g. `description=MyStation`),
+ * a string array (e.g. `description=desc1&description=desc2&description=desc3`) or a list of comma separated strings (e.g. `description=desc1,desc2,desc3`)
+ * @apiParam (Body Parameter)   {Boolean}       [searchFilters.disabled]        Filter by thing status (e.g. `disabled=true`)
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.vendorId]        Filter by Vendor. To get Vendor identifier look at `/vendors` API
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.siteId]          Filter by Site . To get Site identifier look at `/sites` API
+ * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
+ * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
  */
 /**
  * @apiDefine PostThingResource
@@ -138,17 +157,17 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} vendorId                Thing Vendor identifier
  * @apiSuccess {String} siteId                  Thing Site identifier
  */
-/**
+ /**
  * @apiDefine PostThingResourceExample
  * @apiSuccessExample {json} Example: 201 CREATED
  *      HTTP/1.1 201 CREATED
  *      {
  *        "name": "customThing",
  *        "description": "weather station developed by crs4",
+ *        "disabled": "false",
  *        "mobile": "false",
  *        "ownerId" "5d4044fc346a8f0277643ac42",
  *        "api": {"url": "http://iotgw.crs4.it", "access_token": "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"},
- *        "disabled": "false",
  *        "vendorId": "5d4044fc346a8f0277643bf2",
  *        "siteId": "5d4044fc346a8f0277643bf4",
  *      }
@@ -216,7 +235,53 @@ function deleteThingById(id,res){
 }
 
 
+/**
+ * @api {post} /things/:id/actions/disable Disable Thing
+ * @apiVersion 1.0.0
+ * @apiName ThingDisable
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Disables a Thing object
+ *
+ * @apiParam (URL Parameters) {String}  id  The Thing identifier
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/disable
+ *
+ * @apiUse GetThingResource
+ * @apiUse GetThingResourceExample
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 
+/**
+ * @api {post} /things/:id/actions/enable Enable Thing
+ * @apiVersion 1.0.0
+ * @apiName ThingEnable
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Enables a Thing object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Thing identifier
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/enable
+ *
+ * @apiUse GetThingResource
+ * @apiUse GetThingResourceExample
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 function enableDisableThingById(currentThing,action,res){
     if(currentThing.disabled!=action){
         thingDriver.findByIdAndUpdate(currentThing._id,{disabled:action}, function (err, updatedThing) {
@@ -231,7 +296,7 @@ function enableDisableThingById(currentThing,action,res){
 }
 
 
-function enableDisableDeviceyId(deviceId,thingId,action,callback){
+function enableDisableDeviceId(deviceId,thingId,action,callback){
 
     deviceDriver.findByIdAndUpdate(deviceId,{disabled:action},function(err,disabledDevice){
         if(err){
@@ -272,6 +337,7 @@ function enableDisableDeviceyId(deviceId,thingId,action,callback){
  *
  * @apiUse PostThingResource
  * @apiUse PostThingResourceExample
+ *
  * @apiUse Unauthorized
  * @apiUse BadRequest
  * @apiUse InternalServerError
@@ -303,6 +369,7 @@ module.exports.postCreateThing = function (req, res, next) {
  *
  * @apiUse PutThingResource
  * @apiUse GetThingResourceExample
+ *
  * @apiUse Unauthorized
  * @apiUse BadRequest
  * @apiUse InternalServerError
@@ -373,7 +440,7 @@ module.exports.getThingById = function (req, res, next) {
 /**
  * @api {get} /things Get all Things
  * @apiVersion 1.0.0
- * @apiName GetThing
+ * @apiName GetThings
  * @apiGroup Things
  * @apiPermission Access Token
  *
@@ -384,9 +451,10 @@ module.exports.getThingById = function (req, res, next) {
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /things?name=thing1_Crs4,thing2_Crs4&disabled=false&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
  *
- * @apiUse Metadata
  * @apiUse GetAllThingResource
  * @apiUse GetAllThingResourceExample
+ *
+ * @apiUse Metadata
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -399,6 +467,30 @@ module.exports.getThings = function (req, res, next) {
     });
 };
 
+/**
+ * @api {post} /things/actions/searchDismissed Get dismissed Things
+ * @apiVersion 1.0.0
+ * @apiName ThingSearchDismissed
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of all dismissed Things
+ *
+ * @apiUse ThingSearchFilterParams
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /things/actions/searchDismissed?name=thing1_Crs4 thing2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
+ *
+ * @apiUse GetAllThingResource
+ * @apiUse GetAllThingResourceExample
+ *
+ * @apiUse Metadata
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 
 /**
  * @api {post} /things/:id/actions/disable Disable Thing
@@ -486,7 +578,7 @@ module.exports.disableEnableThing = function (req, res, next) {
                                            //      - save disabling into disabledDevice collection
 
                                            async.each(results.devices, function(device, callbackDevice) {
-                                               enableDisableDeviceyId(device._id,id,true,function(err){
+                                               enableDisableDeviceId(device._id,id,true,function(err){
                                                    callbackDevice(err);
                                                });
                                            }, function(err) {
@@ -521,7 +613,7 @@ module.exports.disableEnableThing = function (req, res, next) {
                                            //  2. Delete all previously disabled device list
 
                                            async.each(results.disabledDevices, function (device, callbackDevice) {
-                                               enableDisableDeviceyId(device.deviceId, id, false, function (err) {
+                                               enableDisableDeviceId(device.deviceId, id, false, function (err) {
                                                    callbackDevice(err);
                                                });
                                            }, function (err) {
@@ -636,7 +728,62 @@ module.exports.deleteThing = function (req, res, next) {
 
 
 
-//todo set documentation
+/**
+ * @api {post} /things/actions/sendObservations Add Observations
+ * @apiVersion 1.0.0
+ * @apiName ThingSendObservations
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Add one or more Observations associated with a Thing. An Observation must be valid in compliance with its Unit-Value constraints
+ *
+ * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
+ * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Unit id
+ * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /things/actions/sendObservations
+ * Body: { observations: [
+ *                        {unitId: "543fdd60579e1281b8f6da92",
+ *                         value: 33,
+ *                        }
+ *                       ]
+ *       }
+ *
+ * @apiSuccess {Object[]}   ObjectId                        Array data structure of Observation objects. The key is the Device id, the value is the Observation object
+ * @apiSuccess {String}     ObjectId._id                    Observation id
+ * @apiSuccess {Number}     ObjectId.timestamp              Observation timestamp
+ * @apiSuccess {Number}     ObjectId.value                  Observation value
+ * @apiSuccess {Object}     ObjectId.location               Observation location parent object
+ * @apiSuccess {Point}      ObjectId.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     ObjectId.deviceId               Observation Device id
+ * @apiSuccess {String}     ObjectId.unitId                 Observation Unit id
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "543fdd60579e1281b8f6ba94": [
+ *                                      {
+ *                                          "_id": "1",
+ *                                          "timestamp": 1590364800,
+ *                                          "value": 1
+ *                                          "location": {"coordinates": [83.4,78.3]},
+ *                                          "deviceId": "123",
+ *                                          "unitId": "meter"
+ *                                      },
+ *                                      ...
+ *                                   ],
+ *       "543fdd60579e1281b8f6ce32": [
+ *                                      ...
+ *                                   ],
+ *                                   ...
+ *      }
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.createObservations = function (req, res, next) {
     var id = req.params.id;
     observationUtility.validateAndCreateThingObservations(id,req.body.observations,function(err, observations){
@@ -645,7 +792,71 @@ module.exports.createObservations = function (req, res, next) {
 };
 
 
-//todo set documentation
+/**
+ * @api {post} /things/actions/addDevices Add Devices
+ * @apiVersion 1.0.0
+ * @apiName ThingAddDevices
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Add one or more Devices to a Thing
+ *
+ * @apiParam (Body Parameter) {Object[]}   devices         Array list of Device objects
+ * @apiParam (Body Parameter) {String}     name            Added Device name
+ * @apiParam (Body Parameter) {String}     description     Added Device description
+ * @apiParam (Body Parameter) {String}     deviceTypeId    Added Device type ID
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/enable
+ * Body: {
+ *        [
+ *         {name:"MyDev", description: "Home temp sensor", typeId:"543fdd60579e1281b8f6da92"},
+ *         {name:"MyOtherDev", description: "Home pressure sensor", typeId:"543fdd60579e1281b8f6ba94"}
+ *        ]
+ *       }
+ *
+ * @apiSuccess {Object[]}   results                                     Array data structure of add operation results
+ * @apiSuccess {Number}     results.total                               Total number of added Devices
+ * @apiSuccess {Number}     results.successful                          Number of successfully added Devices
+ * @apiSuccess {Number}     results.unsuccessful                        Number of unsuccessfully added Devices
+ * @apiSuccess {Object[]}   successfulAssociatedDevices                 Array list of successfully added Device objects
+ * @apiSuccess {String}     successfulAssociatedDevices._id             Added Device id
+ * @apiSuccess {String}     successfulAssociatedDevices._name           Added Device name
+ * @apiSuccess {String}     successfulAssociatedDevices.description     Added Device description
+ * @apiSuccess {Object[]}   unsuccessfulAssociatedDevices               Array data structure of unsuccessfully added Device objects
+ * @apiSuccess {String}     unsuccessfulAssociatedDevices.error         Error message explaining why the Device couldn't be added
+ * @apiSuccess {Object[]}   unsuccessfulAssociatedDevices.device        Unsuccessfully added Device parent object
+ * @apiSuccess {String}     unsuccessfulAssociatedDevices._id           Unsuccessfully added Device id
+ * @apiSuccess {String}     unsuccessfulAssociatedDevices._name         Unsuccessfully added Device name
+ * @apiSuccess {String}     unsuccessfulAssociatedDevices.description   Unsuccessfully added Device description
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "results": {"total": 2, "successful": 1, "unsuccessful": 1},
+ *       "successfulAssociatedDevices":
+ *                                      [
+ *                                       {
+ *                                        "_id": "543fdd60579e1281b8f6da92",
+ *                                        "name": "My new device",
+ *                                        "description": "My new device description"
+ *                                       }
+ *                                      ],
+ *       "unsuccessfulAssociatedDevices":
+ *                                      [
+ *                                       {
+ *                                        "_id": "543fdd60579e1281b8f6aa12",
+ *                                        "name": "My new strange device",
+ *                                        "description": "My new strange device description"
+ *                                       }
+ *                                      ]
+ *     }
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.addDevices = function (req, res, next) {
     var thingId = req.params.id;
     var associatedDevices=[];
@@ -700,13 +911,85 @@ module.exports.addDevices = function (req, res, next) {
 };
 
 
-
-/* Things Observation Search Filters*/
-// timestamp: {From:, To;}
-// value: {min:, max:}
-// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
-// pagination: {skip: , limit: }
-//todo set documentation
+/**
+ * @api {post} /things/actions/getObservations Get Observations
+ * @apiVersion 1.0.0
+ * @apiName ThingGetObservations
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of filtered Observations from a Thing
+ *
+ * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ * @apiUse LocationCentreBodyParams
+ * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /things/actions/getObservations
+ * Body: {searchFilters: [
+ *                        {timestamp: {from: 1590364800, to: 1590364801},
+ *                         value: {0, 100},
+ *                         location: {centre:{coordinates: [0,0]},
+ *                                   distance: 1,
+ *                                   distanceOptions: {mode: "bbox"}
+ *                                   }
+ *                        }
+ *                       ]
+ *       }
+ *
+ * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
+ * @apiSuccess {String}     observations._id                    Observation id
+ * @apiSuccess {Number}     observations.timestamp              Observation timestamp
+ * @apiSuccess {Number}     observations.value                  Observation value
+ * @apiSuccess {Object}     observations.location               Observation location parent object
+ * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     observations.deviceId               Observation Device id
+ * @apiSuccess {String}     observations.unitId                 Observation Unit id
+ * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "observations": [
+ *                        {
+ *                         "_id": "1",
+ *                         "timestamp": 1590364800,
+ *                         "value": 1
+ *                         "location": {"coordinates": [83.4,78.3]},
+ *                         "deviceId": "543fdd60579e1281b8f6ce32",
+ *                         "unitId": "meter"
+ *                        },
+ *                        ...
+ *                       ],
+ *       "distancies": [
+ *                      "25",
+ *                      "33",
+ *                      ...
+ *                     ],
+ *       "_metadata": {
+ *                     "skip":10,
+ *                     "limit":50,
+ *                     "totalCount":100
+ *                    }
+ *      }
+ *
+ * @apiUse Metadata
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getObservations = function (req, res, next) {
     var thingId=req.params.id;
     deviceDriver.findAll({thingId:thingId},"_id",{},function(err,devices){

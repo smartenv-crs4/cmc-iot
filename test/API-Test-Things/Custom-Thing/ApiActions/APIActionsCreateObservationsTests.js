@@ -679,7 +679,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                         results.should.have.property('statusCode');
                                         results.should.have.property('error');
                                         results.should.have.property('message');
-                                        results.message.indexOf(" was disable. It must be enabled to set observations.").should.be.greaterThanOrEqual(0);
+                                        results.message.indexOf(" was disabled. It must be enabled to set observations.").should.be.greaterThanOrEqual(0);
                                         results.message.indexOf(thingID).should.be.greaterThanOrEqual(0);
                                         observationUtility.findAll({},null,null,function(err,foundObs){
                                             if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
