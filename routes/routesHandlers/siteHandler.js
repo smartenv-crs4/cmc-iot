@@ -443,7 +443,7 @@ module.exports.updateSite = function(req, res, next) {
  * @apiPermission Access Token
  *
  * @apiDescription Deletes a given Site by its identifier and returns the deleted resource. <br>
- * If there are Sites which are located in this Site, it can't be deleted to preserve data integrity.
+ *     If there are Sites which are located in this Site, it can't be deleted to preserve data integrity.
  *
  * @apiParam (URL Parameter) {String}  id The Site identifier
  *

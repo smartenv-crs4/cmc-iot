@@ -247,6 +247,7 @@ module.exports.updateVendor = function(req, res, next) {
  * @apiPermission Access Token
  *
  * @apiDescription Deletes a given Vendor by its identifier and returns the deleted resource. <br>
+ * If there are Things associated with that Vendor, it can't be deleted to preserve data integrity.
  *
  * @apiParam (URL Parameter) {String}  id The Vendor identifier
  *
