@@ -106,9 +106,9 @@ var async = require("async")
  *                      ...
  *                     ],
  *       "_metadata":{
- *                   "skip":10,
- *                   "limit":50,
- *                   "totalCount":100
+ *                    "skip":10,
+ *                    "limit":50,
+ *                    "totalCount":100
  *                   }
  *     }
  */
@@ -459,7 +459,7 @@ module.exports.updateDeviceType = function(req, res, next) {
 
 
 /**
- * @api {delete} /devices/:id Delete DeviceType
+ * @api {delete} /deviceTypes/:id Delete DeviceType
  * @apiVersion 1.0.0
  * @apiName DeleteDeviceTypeById
  * @apiGroup DeviceTypes
