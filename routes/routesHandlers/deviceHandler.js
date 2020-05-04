@@ -31,64 +31,6 @@ var _=require('underscore');
 
 // Begin Macro
 /**
- * @apiDefine NotFound
- * @apiError {Object} ResourceNotFound[404] The resource was not found <BR>
- *
- * @apiErrorExample {Object} NotFound Error:
- *  HTTP/1.1 404 Resource Not Found
- *   {
- *     "StatusCode": '404'
- *     "error": 'Not Found'
- *     "message": 'The resource was not found'
- *   }
- */
-/**
- * @apiDefine  InternalServerError
- * @apiError  (5xx) {Object} InternalServerError[500] An internal server error occurred <BR>
- *
- * @apiErrorExample {Object} InternalServerError Error:
- *  HTTP/1.1 500 Internal Server Error
- *   {
- *     "StatusCode": '500'
- *     "error": 'Internal Server Error'
- *     "message": 'An internal server error occurred'
- *   }
- */
-/**
- * @apiDefine  BadRequest
- * @apiError {Object} BadRequest[400] The server cannot or will not process the request due to malformed client request <BR>
- *
- * @apiErrorExample {Object} BadRequest Error:
- *  HTTP/1.1 400 Bad Request
- *   {
- *     "StatusCode": '400'
- *     "error": 'Bad Request'
- *     "message": 'Body field missing'
- *   }
- */
-/**
- * @apiDefine  Unauthorized
- * @apiError {Object} Unauthorized[401] The client is not authorized to access this resource <BR>
- *
- * @apiErrorExample {Object} Unauthorized Error:
- *  HTTP/1.1 401 Unauthorized
- *   {
- *     "StatusCode": '401'
- *     "error": 'Unauthorized'
- *     "message": 'You are not authorized to access this resource'
- *   }
- */
-/**
- * @apiDefine  NoContent
- * @apiError (2xx) {Object} NoContent[204] The server successfully processed the request but no content is found <BR>
- *
- * @apiErrorExample NoContent Error:
- *  HTTP/1.1 204 NoContent
- *   {
- *   }
- */
-
-/**
  * @apiDefine DeviceBodyParams
  * @apiParam (Body Parameters) {Object}   device                    Device dictionary with all the fields.
  * @apiParam (Body Parameters) {String}   device.name               Device name
@@ -105,6 +47,25 @@ var _=require('underscore');
  * @apiParam (Query Parameter) {Boolean}    [disabled]     Filter by device status
  * @apiParam (Query Parameter) {String[]}   [typeId]       Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
  * @apiParam (Query Parameter) {String[]}   [thingId]      Filter by Thing. To get Thing identifier look at `/things` API
+ */
+/**
+ * @apiDefine DeviceSearchFilterParams
+ * @apiParam (Body Parameter)   {Object}        [searchFilters]                 Filters parent object
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.name]            Filter by device name. It can be a string (e.g. `name=Crs4Dev`),
+ * a string array (e.g. `name=Crs4Dev&name=dev2&name=dev3`) or a list of comma separated strings (e.g. `name=dev1,dev2,dev3`)
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.description]     Filter by device description. It can be a string (e.g. `description=Crs4Dev`),
+ * a string array (e.g. `description=desc1&description=desc2&description=desc3`) or a list of comma separated strings (e.g. `description=desc1,desc2,desc3`)
+ * @apiParam (Body Parameter)   {Boolean}       [searchFilters.disabled]        Filter by device status (e.g. `disabled=true`)
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.typeId]          Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
+ * @apiParam (Body Parameter)   {String[]}      [searchFilters.thingId]         Filter by Thing . To get Thing identifier look at `/things` API
+ * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
+ * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
  */
 /**
  * @apiDefine PostDeviceResource
@@ -198,26 +159,6 @@ var _=require('underscore');
  *
  *      }
  */
-
-/**
- * @apiDefine Metadata
- * @apiSuccess {Object} _metadata Object containing pagination info
- * @apiSuccess {Number} _metadata.skip Number of query results skipped
- * @apiSuccess {Number} _metadata.limit Limits the number of results returned by this query
- * @apiSuccess {Number} _metadata.totalCount If specified in the request, it contains the total number of query results; it is false otherwise
- */
-/**
- * @apiDefine  Pagination
- * @apiParam (Query Parameter) {Number}   [skip]       Pagination skip parameter - skips the first `n` results
- * @apiParam (Query Parameter) {Number}   [limit]      Pagination limit parameter - limits results total size to `n`
- * @apiParam (Query Parameter) {Boolean}  [totalCount] Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Query Parameter) {String}   [sortAsc]    Ordering parameter - orders results by ascending values
- * @apiParam (Query Parameter) {String}   [sortDesc]   Ordering parameter - orders results by descending values
- */
-/**
- * @apiDefine Projection
- * @apiParam (Query Parameter) {String}  [fields]  A list of comma separated field names to project in query results
- */
 // End Macro
 
 
@@ -235,7 +176,7 @@ var _=require('underscore');
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /devices
- *  Body:{ "name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4",}
+ *  Body: {"name": "customDevice" , "description":"touch device developed by crs4", "typeId":"5d4044fc346a8f0277643bf2", "thingId":"5d4044fc346a8f0277643bf4"}
  *
  * @apiUse PostDeviceResource
  * @apiUse PostDeviceResourceExample
@@ -336,6 +277,7 @@ module.exports.updateDevice = function (req, res, next) {
  *
  * @apiUse GetDeviceResource
  * @apiUse GetDeviceResourceExample
+ *
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -359,6 +301,7 @@ module.exports.updateDevice = function (req, res, next) {
  *
  * @apiUse GetDeviceResource
  * @apiUse GetDeviceResourceExample
+ *
  * @apiUse Unauthorized
  * @apiUse NotFound
  * @apiUse BadRequest
@@ -505,22 +448,7 @@ module.exports.getDevices = function (req, res, next) {
  *
  * @apiDescription Returns a paginated list of all dismissed Devices
  *
- * @apiParam (Body Parameter)   {Object}        [searchFilters]                 Filters parent object
- * @apiParam (Body Parameter)   {String[]}      [searchFilters.name]            Filter by device name. It can be a string (e.g. `name=Crs4Dev`),
- * a string array (e.g. `name=Crs4Dev&name=dev2&name=dev3`) or a list of comma separated strings (e.g. `name=dev1,dev2,dev3`)
- * @apiParam (Body Parameter)   {String[]}      [searchFilters.description]     Filter by device description. It can be a string (e.g. `description=Crs4Dev`),
- * a string array (e.g. `description=desc1&description=desc2&description=desc3`) or a list of comma separated strings (e.g. `description=desc1,desc2,desc3`)
- * @apiParam (Body Parameter)   {Boolean}       [searchFilters.disabled]        Filter by device status (e.g. `disabled=true`)
- * @apiParam (Body Parameter)   {String[]}      [searchFilters.typeId]          Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
- * @apiParam (Body Parameter)   {String[]}      [searchFilters.thingId]         Filter by Thing . To get Thing identifier look at `/things` API
- * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
- * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
- * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
- * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
- * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
- * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
- * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
+ * @apiUse DeviceSearchFilterParams
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /devices/actions/searchDismissed?name=dev1_Crs4 dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
@@ -534,7 +462,6 @@ module.exports.getDevices = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
-
 
 
 /**
@@ -571,12 +498,86 @@ module.exports.deleteDevice = function (req, res, next) {
 
 
 
-/* Device Observation Search Filters*/
-// timestamp: {From:, To;}
-// value: {min:, max:}
-// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
-// pagination: {skip: , limit: }
-//todo set documentation
+/**
+ * @api {post} /devices/actions/getObservations Get Observations
+ * @apiVersion 1.0.0
+ * @apiName DeviceGetObservations
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of filtered Observations from a Device
+ *
+ * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ * @apiUse LocationCentreBodyParams
+ * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /devices/actions/getObservations
+ *  Body: {searchFilters: [
+ *                         {timestamp: {from: 1590364800, to: 1590364801},
+ *                          value: {0, 100},
+ *                          location: {centre:{coordinates: [0,0]},
+ *                                    distance: 1,
+ *                                    distanceOptions: {mode: "bbox"}
+ *                                    }
+ *                         }
+ *                        ]
+ *        }
+ *
+ * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
+ * @apiSuccess {String}     observations._id                    Observation id
+ * @apiSuccess {Number}     observations.timestamp              Observation timestamp
+ * @apiSuccess {Number}     observations.value                  Observation value
+ * @apiSuccess {Object}     observations.location               Observation location parent object
+ * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     observations.deviceId               Observation Device identifier
+ * @apiSuccess {String}     observations.unitId                 Observation Unit identifier
+ * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "observations": [
+ *                        {
+ *                         "_id": "1",
+ *                         "timestamp": 1590364800,
+ *                         "value": 1
+ *                         "location": {"coordinates": [83.4,78.3]},
+ *                         "deviceId": "543fdd60579e1281b8f6ce32",
+ *                         "unitId": "meter"
+ *                        },
+ *                        ...
+ *                       ],
+ *       "distancies": [
+ *                      "25",
+ *                      "33",
+ *                      ...
+ *                     ],
+ *       "_metadata": {
+ *                     "skip":10,
+ *                     "limit":50,
+ *                     "totalCount":100
+ *                    }
+ *      }
+ *
+ * @apiUse Metadata
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getObservations = function (req, res, next) {
     var deviceId=req.params.id;
     if(req.body.searchFilters && !_.isEmpty(req.body.searchFilters)) {
@@ -606,7 +607,56 @@ module.exports.getObservations = function (req, res, next) {
 
 
 
-//todo set documentation
+/**
+ * @api {post} /devices/actions/sendObservations Add Observations
+ * @apiVersion 1.0.0
+ * @apiName DeviceSendObservations
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Add one or more Observations associated with a Device. An Observation must be valid in compliance with its Unit-Value constraints
+ *
+ * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
+ * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /devices/actions/sendObservations
+ *  Body: {"observations": [
+ *                          {"unitId": "543fdd60579e1281b8f6da92",
+ *                           "value": 33,
+ *                          }
+ *                         ]
+ *        }
+ *
+ * @apiSuccess {JSONArray}  .                      JSONArray of Observation objects
+ * @apiSuccess {String}     _id                    Created Observation id
+ * @apiSuccess {Number}     timestamp              Created Observation timestamp
+ * @apiSuccess {Number}     value                  Created Observation value
+ * @apiSuccess {Object}     location               Created Observation location parent object
+ * @apiSuccess {Point}      location.coordinates   Created Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiSuccess {String}     deviceId               Created Observation Device identifier
+ * @apiSuccess {String}     unitId                 Created Observation Unit identifier
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *          [
+ *              {
+ *                  "_id": "1",
+ *                  "timestamp": 1590364800,
+ *                  "value": 1
+ *                  "location": {"coordinates": [83.4,78.3]},
+ *                  "deviceId": "123",
+ *                  "unitId": "meter"
+ *              },
+ *              ...
+ *          ]
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.createObservations = function (req, res, next) {
     var id = req.params.id;
     observationUtility.validateAndCreateObservations(id,req.body.observations,function(err, observations){

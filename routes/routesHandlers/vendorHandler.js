@@ -25,7 +25,115 @@ var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
 
 
-/* Create vendor */
+//Begin macro
+/**
+ * @apiDefine VendorBodyParams
+ * @apiParam (Body Parameter)   {Object}    vendor                  Vendor dictionary with all the fields
+ * @apiParam (Body Parameter)   {String}    vendor.name             Vendor name
+ * @apiParam (Body Parameter)   {String}    vendor.description      Vendor description
+ */
+/**
+ * @apiDefine VendorQueryParams
+ * @apiParam (Query Parameter)  {String[]}  [vendors]               Search by Vendor
+ * @apiParam (Query Parameter)  {String[]}  [name]                  Filter by Vendor name
+ * @apiParam (Query Parameter)  {String[]}  [description]           Filter by Vendor description
+ */
+/**
+ * @apiDefine PostVendorResource
+ * @apiSuccess (201 - CREATED)  {String}    name                    Created Vendor name
+ * @apiSuccess (201 - CREATED)  {String}    description             Created Vendor description
+ */
+/**
+ * @apiDefine PutVendorResource
+ * @apiSuccess                  {String}    name                    Updated Vendor name
+ * @apiSuccess                  {String}    description             Updated Vendor description
+ */
+/**
+ * @apiDefine GetAllVendorResource
+ * @apiSuccess                  {Object[]}  vendor                  A paginated array list of Vendor objects
+ * @apiSuccess                  {String}    vendor._id              Vendor identifier
+ * @apiSuccess                  {String}    vendor.name             Vendor name
+ * @apiSuccess                  {String}    vendor.description      Vendor description
+ */
+/**
+ * @apiDefine GetVendorResource
+ * @apiSuccess                  {String}    _id                     Vendor identifier
+ * @apiSuccess                  {String}    name                    Vendor name
+ * @apiSuccess                  {String}    description             Vendor description
+ */
+/**
+ * @apiDefine PostVendorResourceExample
+ * @apiSuccessExample {json} Example: 201 CREATED
+ *      HTTP/1.1 201 CREATED
+ *      {
+ *        "name": "My new Vendor",
+ *        "description": "Brand new IoT Vendor"
+ *      }
+ */
+/**
+ * @apiDefine GetAllVendorResourceExample
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *          "vendors":[
+ *                      {
+ *                          "_id": "543fdd60579e1281b8f6da92",
+ *                          "name": "My Vendor",
+ *                          "description": "My Vendor description"
+ *                      },
+ *                      {
+ *                          "_id": "543fdd60579e1281sdaf6da92",
+ *                          "name": "My other Vendor",
+ *                          "description": "My other Vendor description"
+ *                      },
+ *                      ...
+ *                     ],
+ *          "_metadata": {
+ *                          "skip":10,
+ *                          "limit":50,
+ *                          "totalCount":100
+ *                       }
+ *     }
+ */
+/**
+ * @apiDefine GetVendorResourceExample
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *        "_id": "543fdd60579e1281b8f6da92",
+ *        "name": "Brand new Vendor",
+ *        "description": "Yet another Vendor"
+ *     }
+ */
+//End macro
+
+
+/**
+ * @api {post} /vendors Create a new Vendor
+ * @apiVersion 1.0.0
+ * @apiName PostVendor
+ * @apiGroup Vendors
+ * @apiPermission Access Token
+ *
+ * @apiDescription Creates a new Vendor object and returns the newly created resource, or an error Object
+ *
+ * @apiUse VendorBodyParams
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /vendors
+ *  Body: {
+ *          "vendor": {
+ *                      "name": "customVendor",
+ *                      "description": "CRS4 Vendor"
+ *                    }
+ *        }
+ *
+ * @apiUse PostVendorResource
+ * @apiUse PostVendorResourceExample
+ * @apiUse Unauthorized
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NotFound
+ * @apiSampleRequest off
+ */
 module.exports.postCreateVendor = function(req, res, next) {
     vendorDriver.create(req.body.vendor, function(err, results) {
         res.httpResponse(err, null, results)
@@ -33,7 +141,29 @@ module.exports.postCreateVendor = function(req, res, next) {
 }
 
 
-/* GET vendors list */
+/**
+ * @api {get} /vendors Get all Vendors
+ * @apiVersion 1.0.0
+ * @apiName GetVendor
+ * @apiGroup Vendors
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a paginated list of all Vendors
+ *
+ * @apiUse VendorQueryParams
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /vendors?name=vendor1_Crs4,vendor2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
+ *
+ * @apiUse Metadata
+ * @apiUse GetAllVendorResource
+ * @apiUse GetAllVendorResourceExample
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getVendors = function(req, res, next) {
     vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -41,7 +171,30 @@ module.exports.getVendors = function(req, res, next) {
 }
 
 
-/* GET vendor By Id */
+/**
+ * @api {get} /vendors/:id Get Vendor by id
+ * @apiVersion 1.0.0
+ * @apiName GetVendorById
+ * @apiGroup Vendors
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns a Vendor object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Vendor identifier
+ * @apiUse Projection
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /vendors/543fdd60579e1281b8f6da92
+ *
+ * @apiUse GetVendorResource
+ * @apiUse GetVendorResourceExample
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getVendorById = function(req, res, next) {
     var id = req.params.id
     vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -50,7 +203,35 @@ module.exports.getVendorById = function(req, res, next) {
 }
 
 
-/* Update vendor */
+/**
+ * @api {put} /domains Update a Vendor
+ * @apiVersion 1.0.0
+ * @apiName PutVendor
+ * @apiGroup Vendors
+ * @apiPermission Access Token
+ *
+ * @apiDescription Updates a Vendor object and returns the newly updated resource, or an error Object
+ *
+ * @apiUse VendorBodyParams
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 PUT /vendors/543fdd60579e1281b8f6da92
+ *  Body: {
+ *          "vendor": {
+ *                      "name": "updatedCustomName" ,
+ *                      "description": "a more detailed description"
+ *                    }
+ *        }
+ *
+ * @apiUse PutVendorResource
+ * @apiUse GetVendorResourceExample
+ * @apiUse Unauthorized
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NotFound
+ * @apiUse NoContent
+ * @apiSampleRequest off
+ */
 module.exports.updateVendor = function(req, res, next) {
     vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
         res.httpResponse(err, null, results)
@@ -58,7 +239,29 @@ module.exports.updateVendor = function(req, res, next) {
 }
 
 
-/* Delete vendors */
+/**
+ * @api {delete} /vendors/:id Delete Vendor
+ * @apiVersion 1.0.0
+ * @apiName DeleteVendorById
+ * @apiGroup Vendors
+ * @apiPermission Access Token
+ *
+ * @apiDescription Deletes a given Vendor by its identifier and returns the deleted resource. <br>
+ * If there are Things associated with that Vendor, it can't be deleted to preserve data integrity.
+ *
+ * @apiParam (URL Parameter) {String}  id The Vendor identifier
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 DELETE /vendors/543fdd60579e1281b8f6da92
+ *
+ * @apiUse GetVendorResource
+ * @apiUse GetVendorResourceExample
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.deleteVendor = function(req, res, next) {
     var id = req.params.id
     thingDriver.findAll({vendorId: id}, null, {totalCount: true}, function (err, results) {

@@ -118,7 +118,7 @@ var deviceType_domainDriver = require('../../DBEngineHandler/drivers/deviceType_
  * @apiUse DomainBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST /domain
+ * HTTP/1.1 POST /domains
  *  Body:{ "name": "customDomain" , "description": "CRS4 main domain of interest"}
  *
  * @apiUse PostDomainResource
