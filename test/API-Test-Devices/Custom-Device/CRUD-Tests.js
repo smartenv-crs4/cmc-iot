@@ -23,7 +23,7 @@
 
 var Devices = require('../../../DBEngineHandler/drivers/deviceDriver');
 var thingsDriver = require('../../../DBEngineHandler/drivers/thingDriver');
-var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/devices" ;

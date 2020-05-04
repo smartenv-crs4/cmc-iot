@@ -22,7 +22,7 @@
 
 
 var should = require('should/should');
-var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var _=require('underscore');
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
 var conf = require('propertiesmanager').conf;
@@ -107,7 +107,11 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     afterEach(function (done) {
         observationDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            done()
+            observationUtility.find({},function(err,data){
+                data.length.should.be.equal(0);
+                done()
+            });
+
         });
     });
 

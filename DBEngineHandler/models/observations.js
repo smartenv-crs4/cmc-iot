@@ -21,10 +21,10 @@
  */
 
 
-var mongoose = require('mongoose')
-var findAllFn = require('./metadata').findAll
-var Schema = mongoose.Schema
-var conf = require('propertiesmanager').conf
+var mongoose = require('mongoose');
+var findAllFn = require('./metadata').findAll;
+var Schema = mongoose.Schema;
+var conf = require('propertiesmanager').conf;
 
 var observation = conf.customSchema.observationSchema || {
     timestamp: {type: Number, index: true, required: true},
@@ -55,8 +55,8 @@ observationSchema.statics.findAll = function(conditions, fields, options, callba
 };
 
 
-var Observation = mongoose.model('observation', observationSchema)
+var Observation = mongoose.model('observation', observationSchema);
 
 
-module.exports.ObservationSchema = observationSchema
-module.exports.Observation = Observation
+module.exports.ObservationSchema = observationSchema;
+module.exports.Observation = Observation;

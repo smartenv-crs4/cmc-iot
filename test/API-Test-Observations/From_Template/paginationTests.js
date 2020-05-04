@@ -19,7 +19,7 @@
  *     along with CMC-IoT.  If not, see <http://www.gnu.org/licenses/>.     *
  ############################################################################
  */
-var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
 var commonFunctioTest=require("../../SetTestenv/testEnvironmentCreation");

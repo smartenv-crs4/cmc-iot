@@ -22,7 +22,7 @@
 
 var _ = require('underscore')._;
 var async = require('async');
-var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var deviceCreateDocuments=require('./createDevicesDocuments');
 var unitCreateDocuments=require('./createUnitsDocuments');
 
@@ -36,7 +36,7 @@ module.exports.createDocuments=function(numbers,callback){
        if(!err){
            unitCreateDocuments.createDocuments(1,deviceForeignKey.observedPropertyId,function(err,unitForeignKey){
                if(!err){
-                   async.each(range, function(e,cb){
+                   async.eachSeries(range, function(e,cb){
 
                        observationUtility.create({
                            timestamp:new Date().getTime(),
@@ -75,7 +75,6 @@ module.exports.createDocuments=function(numbers,callback){
 
 
 module.exports.deleteDocuments=function(callback){
-
     observationUtility.deleteMany({},function(err){
         if(!err){
             deviceCreateDocuments.deleteDocuments(function(err){

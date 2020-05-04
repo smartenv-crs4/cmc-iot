@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var observationUtility = require('./handlerUtility/observationUtility');
+var observationUtility = require('./handlerUtility/observationHandlerUtility');
 var async=require("async");
 
 

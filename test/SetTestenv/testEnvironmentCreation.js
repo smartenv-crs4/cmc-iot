@@ -29,174 +29,191 @@ var app = require('../../app');
 var roles=require('./testconfig');
 var setupEnvironmentDefaults=require('../../bin/environmentDefaults/setupDefault');
 var errorHandler=require('../Utility/errorLogs');
+var redisConnection=require("../../connectionsHandler/redisConnection");
 
 var authHost = conf.authUrl;
 
-
 exports.setAuthMsMicroservice=function(doneCallback){
 
-    async.series([
-        function(callback){ // set configuration for test
-            roles.customTestConfig(conf);
-            callback();
-        },
-        function(callback){ // check if AuthMs is in dev mode
-            request.get(authHost+"/env", function(error, response, body){
-                if(error) {
-                    throw error;
-                }else{
-                    var env=JSON.parse(body).env;
-                    if(env=="dev"){
-
-                        setupEnvironmentDefaults.setupDefaults(function(err,cmc_IotDismissedID) {
-                            if (!err) {
-                                console.log("cmc-IoT_ThingsOwneId " + cmc_IotDismissedID);
-                                conf.cmcIoTThingsOwner._id = cmc_IotDismissedID;
-                                db.connect(function (err) {
-                                    if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
-
-                                    app.set('port', process.env.PORT || conf.microserviceConf.port);
-
-                                    server = app.listen(app.get('port'), function () {
-                                        console.log('TEST Express server listening on port ' + server.address().port);
-                                        callback(null,"one");
-                                    });
-                                });
-                            }else{
-                                errorHandler.printErrorLog("Test can not start due to " + err );
-                                throw (err);
-                            }
-                        });
-                    }else{
-                        throw (new Error("authms isn't in dev mode"));
-                    }
-                }
-            });
-        },
-        function(callback){ // create admins and users type tokens
-            var users=conf.testConfig.adminTokens.concat(conf.testConfig.usertokens);
-            var usersId=[];
-            async.eachSeries(users,function(tokenT,clb){
-                var rqparams={
-                    url:authHost+"/usertypes",
-                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
-                    body:JSON.stringify({usertype:{name:tokenT}})
-                };
-                request.post(rqparams, function(error, response, body){
-                    if(error) {
-                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create user token in cmc-auth  " + err);
+        async.series([
+            function (callback) { // set configuration for test
+                roles.customTestConfig(conf);
+                callback();
+            },
+            function (callback) { // check if AuthMs is in dev mode
+                request.get(authHost + "/env", function (error, response, body) {
+                    if (error) {
                         throw error;
-                    }else{
-                        usersId.push(JSON.parse(body)._id);
-                        clb();
+                    } else {
+                        var env = JSON.parse(body).env;
+                        if (env == "dev") {
+
+                            setupEnvironmentDefaults.setupDefaults(function (err, cmc_IotDismissedID) {
+                                if (!err) {
+                                    console.log("cmc-IoT_ThingsOwneId " + cmc_IotDismissedID);
+                                    conf.cmcIoTThingsOwner._id = cmc_IotDismissedID;
+                                    db.connect(function (err) {
+                                        if (err) console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't connect to database  " + err);
+
+                                        app.set('port', process.env.PORT || conf.microserviceConf.port);
+
+                                        server = app.listen(app.get('port'), function () {
+                                            console.log('TEST Express server listening on port ' + server.address().port);
+                                            callback(null, "one");
+                                        });
+                                    });
+                                } else {
+                                    errorHandler.printErrorLog("Test can not start due to " + err);
+                                    throw (err);
+                                }
+                            });
+                        } else {
+                            throw (new Error("authms isn't in dev mode"));
+                        }
+                    }
+                });
+            },
+            function (callback) { //connect to Redis cache
+
+                redisConnection.connect(function (err, connection) {
+                    if (err && conf.redisCache.must) {
+                        throw (new Error("Redis cache Service required as must but isn't available"));
+                    } else {
+                        callback(null, "Redis Done");
+                    }
+                });
+            },
+            function (callback) { // create admins and users type tokens
+                var users = conf.testConfig.adminTokens.concat(conf.testConfig.usertokens);
+                var usersId = [];
+                async.eachSeries(users, function (tokenT, clb) {
+                    var rqparams = {
+                        url: authHost + "/usertypes",
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
+                        body: JSON.stringify({usertype: {name: tokenT}})
+                    };
+                    request.post(rqparams, function (error, response, body) {
+                        if (error) {
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create user token in cmc-auth  " + err);
+                            throw error;
+                        } else {
+                            usersId.push(JSON.parse(body)._id);
+                            clb();
+                        }
+                    });
+
+                }, function (err) {
+                    conf.testConfig.usersId = usersId;
+                    callback(null, "two");
+                });
+
+            },
+            function (callback) { // create external application token type
+                var apps = conf.testConfig.authApptokens;
+                var appsId = [];
+                async.eachSeries(apps, function (tokenT, clb) {
+                    var rqparams = {
+                        url: authHost + "/apptypes",
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
+                        body: JSON.stringify({apptype: {name: tokenT}})
+                    };
+                    request.post(rqparams, function (error, response, body) {
+
+                        if (error) {
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create application token type in cmc-auth  " + err);
+                            throw err;
+
+                        } else {
+                            appsId.push(JSON.parse(body)._id);
+                            clb();
+                        }
+                    });
+
+                }, function (err) {
+                    conf.testConfig.appsId = appsId;
+                    callback(null, "three");
+                });
+            },
+            function (callback) {// make external application login
+                var appBody = JSON.stringify({app: conf.testConfig.webUiAppTest});
+                request.post({
+                    url: authHost + "/authapp/signup",
+                    body: appBody,
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
+                }, function (error, response, body) {
+                    if (error) {
+                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete external application login in cmc-auth  " + err);
+                        throw error;
+                    } else {
+                        var results = JSON.parse(response.body);
+                        if (!results.error) {
+                            conf.testConfig.myWebUITokenToSignUP = results.apiKey.token;
+                            conf.testConfig.webUiID = results.userId;
+                            callback(null, "four");
+                        } else throw(results.error);
+
                     }
                 });
 
-            },function(err){
-                conf.testConfig.usersId=usersId;
-                callback(null,"two");
-            });
-
-        },
-        function(callback){ // create external application token type
-            var apps=conf.testConfig.authApptokens;
-            var appsId=[];
-            async.eachSeries(apps,function(tokenT,clb){
-                var rqparams={
-                    url:authHost+"/apptypes",
-                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
-                    body:JSON.stringify({apptype:{name:tokenT}})
-                };
-                request.post(rqparams, function(error, response, body){
-
-                    if(error) {
-                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create application token type in cmc-auth  " + err);
-                        throw err;
-
-                    }else{
-                        appsId.push(JSON.parse(body)._id);
-                        clb();
+            },
+            function (callback) {// make admin  login
+                request.post({
+                    url: authHost + "/authuser/signin",
+                    body: JSON.stringify(conf.testConfig.adminLogin),
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
+                }, function (error, response, body) {
+                    if (error) {
+                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete admin login in cmc-auth  " + err);
+                        throw error;
+                    } else {
+                        var results = JSON.parse(response.body);
+                        if (!results.error) {
+                            conf.testConfig.adminToken = results.apiKey.token;
+                            conf.testConfig.adminID = results.userId;
+                            callback(null, "five");
+                        } else throw(results.error);
                     }
                 });
 
-            },function(err){
-                conf.testConfig.appsId=appsId;
-                callback(null,"three");
-            });
-        },
-        function(callback){// make external application login
-            var appBody = JSON.stringify({app:conf.testConfig.webUiAppTest});
-            request.post({
-                url: authHost + "/authapp/signup",
-                body: appBody,
-                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
-            }, function (error, response,body) {
-                if(error) {
-                    console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete external application login in cmc-auth  " + err);
-                    throw error;
-                }else{
-                    var results = JSON.parse(response.body);
-                    if(!results.error) {
-                        conf.testConfig.myWebUITokenToSignUP = results.apiKey.token;
-                        conf.testConfig.webUiID=results.userId;
-                        callback(null,"four");
-                    }else throw(results.error);
+            },
+            function (callback) { // create Authorisation Roles
+                var roles = conf.testConfig.AuthRoles;
+                async.forEachOf(roles, function (value, key, clb) {
+                    var rqparams = {
+                        url: authHost + "/authms/authendpoint",
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
+                        body: JSON.stringify({
+                            microservice: {
+                                name: conf.testConfig.msName,
+                                URI: value.URI,
+                                authToken: value.token,
+                                method: value.method
+                            }
+                        })
+                    };
+                    request.post(rqparams, function (error, response, body) {
 
-                }
-            });
+                        if (error) {
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create authorisation roles in cmc-auth  " + err);
+                            throw err;
+                        } else {
+                            value.id = JSON.parse(body)._id;
+                            clb();
+                        }
+                    });
 
-        },
-        function(callback){// make admin  login
-            request.post({
-                url: authHost + "/authuser/signin",
-                body: JSON.stringify(conf.testConfig.adminLogin),
-                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
-            }, function (error, response,body) {
-                if(error) {
-                    console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete admin login in cmc-auth  " + err);
-                    throw error;
-                }else{
-                    var results = JSON.parse(response.body);
-                    if(!results.error) {
-                        conf.testConfig.adminToken = results.apiKey.token;
-                        conf.testConfig.adminID=results.userId;
-                        callback(null,"five");
-                    }else throw(results.error);
-                }
-            });
-
-        },
-        function(callback){ // create Authorisation Roles
-            var roles=conf.testConfig.AuthRoles;
-            async.forEachOf(roles,function(value,key,clb){
-                var rqparams={
-                    url:authHost+"/authms/authendpoint",
-                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token},
-                    body:JSON.stringify({microservice:{name:conf.testConfig.msName,URI:value.URI, authToken:value.token, method:value.method}})
-                };
-                request.post(rqparams, function(error, response, body){
-
-                    if(error) {
-                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create authorisation roles in cmc-auth  " + err);
-                        throw err;
-                    }else{
-                        value.id=JSON.parse(body)._id;
-                        clb();
-                    }
+                }, function (err) {
+                    conf.testConfig.AuthRoles = roles;
+                    callback(null, "six");
                 });
 
-            },function(err){
-                conf.testConfig.AuthRoles=roles;
-                callback(null,"six");
-            });
-
-        }
-    ],function(err,resp){
-        if(err)
-            doneCallback(err);
-        else
-            doneCallback();
-    });
+            }
+        ], function (err, resp) {
+            if (err)
+                doneCallback(err);
+            else
+                doneCallback();
+        });
 }
 
 exports.resetAuthMsStatus = function(callback) {
@@ -288,6 +305,7 @@ exports.resetAuthMsStatus = function(callback) {
             throw (err);
         else{
             server.close();
+            redisConnection.disconnect();
             db.disconnect(function (err, res) {
                 if (err) console.log("!!! ERROR:--> Error in resetAuthMsStatus function due to can't clean test environment" + err);
                 callback(null);

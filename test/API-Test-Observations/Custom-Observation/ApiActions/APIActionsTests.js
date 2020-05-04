@@ -22,7 +22,7 @@
 
 
 var should = require('should/should');
-var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/observations";

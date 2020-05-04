@@ -22,7 +22,7 @@
 
 
 var Units = require('../../../DBEngineHandler/drivers/unitDriver')
-var Observation = require('../../../routes/routesHandlers/handlerUtility/observationUtility')
+var Observation = require('../../../routes/routesHandlers/handlerUtility/observationHandlerUtility')
 var conf = require('propertiesmanager').conf
 var request = require('request')
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/units"

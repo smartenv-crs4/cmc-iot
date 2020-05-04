@@ -22,7 +22,7 @@
 
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
-var observationUtility=require('./handlerUtility/observationUtility');
+var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var thingAndDeviceHandlerUtility=require("./handlerUtility/thingAndDeviceHandlerUtility");
 var conf = require('propertiesmanager').conf;
 var _=require('underscore');

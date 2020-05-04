@@ -23,7 +23,7 @@
 
 var conf = require('propertiesmanager').conf;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port +"/observations" ;
-var observationUtility=require('../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility=require('../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 
 require('../../API_Compliant-Templates/httpStatusCode').httpStatusCode(APIURL,"observations",observationUtility.ObjectId(),"location");
 

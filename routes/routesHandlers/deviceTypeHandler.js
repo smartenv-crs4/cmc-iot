@@ -214,7 +214,7 @@ module.exports.removeDomains = function(req, res, next) {
         deviceTypeDomainDriver.findOneAndRemove({
             deviceTypeId: id,
             domainId: domainId
-        }, function(err, deviceTypeDomainItem) {
+        }, null,function(err, deviceTypeDomainItem) {
             if (deviceTypeDomainItem) results.push(deviceTypeDomainItem)
             callback(err)
         })

@@ -29,7 +29,7 @@ var thingAndDeviceHandlerUtility = require('./handlerUtility/thingAndDeviceHandl
 var async=require('async');
 var config = require('propertiesmanager').conf;
 var _=require('underscore');
-var observationUtility=require('./handlerUtility/observationUtility');
+var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
 
 

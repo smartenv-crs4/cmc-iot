@@ -26,26 +26,35 @@ var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var observedPropertyDriver = require('../../DBEngineHandler/drivers/observedPropertyDriver.js');
 var unitsDriver = require('../../DBEngineHandler/drivers/unitDriver.js');
 var deviceDocuments = require('../SetTestenv/createDevicesDocuments');
-var observationUtility=require('../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationsDocuments = require('../SetTestenv/createObservationsDocuments');
+var observationUtility=require('../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
+var redisHandler=require('../../routes/routesHandlers/handlerUtility/redisHandler');
 var consoleLogError = require('../Utility/errorLogs');
+var conf=require('propertiesmanager').conf;
 var should = require('should/should');
+var async=require('async');
+var _ = require('underscore');
 var validUnits={first:null,second:null};
 var deviceIdResource;
 var typeIdResource;
 
 
-describe('Observations Model Test', function () {
+
+describe('Observations Utility Test', function () {
 
     before(function (done) {
 
         db.connect(function () {
-            done();
+            redisHandler.connect(conf.redisCache, function (err) {
+                done();
+            });
         });
     });
 
     after(function (done) {
 
         db.disconnect(function () {
+            redisHandler.disconnect();
             done();
         });
     });
@@ -73,7 +82,9 @@ describe('Observations Model Test', function () {
                         observedPropertyId: deviceForeignKeys.observedPropertyId
                     },function(err,unitIdBis){
                         validUnits.second=unitIdBis;
-                        done()
+                        redisHandler.flushDb(function (err, data) {
+                            done();
+                        });
                     })
                 });
             }
@@ -86,7 +97,12 @@ describe('Observations Model Test', function () {
             if(!err){
                 deviceDocuments.deleteDocuments(function (err) {
                     if (err) throw err;
-                    done();
+                    observationsDocuments.deleteDocuments(function (err) {
+                        if (err) throw err;
+                        redisHandler.flushDb(function (err, data) {
+                            done();
+                        });
+                    });
                 });
             }else{
                 throw err;
@@ -98,7 +114,7 @@ describe('Observations Model Test', function () {
 
 
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [observation is valid]', function (done) {
 
@@ -119,7 +135,7 @@ describe('Observations Model Test', function () {
     });
 
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [The observation value is out of range]', function (done) {
 
@@ -134,7 +150,7 @@ describe('Observations Model Test', function () {
     });
 
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [observation not valid due to unit is not associated to Device Type]', function (done) {
 
@@ -148,7 +164,7 @@ describe('Observations Model Test', function () {
         });
     });
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [observation not valid due to Dismissed Device]', function (done) {
 
@@ -167,7 +183,7 @@ describe('Observations Model Test', function () {
         });
     });
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [observation not valid due to Disabled Device]', function (done) {
 
@@ -187,7 +203,7 @@ describe('Observations Model Test', function () {
     });
 
 
-    describe('observation checkIfValid', function () {
+    describe('observation Utility', function () {
 
         it('must test checkIfValid [observation not valid due to Device not exist]', function (done) {
 
@@ -198,6 +214,272 @@ describe('Observations Model Test', function () {
                 err.message.should.be.eql("The device/thing not exist.");
                 done();
             });
+        });
+    });
+
+
+
+    describe('observation Utility', function () {
+        it('must test create and redis synchronization', function (done) {
+            if(redisHandler.getRedisStatus()) {
+                observationsDocuments.createDocuments(100, function (err, deviceForeignKeys) {
+                    observationUtility.findOne({},null,null,function(err,obs){
+                        if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                        var newObs=JSON.parse(JSON.stringify(obs));
+                        delete newObs._id;
+                        var key2=observationUtility.ObjectId();
+                        newObs.deviceId=key2;
+                        observationUtility.create(newObs,function(err,nObs){
+                            if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                            // wait to redis Sync
+                            setTimeout(function () {
+                                var key;
+                                redisHandler.getAllKey("*", function (err, data) {
+                                    key = deviceForeignKeys.deviceId.toString();
+                                    redisHandler.KeyLength(key, function (err, data) {
+                                        redisHandler.getValuesFromKey(key, 0, 100, function (err, data) {
+                                            redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                                if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                                                _.isArray(data).should.be.equal(true);
+                                                data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                for (obscache in data) {
+                                                    data[obscache].deviceId.should.be.equal(deviceForeignKeys.deviceId.toString());
+                                                    data[obscache].value.should.be.equal(100 - obscache - 1);
+                                                }
+
+                                                redisHandler.getObservationsFromCache(key2, {returnAsObject: true}, function (err, data) {
+                                                    if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                                                    _.isArray(data).should.be.equal(true);
+                                                    data.length.should.be.equal(1);
+                                                    observationUtility.deleteMany({}, function (err, data) {
+                                                        // wait to redis Sync
+                                                        setTimeout(function () {
+                                                            redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                                                if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                                                                _.isArray(data).should.be.equal(true);
+                                                                data.length.should.be.equal(0);
+                                                                redisHandler.getObservationsFromCache(key2, {returnAsObject: true}, function (err, data) {
+                                                                    if (err) consoleLogError.printErrorLog("must test create and redis synchronization [ERROR] --> " + err);
+                                                                    _.isArray(data).should.be.equal(true);
+                                                                    data.length.should.be.equal(0);
+                                                                    done();
+
+                                                                });
+                                                            }, 100);
+                                                        })
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            }, 500);
+                        })
+                    });
+                });
+            }else{
+                done();
+            }
+        });
+    });
+
+
+    describe('observation Utility', function () {
+        it('must test deleteMany', function (done) {
+            observationsDocuments.createDocuments(100, function (err,deviceForeignKeys) {
+                observationUtility.deleteMany({},function(err,data){
+                    done();
+                });
+            });
+        });
+    });
+
+
+    describe('observation Utility', function () {
+        it('must test deleteMany and redis synchronization', function (done) {
+            if(redisHandler.getRedisStatus()) {
+                observationsDocuments.createDocuments(100, function (err, deviceForeignKeys) {
+
+                    // wait to redis Sync
+                    setTimeout(function () {
+                        var key;
+                        redisHandler.getAllKey("*", function (err, data) {
+                            key = deviceForeignKeys.deviceId.toString();
+                            redisHandler.KeyLength(key, function (err, data) {
+                                redisHandler.getValuesFromKey(key, 0, 100, function (err, data) {
+                                    redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                        if (err) consoleLogError.printErrorLog("must test deleteMany and redis synchronization [ERROR] --> " + err);
+                                        _.isArray(data).should.be.equal(true);
+                                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                        for (obscache in data) {
+                                            data[obscache].deviceId.should.be.equal(deviceForeignKeys.deviceId.toString());
+                                            data[obscache].value.should.be.equal(100 - obscache - 1);
+                                        }
+
+                                        observationUtility.deleteMany({}, function (err, data) {
+                                            // wait to redis Sync
+                                            setTimeout(function () {
+                                                redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                                    if (err) consoleLogError.printErrorLog("must test deleteMany and redis synchronization [ERROR] --> " + err);
+                                                    _.isArray(data).should.be.equal(true);
+                                                    data.length.should.be.equal(0);
+                                                    done();
+
+                                                }, 100);
+                                            })
+                                        });
+                                    });
+                                });
+                            });
+                        });
+                    }, 500);
+                });
+            }else{
+                done();
+            }
+        });
+    });
+
+
+
+    describe('observation Utility', function () {
+        it('must test findByIdAndUpdate and redis synchronization', function (done) {
+            if(redisHandler.getRedisStatus()) {
+                observationsDocuments.createDocuments(100, function (err, deviceForeignKeys) {
+                    observationsDocuments.createDocuments(10, function (err, device2ForeignKeys) {
+                        // wait to redis Sync
+                        setTimeout(function () {
+                            var key,key1;
+                            redisHandler.getAllKey("*", function (err, data) {
+                                key = deviceForeignKeys.deviceId.toString();
+                                key1= device2ForeignKeys.deviceId.toString();
+                                redisHandler.KeyLength(key, function (err, data) {
+                                    redisHandler.getValuesFromKey(key, 0, 100, function (err, data) {
+                                        redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                            if (err) consoleLogError.printErrorLog("must test findByIdAndUpdate and redis synchronization [ERROR] --> " + err);
+                                            _.isArray(data).should.be.equal(true);
+                                            data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                            for (obscache in data) {
+                                                data[obscache].deviceId.should.be.equal(deviceForeignKeys.deviceId.toString());
+                                                data[obscache].value.should.be.equal(100 - obscache - 1);
+                                            }
+
+                                            redisHandler.KeyLength(key1, function (err, data) {
+                                                redisHandler.getValuesFromKey(key1, 0, 100, function (err, data) {
+                                                    redisHandler.getObservationsFromCache(key1, {returnAsObject: true}, function (err, data) {
+                                                        if (err) consoleLogError.printErrorLog("must test findByIdAndUpdate and redis synchronization [ERROR] --> " + err);
+                                                        _.isArray(data).should.be.equal(true);
+                                                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                        for (obscache in data) {
+                                                            data[obscache].deviceId.should.be.equal(device2ForeignKeys.deviceId.toString());
+                                                            data[obscache].value.should.be.equal(10 - obscache - 1);
+                                                        }
+
+                                                        observationUtility.findByIdAndUpdate(deviceForeignKeys.observationId,{value:50}, function (err, updateObs) {
+                                                            if (err) consoleLogError.printErrorLog("must test findByIdAndUpdate and redis synchronization [ERROR] --> " + err);
+                                                            updateObs.should.have.properties("_id","value","deviceId","unitId","location");
+                                                            updateObs.deviceId.toString().should.be.equal(key);
+                                                            updateObs.value.should.be.equal(50);
+
+                                                            // wait to redis Sync
+                                                            setTimeout(function () {
+                                                                redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                                                    if (err) consoleLogError.printErrorLog("must test findByIdAndUpdate and redis synchronization [ERROR] --> " + err);
+                                                                    _.isArray(data).should.be.equal(true);
+                                                                    data.length.should.be.equal(0);
+                                                                    redisHandler.getObservationsFromCache(key1, {returnAsObject: true}, function (err, data) {
+                                                                        if (err) consoleLogError.printErrorLog("must test findByIdAndUpdate and redis synchronization [ERROR] --> " + err);
+                                                                        _.isArray(data).should.be.equal(true);
+                                                                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                                        done();
+                                                                    });
+                                                                }, 100);
+                                                            })
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        }, 500);
+                    });
+                });
+            }else{
+                done();
+            }
+        });
+    });
+
+
+
+    describe('observation Utility', function () {
+        it('must test findByIdAndRemove and redis synchronization', function (done) {
+            if(redisHandler.getRedisStatus()) {
+                observationsDocuments.createDocuments(100, function (err, deviceForeignKeys) {
+                    observationsDocuments.createDocuments(10, function (err, device2ForeignKeys) {
+                        // wait to redis Sync
+                        setTimeout(function () {
+                            var key,key1;
+                            redisHandler.getAllKey("*", function (err, data) {
+                                key = deviceForeignKeys.deviceId.toString();
+                                key1= device2ForeignKeys.deviceId.toString();
+                                redisHandler.KeyLength(key, function (err, data) {
+                                    redisHandler.getValuesFromKey(key, 0, 100, function (err, data) {
+                                        redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                            if (err) consoleLogError.printErrorLog("must test findByIdAndRemove and redis synchronization [ERROR] --> " + err);
+                                            _.isArray(data).should.be.equal(true);
+                                            data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                            for (obscache in data) {
+                                                data[obscache].deviceId.should.be.equal(deviceForeignKeys.deviceId.toString());
+                                                data[obscache].value.should.be.equal(100 - obscache - 1);
+                                            }
+
+                                            redisHandler.KeyLength(key1, function (err, data) {
+                                                redisHandler.getValuesFromKey(key1, 0, 100, function (err, data) {
+                                                    redisHandler.getObservationsFromCache(key1, {returnAsObject: true}, function (err, data) {
+                                                        if (err) consoleLogError.printErrorLog("must test findByIdAndRemove and redis synchronization [ERROR] --> " + err);
+                                                        _.isArray(data).should.be.equal(true);
+                                                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                        for (obscache in data) {
+                                                            data[obscache].deviceId.should.be.equal(device2ForeignKeys.deviceId.toString());
+                                                            data[obscache].value.should.be.equal(10 - obscache - 1);
+                                                        }
+
+                                                        observationUtility.findByIdAndRemove(deviceForeignKeys.observationId, function (err, updateObs) {
+                                                            if (err) consoleLogError.printErrorLog("must test findByIdAndRemove and redis synchronization [ERROR] --> " + err);
+                                                            updateObs.should.have.properties("_id","value","deviceId","unitId","location");
+                                                            updateObs.deviceId.toString().should.be.equal(key);
+
+                                                            // wait to redis Sync
+                                                            setTimeout(function () {
+                                                                redisHandler.getObservationsFromCache(key, {returnAsObject: true}, function (err, data) {
+                                                                    if (err) consoleLogError.printErrorLog("must test findByIdAndRemove and redis synchronization [ERROR] --> " + err);
+                                                                    _.isArray(data).should.be.equal(true);
+                                                                    data.length.should.be.equal(0);
+                                                                    redisHandler.getObservationsFromCache(key1, {returnAsObject: true}, function (err, data) {
+                                                                        if (err) consoleLogError.printErrorLog("must test findByIdAndRemove and redis synchronization [ERROR] --> " + err);
+                                                                        _.isArray(data).should.be.equal(true);
+                                                                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                                        done();
+                                                                    });
+                                                                }, 100);
+                                                            })
+                                                        });
+                                                    });
+                                                });
+                                            });
+                                        });
+                                    });
+                                });
+                            });
+                        }, 500);
+                    });
+                });
+            }else{
+                done();
+            }
         });
     });
 

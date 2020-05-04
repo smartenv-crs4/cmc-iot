@@ -20,63 +20,101 @@
  ############################################################################
  */
 
-
-var redis=require('redis');
 var conf = require('propertiesmanager').conf;
 var async=require('async');
-var log=require('../../routes/utility/logHandlerUtility');
+var log=require('../../utility/logHandlerUtility');
 var redisDriver=require('../../../DBEngineHandler/drivers/redisDriver');
-
-var redisClient;
-var redisStatus=false;
 var observationsCacheItems=conf.cmcIoTOptions.observationsCacheItems;
 
 
 
-module.exports.create = function (observation,callback) {
-    redisDriver.addObservations(observation.deviceId,[observation],callback);
-};
 
-
-module.exports.find = function (deviceId,callback) {
-    redisDriver.getObservations(deviceId,{returnAsObject:false},callback);
-};
-
-
-module.exports.update = function (observation,callback) {
-    redisDriver.getObservations(observation.deviceId,{returnAsObject:true},function(err,observations){
-        if(!err){
-            for(var count=0;count< observations.length;++count){
-                if(observations[count]._id==observation._id){
-                    observations[count]=observation;
-                    redisDriver.addObservations(deviceId,observations);
-                    count=observations.length+1;
-                }
-            }
-            callback(null,"done");
-        }else{
-            if(callback) callback(err);
+module.exports.saveSingleObservationToCache = function (observation,callback) {
+    var deviceId=observation.deviceId.toString();
+    redisDriver.pushValuesToKey(deviceId,[JSON.stringify(observation)],function(err,reply){
+        reply=reply > observationsCacheItems ? observationsCacheItems : reply;
+        if(callback) callback(err,reply);
+        if(!err) {
+            redisDriver.trimKey(deviceId,0,observationsCacheItems-1);
         }
     });
 };
 
-
-module.exports.delete = function (deviceId,observation,callback) {
-    redisDriver.getObservations(deviceId,{returnAsObject:true},function(err,observations){
-        if(!err){
-            for(var count=0;count< observations.length;++count){
-                if(observations[count]._id==observation._id){
-                    observations[count]=observation;
-                    redisDriver.addObservations(deviceId,observations);
-                    count=observations.length+1;
-                }
+module.exports.saveObservationsToCache = function (deviceId,observations,callback) {
+    observations=observations.slice(-observationsCacheItems);
+    var obs=[];
+    async.eachSeries(observations, function(observation, clb) {
+        obs.push( JSON.stringify(observation));
+        clb();
+    }, function(err) {
+        redisDriver.pushValuesToKey(deviceId.toString(),obs,function(err,reply){
+            reply=reply > observationsCacheItems ? reply-1 : reply;
+            if(callback) callback(err,reply);
+            if(!err) {
+                redisDriver.trimKey(deviceId.toString(),0,observationsCacheItems-1);
             }
-            callback(null,"done");
-        }else{
-            if(callback) callback(err);
+        });
+    });
+};
+
+module.exports.getObservationsFromCache = function (deviceId,options,callbackFunction) {
+    if(!callbackFunction){
+        callbackFunction=options;
+        options={};
+    }
+    redisDriver.getValuesFromKey(deviceId.toString(),0, (options.limit || observationsCacheItems)-1,function(err,reply){
+        var returnObservations = [];
+        if(!err) {
+            if (options.returnAsObject) {
+                for (var value in reply) {
+                    returnObservations.push(JSON.parse(reply[value]));
+                }
+            } else {
+                returnObservations = reply;
+            }
         }
+        return(callbackFunction(err,returnObservations));
     });
 };
 
 
 
+module.exports.removeObservationsFromCache = function (devicesId,callback) {
+    if(devicesId.length>0)
+        redisDriver.deleteKeys(devicesId,callback)
+};
+
+
+module.exports.flushDb = function (callback) {
+    redisDriver.flushall(callback);
+};
+
+module.exports.disconnect = function (callback) {
+    redisDriver.disconnect(callback);
+};
+
+
+module.exports.connect = function (connectionOptions,callback) {
+    redisDriver.connect(connectionOptions,callback);
+};
+
+module.exports.getAllKey = function (key,callback) {
+   redisDriver.getAllKey(key,callback)
+};
+
+
+module.exports.getKey = function (key,callback) {
+    redisDriver.get(key,callback)
+};
+
+module.exports.KeyLength = function (key,callback) {
+    redisDriver.llen(key,callback)
+};
+
+module.exports.getValuesFromKey = function (key,start,stop,callback) {
+    redisDriver.getValuesFromKey(key,start,stop,callback)
+};
+
+module.exports.getRedisStatus = function () {
+    return (redisDriver.getRedisStatus());
+};

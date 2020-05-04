@@ -21,31 +21,27 @@
  */
 
 
-var observations = require('../models/observations').Observation;
-var mongooseError = require('../../routes/utility/mongooseError')
-var mongoose = require('mongoose')
+var observationModel = require('../models/observations').Observation;
+var mongooseError = require('../../routes/utility/mongooseError');
+var mongoose = require('mongoose');
 var async=require('async');
 
 
 /* GET Observations list */
 module.exports.findAll = function(conditions, fields, options, callback) {
-    observations.findAll(conditions, fields, options, function(err, results) {
-        callback(err, results)
-    })
-}
+    observationModel.findAll(conditions, fields, options, callback);
+};
 
 
 /* Create Observations. */
 module.exports.create = function(observation, callback) {
-    observations.create(observation, function(err, createdObservation) {
-        callback(err, createdObservation)
-    })
-}
+    observationModel.create(observation, callback);
+};
 
 // /* Create Observations. */
 // module.exports.insertMany = function(observationsArray, callback) {
 //     try {
-//         observations.insertMany(observationsArray,{ordered:false},function (err, createdObservation) {
+//         observationModel.insertMany(observationsArray,{ordered:false},function (err, createdObservation) {
 //             callback(err, createdObservation)
 //         });
 //     }catch (exception) {
@@ -56,18 +52,19 @@ module.exports.create = function(observation, callback) {
 
 /* delete Observations. */
 module.exports.deleteMany = function(conditions, options, callback) {
-
     if(!callback){
-        callback=options;
-        options=null;
+        if(options) {
+            callback = options;
+            options = null;
+        }
     }
-    observations.find(conditions,"_id",options,function(err,obs){
+    observationModel.find(conditions,"_id",function(err,obs){
         if(err){
-            callback(err);
+            callback(err,null);
         }else{
             var deleted={};
             async.each(obs, function(observation, clb) {
-                observations.findByIdAndRemove(observation._id,function(err,deletedObs){
+                observationModel.findByIdAndRemove(observation._id,options,function(err,deletedObs){
                     if(deletedObs){
                         deleted[deletedObs.deviceId]=deleted[deletedObs.deviceId] || [];
                         deleted[deletedObs.deviceId].push(deletedObs);
@@ -84,47 +81,43 @@ module.exports.deleteMany = function(conditions, options, callback) {
 
 /* findOne Observation */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    observations.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
-}
+    observationModel.findOne(conditions, projection, options, callback);
+};
 
 
 /* findOne Observation by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    observations.findById(id, projection, options, callback)
-}
+    observationModel.findById(id, projection, options, callback);
+};
 
 
 /* findOne Observation and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    observations.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
-}
+    observationModel.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback);
+};
 
 
 /* findOne Observation by ID and remove it */
 module.exports.findByIdAndRemove = function(id, options, callback) {
-    observations.findByIdAndRemove(id, options, callback)
-}
+    observationModel.findByIdAndRemove(id, options, callback);
+};
 
 /* GET Observations list */
 module.exports.find = function(conditions, fields, options, callback) {
-    observations.find(conditions, fields, options, function(err, results) {
-        callback(err, results)
-    })
-}
+    observationModel.find(conditions, fields, options, callback);
+};
 
 /* GET/SET Observations ObjectId. */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
-}
+    return (mongoose.Types.ObjectId(ObjectId));
+};
 
 
 /* Create Observations. */
 module.exports.errorResponse = function(res, err) {
     mongooseError.handleError(res, err)
-}
+};
 
-module.exports.getModel = function() {
-    return (observations);
-}
+// module.exports.getModel = function() {
+//     return (observationModel);
+// }

@@ -22,7 +22,6 @@
 
 
 var domains=require('../models/domains').Domain;
-var observations=require('../models/observations').Observation;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
 

@@ -24,12 +24,15 @@
 var should = require('should/should');
 var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
 var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
-var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
 var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
+var redisHandler=require('../../../../routes/routesHandlers/handlerUtility/redisHandler');
 
 var deviceDocuments = require('../../../SetTestenv/createDevicesDocuments');
 var sitesDocuments = require('../../../SetTestenv/createSitesDocuments');
+
+var _=require('underscore');
 
 var conf = require('propertiesmanager').conf;
 var request = require('request');
@@ -694,6 +697,69 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                             should(err).be.null();
                             done();
                         });
+                    });
+                }
+            });
+        });
+    });
+
+
+
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations and redis synchronization [3 valid observation]";
+        it(testType, function (done) {
+
+            var observations=[
+                {
+                    unitId:validUnits.first._id,
+                    value:validUnits.first.maxValue-1,
+                },
+                {
+                    unitId:validUnits.first._id,
+                    value:validUnits.first.maxValue-1,
+                },
+                {
+                    unitId:validUnits.first._id,
+                    value:validUnits.first.maxValue-1,
+                }
+            ];
+
+            request.post({
+                url: APIURL +'/' + deviceId +'/actions/sendObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({observations:observations})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    _.isArray(results).should.be.equal(true);
+                    observationUtility.findAll({deviceId:deviceId}, null, null, function(err,data){
+                        should(err).be.null();
+                        data.should.have.properties("_metadata","observations");
+                        data.observations.length.should.be.eql(3);
+                        // wait to redis Sync
+                        setTimeout(function () {
+                            redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
+                                should(err).be.null();
+                                _.isArray(data).should.be.equal(true);
+                                data.length.should.be.equal(3);
+                                observationUtility.deleteMany({},function(err){
+                                    should(err).be.null();
+                                    // wait redis sync
+                                    setTimeout(function() {
+                                        redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
+                                            should(err).be.null();
+                                            _.isArray(data).should.be.equal(true);
+                                            data.length.should.be.equal(0);
+                                            done();
+
+                                        });
+                                    },100);
+
+                                });
+                            }, 100);
+                        })
                     });
                 }
             });

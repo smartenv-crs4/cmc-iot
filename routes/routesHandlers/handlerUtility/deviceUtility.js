@@ -22,7 +22,7 @@
 
 
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
-var observationUtility = require('../../routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('./observationHandlerUtility');
 
 
 /* Delete devices. */

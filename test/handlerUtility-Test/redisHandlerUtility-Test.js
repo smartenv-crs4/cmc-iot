@@ -21,10 +21,10 @@
  */
 
 var db = require("../../connectionsHandler/mongooseConnection");
-var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var observationDocuments = require('../SetTestenv/createObservationsDocuments');
 var consoleLogError = require('../Utility/errorLogs');
-var redisHandler = require('../../DBEngineHandler/drivers/redisDriver');
+var redisHandler = require('../../routes/routesHandlers/handlerUtility/redisHandler');
 var conf = require('propertiesmanager').conf;
 var should = require('should/should');
 var async = require('async');
@@ -61,7 +61,7 @@ describe('Redis Handler Test', function () {
             observationUtility.findById(ForeignKeys.observationId, function (err, obs) {
                 if (err) consoleLogError.printErrorLog("Redis Handler Testa - beforeEach ---> " + err);
                 observation = obs;
-                redisHandler.flushall(function (err, data) {
+                redisHandler.flushDb(function (err, data) {
                     done();
                 });
             })
@@ -72,7 +72,7 @@ describe('Redis Handler Test', function () {
     afterEach(function (done) {
         observationDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Observation CRUD-Tests.js - afterEach - deleteMany ---> " + err);
-            redisHandler.flushall(function (err, data) {
+            redisHandler.flushDb(function (err, data) {
                 done();
             });
         });
@@ -82,10 +82,10 @@ describe('Redis Handler Test', function () {
     describe(testType, function () {
         testMessage = "must test single observation save and read";
         it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation], function (err, data) {
+            redisHandler.saveObservationsToCache(deviceId, [observation], function (err, data) {
                 if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                 data.should.be.equal(1);
-                redisHandler.getObservations(deviceId, function (err, data) {
+                redisHandler.getObservationsFromCache(deviceId, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     _.isArray(data).should.be.equal(true);
                     data[0].should.not.have.property("deviceId");
@@ -100,10 +100,10 @@ describe('Redis Handler Test', function () {
     describe(testType, function () {
         testMessage = "must test single observation save and read as Obj";
         it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation], function (err, data) {
+            redisHandler.saveObservationsToCache(deviceId, [observation], function (err, data) {
                 if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                 data.should.be.equal(1);
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
+                redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     _.isArray(data).should.be.equal(true);
                     data[0].deviceId.should.be.equal(observation.deviceId.toString());
@@ -119,10 +119,10 @@ describe('Redis Handler Test', function () {
     describe(testType, function () {
         testMessage = "must test 2 observation save and read as Obj";
         it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation, observation], function (err, data) {
+            redisHandler.saveObservationsToCache(deviceId, [observation, observation], function (err, data) {
                 if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                 data.should.be.equal(2);
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
+                redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     _.isArray(data).should.be.equal(true);
                     data.length.should.be.equal(2);
@@ -142,10 +142,10 @@ describe('Redis Handler Test', function () {
     describe(testType, function () {
         testMessage = "must test 2 observation save and read";
         it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation, observation], function (err, data) {
+            redisHandler.saveObservationsToCache(deviceId, [observation, observation], function (err, data) {
                 if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                 data.should.be.equal(2);
-                redisHandler.getObservations(deviceId, false, function (err, data) {
+                redisHandler.getObservationsFromCache(deviceId, false, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     _.isArray(data).should.be.equal(true);
                     data.length.should.be.equal(2);
@@ -167,13 +167,13 @@ describe('Redis Handler Test', function () {
             var range = _.range(0, 20);
             async.eachSeries(range, function (value, clb) {
                 observation.value = value;
-                redisHandler.addObservations(deviceId, [observation], function (err, data) {
+                redisHandler.saveObservationsToCache(deviceId, [observation], function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
                     clb();
                 })
             }, function (err) {
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
+                redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     _.isArray(data).should.be.equal(true);
                     data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
@@ -204,10 +204,10 @@ describe('Redis Handler Test', function () {
                 obs.push(JSON.parse(JSON.stringify(observation)));
                 clb();
             }, function (err) {
-                redisHandler.addObservations(deviceId, obs, function (err, data) {
+                redisHandler.saveObservationsToCache(deviceId, obs, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
-                    redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
+                    redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true}, function (err, data) {
                         if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                         _.isArray(data).should.be.equal(true);
                         data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
@@ -229,7 +229,7 @@ describe('Redis Handler Test', function () {
 
     describe(testType, function () {
         this.timeout(0);
-        testMessage = "must test getObservat6ion limit option";
+        testMessage = "must test getObservation limit option";
         it(testMessage, function (done) {
 
             var range = _.range(0, 20);
@@ -239,10 +239,10 @@ describe('Redis Handler Test', function () {
                 obs.push(JSON.parse(JSON.stringify(observation)));
                 clb();
             }, function (err) {
-                redisHandler.addObservations(deviceId, obs, function (err, data) {
+                redisHandler.saveObservationsToCache(deviceId, obs, function (err, data) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                     data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
-                    redisHandler.getObservations(deviceId, {returnAsObject: true, limit:2}, function (err, data) {
+                    redisHandler.getObservationsFromCache(deviceId, {returnAsObject: true, limit:2}, function (err, data) {
                         if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
                         _.isArray(data).should.be.equal(true);
                         data.length.should.be.equal(2);
@@ -258,6 +258,69 @@ describe('Redis Handler Test', function () {
             });
         });
     });
+
+
+
+    describe(testType, function () {
+        this.timeout(0);
+        testMessage = "must test delete observations";
+        it(testMessage, function (done) {
+
+            var range = _.range(0, 20);
+            var devicesIds=[];
+            var obsArray=15;
+
+            async.eachSeries(range, function (value, clb) {
+                var obs = [];
+                var observationDeviceID=observationUtility.ObjectId();
+                observation.deviceId = observationDeviceID;
+                for(count=0;count<obsArray;++count){
+                    observation.value=count;
+                    obs.push(JSON.parse(JSON.stringify(observation)));
+                }
+                redisHandler.saveObservationsToCache(observationDeviceID, obs, function (err, data) {
+                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                    data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
+                    devicesIds.push(observationDeviceID.toString());
+                    clb();
+                });
+            }, function (err) {
+                async.eachSeries(devicesIds, function (value, clb) {
+                    redisHandler.getObservationsFromCache(value, {returnAsObject: true}, function (err, data) {
+                        if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        _.isArray(data).should.be.equal(true);
+                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                        for(obscache in data) {
+                            data[obscache].deviceId.should.be.equal(value.toString());
+                            data[obscache].value.should.be.equal(obsArray-obscache-1);
+                        }
+                        clb();
+                    });
+                }, function (err) {
+                    redisHandler.removeObservationsFromCache(devicesIds,function(err,data){
+                        if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        data.should.be.equal(20);
+
+                        //check delete is done
+                        async.eachSeries(devicesIds, function (value, clb) {
+                            redisHandler.getObservationsFromCache(value, {returnAsObject: true}, function (err, data) {
+                                if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                                _.isArray(data).should.be.equal(true);
+                                data.length.should.be.equal(0);
+                                clb();
+                            });
+                        }, function (err) {
+                            done();
+
+                        });
+                    });
+
+                });
+
+            });
+        });
+    });
+
 
 
 });

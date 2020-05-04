@@ -21,7 +21,7 @@
  */
 
 var db = require("../../connectionsHandler/mongooseConnection");
-var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var observationDocuments = require('../SetTestenv/createObservationsDocuments');
 var consoleLogError = require('../Utility/errorLogs');
 var redisHandler = require('../../DBEngineHandler/drivers/redisDriver');

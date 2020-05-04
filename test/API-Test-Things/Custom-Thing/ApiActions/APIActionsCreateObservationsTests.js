@@ -24,11 +24,15 @@
 var should = require('should/should');
 var Devices = require('../../../../DBEngineHandler/drivers/deviceDriver');
 var unitDriver = require('../../../../DBEngineHandler/drivers/unitDriver');
-var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var thingsDriver = require('../../../../DBEngineHandler/drivers/thingDriver');
 var sitesDriver = require('../../../../DBEngineHandler/drivers/siteDriver');
 var deviceDocuments = require('../../../SetTestenv/createDevicesDocuments');
 var sitesDocuments = require('../../../SetTestenv/createSitesDocuments');
+
+var _=require('underscore');
+var redisHandler=require('../../../../routes/routesHandlers/handlerUtility/redisHandler');
+
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
@@ -886,6 +890,154 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         });
     });
 
+
+
+
+
+    describe(describeMessage, function () {
+        var testType="must test API action sendObservations and redis synchronization [create Observation]";
+        it(testType, function (done) {
+
+
+            observationUtility.findAll({},null,null,function(err,foundObs){
+                if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
+                else{
+                    foundObs.should.have.properties("observations","_metadata");
+                    foundObs.observations.length.should.be.eql(0);
+                    getDevices(3,function(deviceList){
+                        var validObservations=[
+                            {
+                                unitId:validUnits.first._id,
+                                value:validUnits.first.maxValue-1
+                            },
+                            {
+                                unitId:validUnits.first._id,
+                                value:validUnits.first.minValue+1
+                            }
+                        ];
+                        var otherValidObservations=[
+                            {
+                                unitId:validUnits.first._id,
+                                value:validUnits.first.minValue+1
+                            }
+                        ];
+
+                        var thingObservations={};
+                        thingObservations[deviceList[0]._id]=validObservations;
+                        thingObservations[deviceList[1]._id]=validObservations;
+                        thingObservations[deviceList[2]._id]=otherValidObservations;
+
+
+                        request.post({
+                            url: APIURL +'/' + thingID +'/actions/sendObservations',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({observations:thingObservations})
+                        }, function (error, response, body) {
+                            if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var results = JSON.parse(body);
+                                results.should.have.properties(deviceList[0]._id,deviceList[1]._id,deviceList[2]._id);
+
+
+                                results[deviceList[0]._id].length.should.be.eql(2);
+                                results[deviceList[0]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
+                                unitDriver.ObjectId(results[deviceList[0]._id][0].unitId).should.be.eql(validUnits.first._id);
+                                unitDriver.ObjectId(results[deviceList[0]._id][1].unitId).should.be.eql(validUnits.first._id);
+                                results[deviceList[0]._id][0].value.should.be.eql(validUnits.first.maxValue-1);
+                                results[deviceList[0]._id][1].value.should.be.eql(validUnits.first.minValue+1);
+                                Devices.ObjectId(results[deviceList[0]._id][0].deviceId).should.be.eql(deviceList[0]._id);
+                                Devices.ObjectId(results[deviceList[0]._id][1].deviceId).should.be.eql(deviceList[0]._id);
+                                results[deviceList[0]._id][0].timestamp.should.be.not.eql(null);
+                                should(results[deviceList[0]._id][0].location).be.not.null();
+                                should(results[deviceList[0]._id][0].location).be.not.undefined();
+                                should(results[deviceList[0]._id][0].location.coordinates).be.not.null();
+                                should(results[deviceList[0]._id][0].location.coordinates).be.not.undefined();
+                                results[deviceList[0]._id][0].location.coordinates.length.should.be.eql(2);
+                                results[deviceList[0]._id][0].location.coordinates[0].should.be.eql(0);
+                                results[deviceList[0]._id][0].location.coordinates[1].should.be.eql(0);
+                                results[deviceList[0]._id][1].timestamp.should.be.not.eql(null);
+                                should(results[deviceList[0]._id][1].location).be.not.null();
+                                should(results[deviceList[0]._id][1].location).be.not.undefined();
+                                should(results[deviceList[0]._id][1].location.coordinates).be.not.null();
+                                should(results[deviceList[0]._id][1].location.coordinates).be.not.undefined();
+                                results[deviceList[0]._id][1].location.coordinates.length.should.be.eql(2);
+                                results[deviceList[0]._id][1].location.coordinates[0].should.be.eql(0);
+                                results[deviceList[0]._id][1].location.coordinates[1].should.be.eql(0);
+
+                                results[deviceList[1]._id].length.should.be.eql(2);
+                                results[deviceList[1]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
+                                unitDriver.ObjectId(results[deviceList[0]._id][0].unitId).should.be.eql(validUnits.first._id);
+                                unitDriver.ObjectId(results[deviceList[0]._id][1].unitId).should.be.eql(validUnits.first._id);
+                                results[deviceList[1]._id][0].value.should.be.eql(validUnits.first.maxValue-1);
+                                results[deviceList[1]._id][1].value.should.be.eql(validUnits.first.minValue+1);
+                                Devices.ObjectId(results[deviceList[1]._id][0].deviceId).should.be.eql(deviceList[1]._id);
+                                Devices.ObjectId(results[deviceList[1]._id][1].deviceId).should.be.eql(deviceList[1]._id);
+                                results[deviceList[1]._id][0].timestamp.should.be.not.eql(null);
+                                should(results[deviceList[1]._id][0].location).be.not.null();
+                                should(results[deviceList[1]._id][0].location).be.not.undefined();
+                                should(results[deviceList[1]._id][0].location.coordinates).be.not.null();
+                                should(results[deviceList[1]._id][0].location.coordinates).be.not.undefined();
+                                results[deviceList[1]._id][0].location.coordinates.length.should.be.eql(2);
+                                results[deviceList[1]._id][0].location.coordinates[0].should.be.eql(0);
+                                results[deviceList[1]._id][0].location.coordinates[1].should.be.eql(0);
+                                results[deviceList[1]._id][1].timestamp.should.be.not.eql(null);
+                                should(results[deviceList[1]._id][1].location).be.not.null();
+                                should(results[deviceList[1]._id][1].location).be.not.undefined();
+                                should(results[deviceList[1]._id][1].location.coordinates).be.not.null();
+                                should(results[deviceList[1]._id][1].location.coordinates).be.not.undefined();
+                                results[deviceList[1]._id][1].location.coordinates.length.should.be.eql(2);
+                                results[deviceList[1]._id][1].location.coordinates[0].should.be.eql(0);
+                                results[deviceList[1]._id][1].location.coordinates[1].should.be.eql(0);
+
+
+                                results[deviceList[2]._id].length.should.be.eql(1);
+                                results[deviceList[2]._id][0].should.have.properties("unitId","deviceId","location","value","timestamp","_id");
+                                unitDriver.ObjectId(results[deviceList[0]._id][0].unitId).should.be.eql(validUnits.first._id);
+                                results[deviceList[2]._id][0].value.should.be.eql(validUnits.first.minValue+1);
+                                Devices.ObjectId(results[deviceList[2]._id][0].deviceId).should.be.eql(deviceList[2]._id);
+                                results[deviceList[2]._id][0].timestamp.should.be.not.eql(null);
+                                should(results[deviceList[2]._id][0].location).be.not.null();
+                                should(results[deviceList[2]._id][0].location).be.not.undefined();
+                                should(results[deviceList[2]._id][0].location.coordinates).be.not.null();
+                                should(results[deviceList[2]._id][0].location.coordinates).be.not.undefined();
+                                results[deviceList[2]._id][0].location.coordinates.length.should.be.eql(2);
+                                results[deviceList[2]._id][0].location.coordinates[0].should.be.eql(0);
+                                results[deviceList[2]._id][0].location.coordinates[1].should.be.eql(0);
+
+                                observationUtility.findAll({},null,null,function(err,foundObs){
+                                    if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
+                                    else {
+                                        foundObs.should.have.properties("observations", "_metadata");
+                                        foundObs.observations.length.should.be.eql(5);
+                                        setTimeout(function () {
+                                            redisHandler.getObservationsFromCache(deviceList[0]._id, {returnAsObject: true}, function (err, data) {
+                                                should(err).be.null();
+                                                _.isArray(data).should.be.equal(true);
+                                                data.length.should.be.equal(2);
+                                                redisHandler.getObservationsFromCache(deviceList[1]._id, {returnAsObject: true}, function (err, data) {
+                                                    should(err).be.null();
+                                                    _.isArray(data).should.be.equal(true);
+                                                    data.length.should.be.equal(2);
+                                                    redisHandler.getObservationsFromCache(deviceList[2]._id, {returnAsObject: true}, function (err, data) {
+                                                        should(err).be.null();
+                                                        _.isArray(data).should.be.equal(true);
+                                                        data.length.should.be.equal(1);
+                                                        done();
+                                                    });
+                                                });
+                                            }, 100);
+                                        })
+                                    }
+                                });
+                            }
+
+                        });
+                    });
+                }
+            });
+        });
+    });
 
 
 

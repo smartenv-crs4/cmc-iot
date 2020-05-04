@@ -40,8 +40,7 @@ require('./Models-Test/observations');
 
 // Utility
 require('./handlerUtility-Test/observationsUtility-Test');
-//TODO: Remove   uncomment redis test
-//require('./handlerUtility-Test/redisHandlerUtility-Test');
+require('./handlerUtility-Test/redisHandlerUtility-Test');
 
 
 

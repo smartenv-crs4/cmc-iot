@@ -20,7 +20,7 @@
  ############################################################################
  */
 
-var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
 var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');

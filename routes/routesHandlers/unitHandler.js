@@ -22,7 +22,7 @@
 
 
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
-var observationUtility = require('./handlerUtility/observationUtility')
+var observationUtility = require('./handlerUtility/observationHandlerUtility')
 
 
 /* Create unit */

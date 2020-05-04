@@ -220,11 +220,11 @@
       "observationsCacheItems":5
     },
     "redisCache":{
-      "must": false,
+      "must": true,
       "totalRetryTime": 0,
       "maxRetryTime": 1,
-      "logError": false,
-      "logCommandsFailWhenRedisIsDown": false,
+      "logError": true,
+      "logCommandsFailWhenRedisIsDown": true,
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,

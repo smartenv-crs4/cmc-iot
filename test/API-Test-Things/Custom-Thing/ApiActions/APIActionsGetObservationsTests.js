@@ -22,7 +22,7 @@
 
 
 var should = require('should/should');
-var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationUtility');
+var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var devicesDriver = require('../../../../DBEngineHandler/drivers/deviceDriver');
 var _=require('underscore');
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
