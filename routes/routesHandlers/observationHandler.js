@@ -362,7 +362,7 @@ module.exports.updateObservation = function(req, res, next) {
  *        }
  *
  * @apiUse GetAllObservationResource
- * @apiSuccess {String[]}   [distances]     Array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiSuccess {String[]}   distances     Array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
  *
  * @apiUse SearchObservationResourceExample
  *

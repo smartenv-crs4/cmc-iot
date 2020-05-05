@@ -521,7 +521,7 @@ module.exports.deleteDevice = function (req, res, next) {
  *        }
  *
  * @apiUse GetAllObservationResource
- * @apiSuccess {String[]}   [distances]     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiSuccess {String[]}   distances     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
  *
  * @apiUse SearchObservationResourceExample
  *

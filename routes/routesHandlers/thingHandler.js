@@ -82,14 +82,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess (201 - CREATED) {String} disabled                Created thing `disabled` status
  * @apiSuccess (201 - CREATED) {String} mobile                  Created thing `mobile` status
  * @apiSuccess (201 - CREATED) {String} ownerId                 Created thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess (201 - CREATED) {Object} [api]                   Created thing middleware object
- * @apiSuccess (201 - CREATED) {String} [api.url]               Created thing API URL of its connector middleware
- * @apiSuccess (201 - CREATED) {String} [api.access_token]      Created thing API access token of its connector middleware
- * @apiSuccess (201 - CREATED) {Object} [direct]                Created thing direct access
- * @apiSuccess (201 - CREATED) {String} [direct.url]            Created thing direct access URL
- * @apiSuccess (201 - CREATED) {String} [direct.access_token]   Created thing direct access token
- * @apiSuccess (201 - CREATED) {String} [direct.username]       Created thing direct access username
- * @apiSuccess (201 - CREATED) {String} [direct.password]       Created thing direct access password
+ * @apiSuccess (201 - CREATED) {Object} api                   Created thing middleware object
+ * @apiSuccess (201 - CREATED) {String} api.url               Created thing API URL of its connector middleware
+ * @apiSuccess (201 - CREATED) {String} api.access_token      Created thing API access token of its connector middleware
+ * @apiSuccess (201 - CREATED) {Object} direct                Created thing direct access
+ * @apiSuccess (201 - CREATED) {String} direct.url            Created thing direct access URL
+ * @apiSuccess (201 - CREATED) {String} direct.access_token   Created thing direct access token
+ * @apiSuccess (201 - CREATED) {String} direct.username       Created thing direct access username
+ * @apiSuccess (201 - CREATED) {String} direct.password       Created thing direct access password
  * @apiSuccess (201 - CREATED) {String} vendorId                Created thing Vendor identifier
  * @apiSuccess (201 - CREATED) {String} siteId                  Created thing Site identifier
  */
@@ -100,14 +100,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} disabled                Updated thing `disabled` status
  * @apiSuccess {String} mobile                  Updated thing `mobile` status
  * @apiSuccess {String} ownerId                 Updated thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [api]                   Updated thing middleware object
- * @apiSuccess {String} [api.url]               Updated thing API URL of its connector middleware
- * @apiSuccess {String} [api.access_token]      Updated thing API access token of its connector middleware
- * @apiSuccess {Object} [direct]                Updated thing direct access
- * @apiSuccess {String} [direct.url]            Updated thing direct access URL
- * @apiSuccess {String} [direct.access_token]   Updated thing direct access token
- * @apiSuccess {String} [direct.username]       Updated thing direct access username
- * @apiSuccess {String} [direct.password]       Updated thing direct access password
+ * @apiSuccess {Object} api                     Updated thing middleware object
+ * @apiSuccess {String} api.url                 Updated thing API URL of its connector middleware
+ * @apiSuccess {String} api.access_token        Updated thing API access token of its connector middleware
+ * @apiSuccess {Object} direct]                 Updated thing direct access
+ * @apiSuccess {String} direct.url]             Updated thing direct access URL
+ * @apiSuccess {String} direct.access_token     Updated thing direct access token
+ * @apiSuccess {String} direct.username         Updated thing direct access username
+ * @apiSuccess {String} direct.password         Updated thing direct access password
  * @apiSuccess {String} vendorId                Updated thing Vendor identifier
  * @apiSuccess {String} siteId                  Updated thing Site identifier
  */
@@ -120,14 +120,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} thing.disabled                  Thing status (enabled/disabled)
  * @apiSuccess {String} thing.mobile                    Thing mobile status (can be moved/fixed position)
  * @apiSuccess {String} thing.ownerId                   Thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [thing.api]                     Object for connector middleware/driver
- * @apiSuccess {String} [thing.api.url]                 BaseURL of the connector
- * @apiSuccess {String} [thing.api.access_token]        Access token of the connector
- * @apiSuccess {Object} [thing.direct]                  Object describing how directly reaching the Thing, bypassing CMC-Iot
- * @apiSuccess {String} [thing.direct.url]              URL for Thing direct access
- * @apiSuccess {String} [thing.direct.access_token]     Access token of Thing direct access
- * @apiSuccess {String} [thing.direct.username]         Username of Thing direct access
- * @apiSuccess {String} [thing.direct.password]         Password token of Thing direct access
+ * @apiSuccess {Object} thing.api                     Object for connector middleware/driver
+ * @apiSuccess {String} thing.api.url                 BaseURL of the connector
+ * @apiSuccess {String} thing.api.access_token        Access token of the connector
+ * @apiSuccess {Object} thing.direct                  Object describing how directly reaching the Thing, bypassing CMC-Iot
+ * @apiSuccess {String} thing.direct.url              URL for Thing direct access
+ * @apiSuccess {String} thing.direct.access_token     Access token of Thing direct access
+ * @apiSuccess {String} thing.direct.username         Username of Thing direct access
+ * @apiSuccess {String} thing.direct.password         Password token of Thing direct access
  * @apiSuccess {String} thing.vendorId                  Thing Vendor identifier
  * @apiSuccess {String} thing.siteId                    Thing Site identifier
  */
@@ -139,14 +139,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} disabled                Thing status (enabled/disabled)
  * @apiSuccess {String} mobile                  Thing mobile status (can be moved/fixed position)
  * @apiSuccess {String} ownerId                 Thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [api]                   Object for connector middleware/driver
- * @apiSuccess {String} [api.url]               BaseURL of the connector
- * @apiSuccess {String} [api.access_token]      Access token of the connector
- * @apiSuccess {Object} [direct]                Object describing how directly reaching the Thing, bypassing CMC-Iot
- * @apiSuccess {String} [direct.url]            URL for Thing direct access
- * @apiSuccess {String} [direct.access_token]   Access token of Thing direct access
- * @apiSuccess {String} [direct.username]       Username of Thing direct access
- * @apiSuccess {String} [direct.password]       Password token of Thing direct access
+ * @apiSuccess {Object} api                   Object for connector middleware/driver
+ * @apiSuccess {String} api.url               BaseURL of the connector
+ * @apiSuccess {String} api.access_token      Access token of the connector
+ * @apiSuccess {Object} direct                Object describing how directly reaching the Thing, bypassing CMC-Iot
+ * @apiSuccess {String} direct.url            URL for Thing direct access
+ * @apiSuccess {String} direct.access_token   Access token of Thing direct access
+ * @apiSuccess {String} direct.username       Username of Thing direct access
+ * @apiSuccess {String} direct.password       Password token of Thing direct access
  * @apiSuccess {String} vendorId                Thing Vendor identifier
  * @apiSuccess {String} siteId                  Thing Site identifier
  */
@@ -934,7 +934,7 @@ module.exports.addDevices = function (req, res, next) {
  *        }
  *
  * @apiUse GetAllObservationResource
- * @apiSuccess {String[]}   [distances]     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiSuccess {String[]}   distances     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
  *
  * @apiUse SearchObservationResourceExample
  *
