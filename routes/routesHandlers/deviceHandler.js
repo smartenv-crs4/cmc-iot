@@ -59,13 +59,6 @@ var _=require('underscore');
  * @apiParam (Body Parameter)   {String[]}      [searchFilters.typeId]          Filter by DeviceType. To get DeviceType identifier look at `/deviceTypes` API
  * @apiParam (Body Parameter)   {String[]}      [searchFilters.thingId]         Filter by Thing . To get Thing identifier look at `/things` API
  * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
- * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
- * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
- * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
- * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
- * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
- * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
  */
 /**
  * @apiDefine PostDeviceResource
@@ -449,6 +442,7 @@ module.exports.getDevices = function (req, res, next) {
  * @apiDescription Returns a paginated list of all dismissed Devices
  *
  * @apiUse DeviceSearchFilterParams
+ * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /devices/actions/searchDismissed?name=dev1_Crs4 dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
@@ -507,69 +501,29 @@ module.exports.deleteDevice = function (req, res, next) {
  *
  * @apiDescription Returns a paginated list of filtered Observations from a Device
  *
- * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
- * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
- * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
- * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
- * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
- * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
- * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ * @apiUse SearchObservationParams
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.unitId]          Observation Unit identifier
  * @apiUse LocationCentreBodyParams
- * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
- * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
- * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
- * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
- * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
- * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
+ * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /devices/actions/getObservations
- *  Body: {searchFilters: [
- *                         {timestamp: {from: 1590364800, to: 1590364801},
- *                          value: {0, 100},
- *                          location: {centre:{coordinates: [0,0]},
- *                                    distance: 1,
- *                                    distanceOptions: {mode: "bbox"}
- *                                    }
- *                         }
- *                        ]
+ *  Body: {"searchFilters": [
+ *                              {"timestamp": {"from": 1590364800, "to": 1590364801},
+ *                               "value": {0, 100},
+ *                               "location": {"centre": {"coordinates": [0,0]},
+ *                               "distance": 1,
+ *                               "distanceOptions": {"mode": "bbox"}
+ *                                    },
+ *                               "unitId": "543fdd60579e1281sdcf6da34"
+ *                              }
+ *                          ]
  *        }
  *
- * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
- * @apiSuccess {String}     observations._id                    Observation id
- * @apiSuccess {Number}     observations.timestamp              Observation timestamp
- * @apiSuccess {Number}     observations.value                  Observation value
- * @apiSuccess {Object}     observations.location               Observation location parent object
- * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiSuccess {String}     observations.deviceId               Observation Device identifier
- * @apiSuccess {String}     observations.unitId                 Observation Unit identifier
- * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiUse GetAllObservationResource
+ * @apiSuccess {String[]}   [distances]     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
  *
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *      {
- *       "observations": [
- *                        {
- *                         "_id": "1",
- *                         "timestamp": 1590364800,
- *                         "value": 1
- *                         "location": {"coordinates": [83.4,78.3]},
- *                         "deviceId": "543fdd60579e1281b8f6ce32",
- *                         "unitId": "meter"
- *                        },
- *                        ...
- *                       ],
- *       "distancies": [
- *                      "25",
- *                      "33",
- *                      ...
- *                     ],
- *       "_metadata": {
- *                     "skip":10,
- *                     "limit":50,
- *                     "totalCount":100
- *                    }
- *      }
+ * @apiUse SearchObservationResourceExample
  *
  * @apiUse Metadata
  * @apiUse Unauthorized
@@ -630,13 +584,7 @@ module.exports.getObservations = function (req, res, next) {
  *        }
  *
  * @apiSuccess {JSONArray}  .                      JSONArray of Observation objects
- * @apiSuccess {String}     _id                    Created Observation id
- * @apiSuccess {Number}     timestamp              Created Observation timestamp
- * @apiSuccess {Number}     value                  Created Observation value
- * @apiSuccess {Object}     location               Created Observation location parent object
- * @apiSuccess {Point}      location.coordinates   Created Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiSuccess {String}     deviceId               Created Observation Device identifier
- * @apiSuccess {String}     unitId                 Created Observation Unit identifier
+ * @apiUse GetObservationResource
  *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *          [
@@ -645,8 +593,8 @@ module.exports.getObservations = function (req, res, next) {
  *                  "timestamp": 1590364800,
  *                  "value": 1
  *                  "location": {"coordinates": [83.4,78.3]},
- *                  "deviceId": "123",
- *                  "unitId": "meter"
+ *                  "deviceId": "543fdd60579e1281b8f6aa32",
+ *                  "unitId": "543fdd60579e1281b8f6de22"
  *              },
  *              ...
  *          ]

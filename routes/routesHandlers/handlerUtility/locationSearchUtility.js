@@ -23,22 +23,22 @@
 //Begin macro
 /**
  * @apiDefine LocationBodyParams
- * @apiParam (Body Parameter)   {Object}        location                        Geographical coordinates parent object
- * @apiParam (Body Parameter)   {Point}         location.coordinates            Site coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiParam (Body Parameter)   {Number}        distance                        Radius of the search area (mode "radius"), or half the side of the square bounding box (mode "bbox")
- * @apiParam (Body Parameter)   {Object}        distanceOptions                 Distance search options parent object
- * @apiParam (Body Parameter)   {String}        distanceOptions.mode            Distance search mode; accepted values are "radius" or "bbox". Default is "bbox"
- * @apiParam (Body Parameter)   {Boolean}       distanceOptions.returnDistance  Option for returning an array of distances of each returned site from the location
+ * @apiParam (Body Parameter)   {Object}        [location]                        Geographical coordinates parent object
+ * @apiParam (Body Parameter)   {Point}         [location.coordinates]            Site coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiParam (Body Parameter)   {Number}        [distance]                        Radius of the search area (mode "radius"), or half the side of the square bounding box (mode "bbox")
+ * @apiParam (Body Parameter)   {Object}        [distanceOptions]                 Distance search options parent object
+ * @apiParam (Body Parameter)   {String}        [distanceOptions.mode]            Distance search mode; accepted values are "radius" or "bbox". Default is "bbox"
+ * @apiParam (Body Parameter)   {Boolean}       [distanceOptions.returnDistance]  Option for returning an array of distances of each returned site from the location
  */
 /**
  * @apiDefine LocationCentreBodyParams
- * @apiParam (Body Parameter)   {Object}        location                                    Location parent object
- * @apiParam (Body Parameter)   {Object}        location.centre                             Location centre parent object
- * @apiParam (Body Parameter)   {Point}         location.centre.coordinates                 Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiParam (Body Parameter)   {Number}        location.distance                           Radius of the search area (mode "radius"), or half the side of the square bounding box (mode "bbox")
- * @apiParam (Body Parameter)   {Object}        location.distanceOptions                    Distance search options parent object
- * @apiParam (Body Parameter)   {String}        location.distanceOptions.mode               Distance search mode; accepted values are "radius" or "bbox". Default is "bbox"
- * @apiParam (Body Parameter)   {Boolean}       location.distanceOptions.returnDistance     Option for returning an array of distances of each returned site from the location
+ * @apiParam (Body Parameter)   {Object}        [location]                                    Location parent object
+ * @apiParam (Body Parameter)   {Object}        [location.centre]                             Location centre parent object
+ * @apiParam (Body Parameter)   {Point}         [location.centre.coordinates]                 Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiParam (Body Parameter)   {Number}        [location.distance]                           Radius of the search area (mode "radius"), or half the side of the square bounding box (mode "bbox")
+ * @apiParam (Body Parameter)   {Object}        [location.distanceOptions]                    Distance search options parent object
+ * @apiParam (Body Parameter)   {String}        [location.distanceOptions.mode]               Distance search mode; accepted values are "radius" or "bbox". Default is "bbox"
+ * @apiParam (Body Parameter)   {Boolean}       [location.distanceOptions.returnDistance]     Option for returning an array of distances of each returned site from the location
  */
 //End macro
 
