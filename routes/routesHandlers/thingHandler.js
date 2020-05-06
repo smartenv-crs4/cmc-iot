@@ -998,33 +998,14 @@ module.exports.getObservations = function (req, res, next) {
             res.httpResponse(err, null, null);
         }else{
             if(devices && devices.devices && !_.isEmpty(devices.devices)) {
-                var foundedDev = _.map(devices.devices, function (item) {
+                var searchFilters=req.body.searchFilters || {};
+                searchFilters["devicesId"] = _.map(devices.devices, function (item) {
                     return (item._id);
                 });
-                if (req.body.searchFilters && !_.isEmpty(req.body.searchFilters)) {
-                    req.body.searchFilters["devicesId"] = foundedDev;
-                    observationUtility.searchFilter(req.body.searchFilters, false, function (err, foundedObservations) {
-                        if (foundedObservations) {
-                            var totalCount = foundedObservations.observations.length;
-                            foundedObservations.observations = foundedObservations.observations.slice(req.dbPagination.skip, req.dbPagination.skip + req.dbPagination.limit);
-                            if (foundedObservations.distances) {
-                                foundedObservations.distances = foundedObservations.distances.slice(req.dbPagination.skip, req.dbPagination.skip + req.dbPagination.limit);
-                            }
-                            foundedObservations['_metadata'] = req.dbPagination;
-                            foundedObservations._metadata['totalCount'] = totalCount;
-                        }
-                        res.httpResponse(err, req.statusCode, foundedObservations);
-                    });
-                } else { // grt from redis
-                    //TODO: set query to redis instead database
-                    observationUtility.find({deviceId: {"$in": foundedDev}}, null, {
-                        skip: 0,
-                        limit: conf.cmcIoTOptions.observationsCacheItems,
-                        lean: true
-                    }, function (err, data) {
-                        res.httpResponse(err, req.statusCode, {observations: data});
-                    });
-                }
+
+                observationUtility.searchFilter(searchFilters,req.dbPagination,false, function (err, foundedObservations) {
+                    res.httpResponse(err, req.statusCode, foundedObservations);
+                });
             }else{
                 res.httpResponse(null, req.statusCode, {observations: [], _metadata:req.dbPagination});
             }

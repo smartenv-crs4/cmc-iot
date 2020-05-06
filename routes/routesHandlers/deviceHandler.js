@@ -578,31 +578,15 @@ module.exports.deleteDevice = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+//TODO: Remove Modificato
+
 module.exports.getObservations = function (req, res, next) {
     var deviceId=req.params.id;
-    if(req.body.searchFilters && !_.isEmpty(req.body.searchFilters)) {
-        req.body.searchFilters["devicesId"] = [deviceId];
-        observationUtility.searchFilter(req.body.searchFilters, false, function (err, foundedObservations) {
-
-           if(foundedObservations){
-               var totalCount=foundedObservations.observations.length;
-               foundedObservations.observations=foundedObservations.observations.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
-               if(foundedObservations.distances){
-                   foundedObservations.distances=foundedObservations.distances.slice(req.dbPagination.skip,req.dbPagination.skip+req.dbPagination.limit);
-               }
-               foundedObservations['_metadata']=req.dbPagination;
-               foundedObservations._metadata['totalCount']=totalCount;
-           }
-
-           res.httpResponse(err, req.statusCode, foundedObservations);
-
-        });
-    }else{ // grt from redis
-        //TODO: set query to redis instead database
-        observationUtility.find({deviceId:deviceId},null,{skip:0 ,limit:conf.cmcIoTOptions.observationsCacheItems, lean:true},function(err,data){
-            res.httpResponse(err, req.statusCode, {observations:data});
-        });
-    }
+    var searchFilters=req.body.searchFilters || {};
+    searchFilters["devicesId"] = [deviceId];
+    observationUtility.searchFilter(searchFilters,req.dbPagination,false, function (err, foundedObservations) {
+        res.httpResponse(err, req.statusCode, foundedObservations);
+    });
 };
 
 

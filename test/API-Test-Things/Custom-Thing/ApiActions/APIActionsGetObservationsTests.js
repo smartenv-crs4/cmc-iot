@@ -39,6 +39,7 @@ var testMessage;
 var observationId,thingId,unitId,voidThingId;
 var searchFilter;
 var From,To,Middle;
+var pagination={skip:0,limit:conf.pagination.limit};
 
 
 
@@ -158,13 +159,64 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                    results._metadata.source.should.be.equal("Redis cache");
                     done();
                 }
             });
 
         });
     });
+
+    describe(testTypeMessage, function () {
+        testMessage="must test API action getObservations limit pagination [no body - from Redis]";
+        it(testMessage, function (done) {
+
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({pagination:{skip: 0, limit:3}})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(3);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    done();
+                }
+            });
+
+        });
+    });
+
+
+    describe(testTypeMessage, function () {
+        testMessage="must test API action getObservations skip + limit pagination [no body - from Redis]";
+        it(testMessage, function (done) {
+
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({pagination:{skip: 3, limit:3}})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(3);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    done();
+                }
+            });
+
+        });
+    });
+
 
 
     describe(testTypeMessage, function () {
@@ -182,12 +234,59 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                    results._metadata.source.should.be.equal("Redis cache");
                 }
                 done();
             });
         });
+    });
 
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from redis  [skip=9 return only 1 values]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({skip: 9})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(1);
+                    results._metadata.source.should.be.equal("Redis cache");
+                }
+                done();
+            });
+        });
+    });
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from database  [skip=10 return pagination.limit values]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({skip: 10})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results._metadata.source.should.be.equal("Database");
+                }
+                done();
+            });
+        });
     });
 
 
@@ -206,7 +305,8 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     response.statusCode.should.be.equal(200);
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
-                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                    results._metadata.source.should.be.equal("Redis cache");
                 }
                 done();
             });
@@ -274,7 +374,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by timestamp={from} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:From}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{from:From}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -309,7 +409,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by timestamp={to} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{to:To}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -341,7 +441,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by timestamp={from:"" to:""} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:Middle, to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{from:Middle, to:To}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -374,7 +474,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search timestamp order';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{to:To}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -411,7 +511,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search [thing without devices] ';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{to:To}}});
             request.post({
                 url: APIURL +'/' + voidThingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -442,7 +542,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action getObservations error due to value filter field is not valid';
         it(testMessage, function (done) {
             searchFilter.value="notValid";
-            var bodyParam=JSON.stringify({searchFilters:searchFilter});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:searchFilter});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -467,7 +567,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search error due to value={} filter field is not valid';
         it(testMessage, function (done) {
             searchFilter.value={};
-            var bodyParam=JSON.stringify({searchFilters:searchFilter});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:searchFilter});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -493,7 +593,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by value={min} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{min:0}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{value:{min:0}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -528,7 +628,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by value={max} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{max:99}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{value:{max:99}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -563,7 +663,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
         testMessage='must test API action search by value={min:"" max:""} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{min:0, max:24}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{value:{min:0, max:24}}});
             request.post({
                 url: APIURL +'/' + thingId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},

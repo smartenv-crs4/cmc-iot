@@ -61,8 +61,13 @@ module.exports.getObservationsFromCache = function (deviceId,options,callbackFun
     if(!callbackFunction){
         callbackFunction=options;
         options={};
+    }else{
+        if(!options) options={};
     }
-    redisDriver.getValuesFromKey(deviceId.toString(),0, (options.limit || observationsCacheItems)-1,function(err,reply){
+    options.skip=options.skip || 0;
+    options.limit=(options.limit || observationsCacheItems)-1;
+
+    redisDriver.getValuesFromKey(deviceId.toString(),options.skip, options.limit,function(err,reply){
         var returnObservations = [];
         if(!err) {
             if (options.returnAsObject) {
@@ -111,6 +116,7 @@ module.exports.KeyLength = function (key,callback) {
     redisDriver.llen(key,callback)
 };
 
+// todo Remove due to a mnore specific  function exixt getObservationsFromCache
 module.exports.getValuesFromKey = function (key,start,stop,callback) {
     redisDriver.getValuesFromKey(key,start,stop,callback)
 };

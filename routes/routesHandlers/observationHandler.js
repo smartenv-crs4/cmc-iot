@@ -114,7 +114,7 @@ module.exports.updateObservation = function(req, res, next) {
 
 module.exports.searchFilter= function(req, res, next) {
 
-    observationUtility.searchFilter(req.body.searchFilters,true,function(err,foundedObservations){
+    observationUtility.searchFilter(req.body.searchFilters,req.dbPagination,true,function(err,foundedObservations){
         if(err) {
             return res.httpResponse(err,null,null);
         }else{

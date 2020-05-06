@@ -25,11 +25,12 @@ var conf = require('propertiesmanager').conf;
 var _=require('underscore')
 
 
-function pagination(query){
+function pagination(query,defaultLimit){
     var paginateConf={error:null,paginateInfo:{}};
 
     var skip = query.skip && !isNaN(parseInt(query.skip)) ? parseInt(query.skip) : conf.pagination.skip;
-    var limit = query.limit && !isNaN(parseInt(query.limit)) ? parseInt(query.limit): conf.pagination.limit;
+    var limitByDefault= !(query.limit);
+    var limit = query.limit && !isNaN(parseInt(query.limit)) ? parseInt(query.limit): (defaultLimit || conf.pagination.limit);
 
 
     if((!conf.pagination.allowLargerLimit) && ((limit>conf.pagination.limit)||(limit==-1))){
@@ -42,7 +43,7 @@ function pagination(query){
         if(limit==-1)
             paginateConf.paginateInfo = {"skip": skip, totalCount:totalCount};
         else
-            paginateConf.paginateInfo = {"skip": skip, "limit": limit, totalCount:totalCount};
+            paginateConf.paginateInfo = {"skip": skip, "limit": limit, totalCount:totalCount, limitByDefault:limitByDefault};
 
     }
 
@@ -151,6 +152,25 @@ exports.parsePagination = function (req, res, next) {
         req.dbPagination=paginateInfo.paginateInfo;
         next();
     }
+
+};
+
+
+//Middleware to parse pagination params from request URI
+//Adds dbPagination to request
+exports.parsePaginationWithDefaultLimit = function (defaultLimit) {
+
+    return(function (req, res, next) {
+        var paginateInfo=pagination(req.body.pagination || req.body || req.query,defaultLimit);
+
+        if(paginateInfo.error){
+            return res.boom.badRequest(paginateInfo.error);
+        }else{
+            req.dbPagination=paginateInfo.paginateInfo;
+            next();
+        }
+
+    });
 
 };
 

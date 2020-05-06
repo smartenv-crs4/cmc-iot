@@ -38,6 +38,7 @@ var testMessage;
 var observationId,deviceId,unitId;
 var searchFilter;
 var From,To,Middle;
+var pagination={skip:0,limit:conf.pagination.limit};
 
 
 
@@ -145,7 +146,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage="must test API action getObservations  [no body - from Redis]";
         it(testMessage, function (done) {
 
-            //body: JSON.stringify({observations:observations})
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -159,7 +159,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     done();
                 }
             });
-
         });
     });
 
@@ -270,7 +269,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by timestamp={from} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:From}}});
+            var bodyParam=JSON.stringify({pagination:pagination, searchFilters:{timestamp:{from:From}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -302,7 +301,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by timestamp={to} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:{timestamp:{to:To}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -334,7 +333,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by timestamp={from:"" to:""} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{timestamp:{from:Middle, to:To}}});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:{timestamp:{from:Middle, to:To}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -370,7 +369,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action getObservations error due to value filter field is not valid';
         it(testMessage, function (done) {
             searchFilter.value="notValid";
-            var bodyParam=JSON.stringify({searchFilters:searchFilter});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:searchFilter});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -395,7 +394,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search error due to value={} filter field is not valid';
         it(testMessage, function (done) {
             searchFilter.value={};
-            var bodyParam=JSON.stringify({searchFilters:searchFilter});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:searchFilter});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -421,7 +420,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by value={min} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{min:0}}});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:{value:{min:0}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -457,7 +456,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by value={max} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{max:99}}});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:{value:{max:99}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -493,7 +492,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         testMessage='must test API action search by value={min:"" max:""} filter';
         it(testMessage, function (done) {
 
-            var bodyParam=JSON.stringify({searchFilters:{value:{min:0, max:24}}});
+            var bodyParam=JSON.stringify({pagination:pagination,searchFilters:{value:{min:0, max:24}}});
             request.post({
                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
@@ -1004,6 +1003,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1049,6 +1049,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1095,6 +1096,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1141,6 +1143,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1189,6 +1192,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                 request.post({
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1236,6 +1240,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1281,6 +1286,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1327,6 +1333,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1379,6 +1386,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1420,7 +1428,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        testMessage='must test API action search pagination[10 observations saved, get 9 or more observation and correct distance]';
+        testMessage='must test API action search pagination[10 observations saved, get 5 or more observation and correct distance]';
         it(testMessage, function (done) {
 
             var observation=[38.990519,8.936253];
@@ -1488,6 +1496,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1537,6 +1546,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     url: APIURL +'/' + deviceId +'/actions/getObservations',
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     body: JSON.stringify({
+                        pagination:pagination,
                         searchFilters: {
                             location: {
                                 centre: {
@@ -1615,6 +1625,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         url: APIURL +'/' + deviceId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
+                            pagination:pagination,
                             searchFilters: {
                                 timestamp:{
                                     from:ts
@@ -1660,6 +1671,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         url: APIURL +'/' + deviceId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
+                            pagination:pagination,
                             searchFilters: {
                                 timestamp:{
                                     from:ts,
@@ -1706,6 +1718,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         url: APIURL +'/' + deviceId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
+                            pagination:pagination,
                             searchFilters: {
                                 value:{
                                     min:value
@@ -1753,6 +1766,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         url: APIURL +'/' + deviceId +'/actions/getObservations',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                         body: JSON.stringify({
+                            pagination:pagination,
                             searchFilters: {
                                 value:{
                                     min:value,
@@ -1804,6 +1818,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 url: APIURL +'/' + deviceId +'/actions/getObservations',
                                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                 body: JSON.stringify({
+                                    pagination:pagination,
                                     searchFilters: {
                                         value:{
                                             min:value
@@ -1863,6 +1878,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                         url: APIURL +'/' + deviceId +'/actions/getObservations',
                                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                         body: JSON.stringify({
+                                            pagination:pagination,
                                             searchFilters: {
                                                 value:{
                                                     min:value
@@ -1928,6 +1944,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                             url: APIURL +'/' + deviceId +'/actions/getObservations',
                                             headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                                             body: JSON.stringify({
+                                                pagination:pagination,
                                                 searchFilters: {
                                                     value:{
                                                         min:value

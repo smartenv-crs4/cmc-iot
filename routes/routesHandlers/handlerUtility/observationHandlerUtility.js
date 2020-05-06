@@ -28,6 +28,7 @@ var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var locationSearchUtility=require("./locationSearchUtility");
 var observationUtility=require('./observationUtlity.js');
 var async = require('async');
+var conf=require('propertiesmanager').conf;
 
 var _ = require('underscore');
 //
@@ -578,10 +579,121 @@ var _ = require('underscore');
 
 module.exports.validateSearchFieldsAndGetQuery=observationUtility.validateSearchFieldsAndGetQuery;
 
-module.exports.searchFilter= function(searchFields,returnOnlyObservationsId,callBackFunction) {
+function paginationIsIntoCacheLimits(pagination,observationsCacheItems){
+    if(pagination){
+        if(!pagination.limit){
+            return({searchOnRedis:false});
+        }else{
+            if((pagination.skip||0)>=observationsCacheItems){
+                return({searchOnRedis:false});
+            }else{
+
+                if(pagination.limitByDefault){
+                    pagination.limit=observationsCacheItems;
+                    return ({searchOnRedis:true,paginationChanges:pagination});
+                }else{
+                    if(((pagination.skip || 0 ) + pagination.limit)>observationsCacheItems){
+                        return({searchOnRedis:false});
+                    }else{
+                        return ({searchOnRedis:true,paginationChanges:pagination});
+                    }
+                }
+            }
+        }
+    }else{
+        return({searchOnRedis:false});
+    }
+}
+
+function checkIfSearchOnlyByDeviceIdAndGetLimits(searchFilters){
+    var observationsCacheItems=conf.cmcIoTOptions.observationsCacheItems;
+    if(searchFilters && !_.isEmpty(searchFilters)){ // there are search filters
+        if(((_.keys(searchFilters).length)===1) && (searchFilters.devicesId)) { // only devices filter
+            return ({searchOnRedis:true,observationsCacheItems:(observationsCacheItems * searchFilters.devicesId.length)});
+        }
+        else{
+            return({searchOnRedis:false,observationsCacheItems:observationsCacheItems});  // search with more filters
+        }
+    }else{  // no filters then return all obs
+        return({searchOnRedis:false,observationsCacheItems:observationsCacheItems});
+    }
+}
+
+function mustSearchOnRedisFirst(searchFilters,pagination){
+
+    var canSearchOnlyByDeviceIdAndGetLimits=checkIfSearchOnlyByDeviceIdAndGetLimits(searchFilters);
+
+    if(canSearchOnlyByDeviceIdAndGetLimits.searchOnRedis){
+        var paginationCheck=paginationIsIntoCacheLimits(pagination,canSearchOnlyByDeviceIdAndGetLimits.observationsCacheItems);
+        if(paginationCheck.searchOnRedis){
+            return ({searchOnRedis:true,paginationChanges:paginationCheck.paginationChanges});
+        }else{
+            return({searchOnRedis:false});
+        }
+    }else{
+        return({searchOnRedis:false});
+    }
 
 
-    var observationLabel="observation";
+    // if(pagination){
+    //     var observationsCacheItems=conf.cmcIoTOptions.observationsCacheItems;
+    //     if(!pagination.limit){
+    //
+    //     }else{
+    //         var onlyDeviceFilter;
+    //         if(((_.keys(searchFilters).length)===1) && (searchFilters.devicesId)) { // only devices filter
+    //             onlyDeviceFilter=true;
+    //             observationsCacheItems *= searchFilters.devicesId.length;
+    //         }
+    //
+    //         if((!pagination.limitByDefault) && (((pagination.skip || 0 ) + pagination.limit)>observationsCacheItems)){
+    //             return({searchOnRedis:false});
+    //         }else{
+    //             if(searchFilters && !_.isEmpty(searchFilters)){ // there are search filters
+    //                 if(onlyDeviceFilter) { // only devices filter
+    //                     if(pagination.limitByDefault) {
+    //                         pagination.limit = observationsCacheItems;
+    //                     }
+    //                     return ({searchOnRedis:true,paginationChanges:pagination});
+    //                 }
+    //                 else{
+    //                     return({searchOnRedis:false});  // search with more filters
+    //                 }
+    //             }else{  // no filters then return all obs
+    //                 return({searchOnRedis:false});
+    //             }
+    //         }
+    //     }
+    // }else{
+    //     return(false);
+    // }
+
+
+};
+
+// pagination(limit) must be set otherwise, search go onto database search branch
+function searchOnRedis(devicesId,pagination,callbackValues){
+    var observationsList=[];
+    async.each(devicesId, function(deviceId, callback) {
+        redisHandler.getObservationsFromCache(deviceId,{limit:pagination.limit},function(err,deviceObservations){
+            observationsList=observationsList.concat(deviceObservations);
+            callback(err);
+        })
+    }, function(err) {
+        if( err ) {
+            callbackValues(err,null);
+        } else {
+            // limit must be set otherwise this block is not reachable due to execute branch searchOnDb
+            callbackValues(null,{
+                observations:_.sortBy(observationsList, "_id")
+            });
+            // callbackValues(null, _.sortBy(observationsList, "_id").slice(pagination.skip || 0, pagination.limit - 1));
+        }
+    });
+};
+
+function  databaseSearch(searchFields,pagination,returnOnlyObservationsId,callBackFunction){
+
 
     var fieldsToReturn= returnOnlyObservationsId ? "_id location" : null;
 
@@ -596,7 +708,7 @@ module.exports.searchFilter= function(searchFields,returnOnlyObservationsId,call
                     if(queryObj.locationInfo){ // filter by location and distance is set
                         var dstOpt=searchFields.location.distanceOptions;
                         dstOpt.mode=queryObj.locationInfo.mode;
-                        locationSearchUtility.filterByOptions(queryResults,dstOpt,queryObj.locationInfo.centre.point,searchFields.location.distance,["_id"],observationLabel,returnOnlyObservationsId,function(err,foundedObservations){
+                        locationSearchUtility.filterByOptions(queryResults,dstOpt,queryObj.locationInfo.centre.point,searchFields.location.distance,["_id"],'observation',returnOnlyObservationsId,function(err,foundedObservations){
                             if(err) {
                                 return callBackFunction(err,null);
                             }else{
@@ -604,21 +716,156 @@ module.exports.searchFilter= function(searchFields,returnOnlyObservationsId,call
                             }
                         });
                     } else{
-                        var resp={};
                         var foundedItems;
                         if(returnOnlyObservationsId) {
                             foundedItems = _.map(queryResults, function (item) {
                                 return (item._id);
-                            })
+                            });
                         }else foundedItems=queryResults;
-                        resp[observationLabel+"s"]=foundedItems;
-                        return callBackFunction(null,resp);
+                        return callBackFunction(null,{
+                            observations:foundedItems
+                        });
                     }
                 }
             });
         }
     });
+}
+
+function searchOnDbAndPopulateRedis(devicesId,pagination,callBackFunction){
+
+    var observationsList=[];
+    async.each(devicesId, function(deviceId, callback) {
+        observationsDriver.find({devicesId:[deviceId]},null,{skip:0, limit:conf.cmcIoTOptions.observationsCacheItems},false,function(err,deviceObservations){
+            if(err){
+                callback(err);
+            }else{
+                observationsList=observationsList.concat(deviceObservations);
+                redisHandler.saveObservationsToCache(deviceId,deviceObservations);
+                callback();
+            }
+        });
+
+    }, function(err) {
+        if( err ) {
+            callBackFunction(err,null);
+        } else {
+            callBackFunction(null,{
+                observations:_.sortBy(observationsList, "_id")
+            });
+        }
+    });
+
 };
+
+function setResponseWithMetadata(observations,pagination,source,callBackFunction){
+
+    if(!pagination){
+        callBackFunction(null,observations);
+    }else{
+        var foundedObservation=observations['observations'];
+        var distances=observations['distances'];
+        var start=pagination.skip || 0;
+        var stop=pagination.limit ? pagination.limit+start : undefined ;
+
+        //TODO: Remove
+        if(!foundedObservation)console.log(observations);
+
+        observations['observations']=foundedObservation.slice(start, stop);
+        if(distances)
+            observations['distances']=distances.slice(start, stop);
+
+        observations['_metadata']={
+            skip: start,
+            limit: pagination.limit || "-1",
+            totalCount:foundedObservation.length,
+            source:source
+        };
+        return callBackFunction(null,observations);
+    }
+}
+
+/* Observation Search Filters*/
+// timestamp: {From:, To;}
+// value: {min:, max:}
+// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
+// devicesId: [ids]
+// unitsId: { ids:}
+module.exports.searchFilter= function(searchFields,pagination,returnOnlyObservationsId,callBackFunction) {
+    var searchOnRedisFirst=mustSearchOnRedisFirst(searchFields,pagination);
+    if(searchOnRedisFirst.searchOnRedis){
+        var source="Redis cache";
+        pagination=searchOnRedisFirst.paginationChanges || pagination;
+        searchOnRedis(searchFields.devicesId,pagination,function(err,observationList){
+            if(err){
+                callBackFunction(err,null);
+            }else{
+                if(observationList.observations.length>0){
+                   setResponseWithMetadata(observationList,pagination,source,callBackFunction);
+                }else{ // search in Database and populate Redis
+                    searchOnDbAndPopulateRedis(searchFields.devicesId,pagination,function(err,observationList){
+                        if(err){
+                            callBackFunction(err,null);
+                        }else{
+                            setResponseWithMetadata(observationList,pagination,source,callBackFunction);
+                        }
+                    });
+                }
+            }
+       });
+   }else{
+       databaseSearch(searchFields,pagination,returnOnlyObservationsId,function(err,observationList){
+           if(err){
+               callBackFunction(err,null);
+           }else{
+               setResponseWithMetadata(observationList,pagination,"Database",callBackFunction);
+           }
+       });
+   }
+};
+
+// //TODO: remove after redis integration complete
+// module.exports.searchFilter= function(searchFields,pagination,returnOnlyObservationsId,callBackFunction) {
+//
+//
+//     var observationLabel="observation";
+//
+//     var fieldsToReturn= returnOnlyObservationsId ? "_id location" : null;
+//
+//     observationUtility.validateSearchFieldsAndGetQuery(searchFields,function(err,queryObj){
+//         if(err){
+//             return callBackFunction(err,null);
+//         }else{
+//             observationsDriver.find(queryObj.query,fieldsToReturn,{lean:true, sort:{_id:"desc"}},function(err,queryResults){
+//                 if(err){
+//                     return callBackFunction(err,null);
+//                 } else{
+//                     if(queryObj.locationInfo){ // filter by location and distance is set
+//                         var dstOpt=searchFields.location.distanceOptions;
+//                         dstOpt.mode=queryObj.locationInfo.mode;
+//                         locationSearchUtility.filterByOptions(queryResults,dstOpt,queryObj.locationInfo.centre.point,searchFields.location.distance,["_id"],observationLabel,returnOnlyObservationsId,function(err,foundedObservations){
+//                             if(err) {
+//                                 return callBackFunction(err,null);
+//                             }else{
+//                                 return callBackFunction(null,foundedObservations);
+//                             }
+//                         });
+//                     } else{
+//                         var resp={};
+//                         var foundedItems;
+//                         if(returnOnlyObservationsId) {
+//                             foundedItems = _.map(queryResults, function (item) {
+//                                 return (item._id);
+//                             })
+//                         }else foundedItems=queryResults;
+//                         resp[observationLabel+"s"]=foundedItems;
+//                         return callBackFunction(null,resp);
+//                     }
+//                 }
+//             });
+//         }
+//     });
+// };
 
 
 /* GET Observations list */
