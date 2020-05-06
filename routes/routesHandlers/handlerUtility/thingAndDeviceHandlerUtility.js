@@ -37,12 +37,22 @@ var _ = require('underscore');
  * @apiSuccess {Number} _metadata.totalCount If specified in the request, it contains the total number of query results; it is false otherwise
  */
 /**
- * @apiDefine  Pagination
+ * @apiDefine Pagination
  * @apiParam (Query Parameter) {Number}   [skip]       Pagination skip parameter - skips the first `n` results
  * @apiParam (Query Parameter) {Number}   [limit]      Pagination limit parameter - limits results total size to `n`
  * @apiParam (Query Parameter) {Boolean}  [totalCount] Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
  * @apiParam (Query Parameter) {String}   [sortAsc]    Ordering parameter - orders results by ascending values
  * @apiParam (Query Parameter) {String}   [sortDesc]   Ordering parameter - orders results by descending values
+ */
+/**
+ * @apiDefine PaginationBodyParams
+ * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
+ * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
+ * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
+ * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
+ * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
+ * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
+ * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
  */
 /**
  * @apiDefine Projection
@@ -104,6 +114,43 @@ var _ = require('underscore');
  *  HTTP/1.1 204 NoContent
  *   {
  *   }
+ */
+/**
+ * @apiDefine SearchObservationParams
+ * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
+ * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
+ * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ */
+/**
+ * @apiDefine SearchObservationResourceExample
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "observations": [
+ *                        {
+ *                         "_id": "543fdd60579e1281b8f6cd34",
+ *                         "timestamp": 1590364800,
+ *                         "value": 1
+ *                         "location": {"coordinates": [83.4,78.3]},
+ *                         "deviceId": "543fdd60579e1281b8f6ce32",
+ *                         "unitId": "543fdd60579e1281b8f6de22"
+ *                        },
+ *                        ...
+ *                       ],
+ *       "distancies": [
+ *                      "25",
+ *                      "33",
+ *                      ...
+ *                     ],
+ *       "_metadata": {
+ *                     "skip":10,
+ *                     "limit":50,
+ *                     "totalCount":100
+ *                    }
+ *      }
  */
 //End macro
 

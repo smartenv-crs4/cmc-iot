@@ -143,7 +143,7 @@ var observationUtility = require('./handlerUtility/observationHandlerUtility')
 /**
  * @api {post} /units Create a new Unit
  * @apiVersion 1.0.0
- * @apiName PosUnitType
+ * @apiName PostUnit
  * @apiGroup Units
  * @apiPermission Access Token
  *
@@ -154,14 +154,14 @@ var observationUtility = require('./handlerUtility/observationHandlerUtility')
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /units
  *  Body: {
- *          "deviceType": {
- *                          "name": "custom Unit",
- *                          "description": "A newly created Unit",
- *                          "symbol": "Z",
- *                          "minValue": 0,
- *                          "maxValue": 1000,
- *                          "observedPropertyId": "543fdd60579e1281b8f6da94"
- *                        }
+ *          "unit": {
+ *                      "name": "custom Unit",
+ *                      "description": "A newly created Unit",
+ *                      "symbol": "Z",
+ *                      "minValue": 0,
+ *                      "maxValue": 1000,
+ *                      "observedPropertyId": "543fdd60579e1281b8f6da94"
+ *                  }
  *        }
  *
  * @apiUse PostUnitResource
@@ -242,7 +242,7 @@ module.exports.getUnitById = function(req, res, next) {
 
 
 /**
- * @api {put} /domains Update a Unit
+ * @api {put} /units Update a Unit
  * @apiVersion 1.0.0
  * @apiName PutUnit
  * @apiGroup Units

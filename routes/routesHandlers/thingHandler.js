@@ -74,13 +74,6 @@ var conf = require('propertiesmanager').conf;
  * @apiParam (Body Parameter)   {String[]}      [searchFilters.vendorId]        Filter by Vendor. To get Vendor identifier look at `/vendors` API
  * @apiParam (Body Parameter)   {String[]}      [searchFilters.siteId]          Filter by Site . To get Site identifier look at `/sites` API
  * @apiParam (Body Parameter)   {Object}        [searchFilters.fields]          A list of comma separated field names to project in query results
- * @apiParam (Body Parameter)   {Object}        [pagination]                    Pagination parent object
- * @apiParam (Body Parameter)   {Number}        [pagination.skip]               Pagination skip parameter - skips the first `n` results
- * @apiParam (Body Parameter)   {Number}        [pagination.limit]              Pagination limit parameter - limits results total size to `n`
- * @apiParam (Body Parameter)   {Boolean}       [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Body Parameter)   {Object}        [options]                       Options parent object
- * @apiParam (Body Parameter)   {String}        [options.sortAsc]               Ordering parameter - orders results by ascending values
- * @apiParam (Body Parameter)   {String}        [options.sortDesc]              Ordering parameter - orders results by descending values
  */
 /**
  * @apiDefine PostThingResource
@@ -89,14 +82,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess (201 - CREATED) {String} disabled                Created thing `disabled` status
  * @apiSuccess (201 - CREATED) {String} mobile                  Created thing `mobile` status
  * @apiSuccess (201 - CREATED) {String} ownerId                 Created thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess (201 - CREATED) {Object} [api]                   Created thing middleware object
- * @apiSuccess (201 - CREATED) {String} [api.url]               Created thing API URL of its connector middleware
- * @apiSuccess (201 - CREATED) {String} [api.access_token]      Created thing API access token of its connector middleware
- * @apiSuccess (201 - CREATED) {Object} [direct]                Created thing direct access
- * @apiSuccess (201 - CREATED) {String} [direct.url]            Created thing direct access URL
- * @apiSuccess (201 - CREATED) {String} [direct.access_token]   Created thing direct access token
- * @apiSuccess (201 - CREATED) {String} [direct.username]       Created thing direct access username
- * @apiSuccess (201 - CREATED) {String} [direct.password]       Created thing direct access password
+ * @apiSuccess (201 - CREATED) {Object} api                   Created thing middleware object
+ * @apiSuccess (201 - CREATED) {String} api.url               Created thing API URL of its connector middleware
+ * @apiSuccess (201 - CREATED) {String} api.access_token      Created thing API access token of its connector middleware
+ * @apiSuccess (201 - CREATED) {Object} direct                Created thing direct access
+ * @apiSuccess (201 - CREATED) {String} direct.url            Created thing direct access URL
+ * @apiSuccess (201 - CREATED) {String} direct.access_token   Created thing direct access token
+ * @apiSuccess (201 - CREATED) {String} direct.username       Created thing direct access username
+ * @apiSuccess (201 - CREATED) {String} direct.password       Created thing direct access password
  * @apiSuccess (201 - CREATED) {String} vendorId                Created thing Vendor identifier
  * @apiSuccess (201 - CREATED) {String} siteId                  Created thing Site identifier
  */
@@ -107,14 +100,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} disabled                Updated thing `disabled` status
  * @apiSuccess {String} mobile                  Updated thing `mobile` status
  * @apiSuccess {String} ownerId                 Updated thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [api]                   Updated thing middleware object
- * @apiSuccess {String} [api.url]               Updated thing API URL of its connector middleware
- * @apiSuccess {String} [api.access_token]      Updated thing API access token of its connector middleware
- * @apiSuccess {Object} [direct]                Updated thing direct access
- * @apiSuccess {String} [direct.url]            Updated thing direct access URL
- * @apiSuccess {String} [direct.access_token]   Updated thing direct access token
- * @apiSuccess {String} [direct.username]       Updated thing direct access username
- * @apiSuccess {String} [direct.password]       Updated thing direct access password
+ * @apiSuccess {Object} api                     Updated thing middleware object
+ * @apiSuccess {String} api.url                 Updated thing API URL of its connector middleware
+ * @apiSuccess {String} api.access_token        Updated thing API access token of its connector middleware
+ * @apiSuccess {Object} direct]                 Updated thing direct access
+ * @apiSuccess {String} direct.url]             Updated thing direct access URL
+ * @apiSuccess {String} direct.access_token     Updated thing direct access token
+ * @apiSuccess {String} direct.username         Updated thing direct access username
+ * @apiSuccess {String} direct.password         Updated thing direct access password
  * @apiSuccess {String} vendorId                Updated thing Vendor identifier
  * @apiSuccess {String} siteId                  Updated thing Site identifier
  */
@@ -127,14 +120,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} thing.disabled                  Thing status (enabled/disabled)
  * @apiSuccess {String} thing.mobile                    Thing mobile status (can be moved/fixed position)
  * @apiSuccess {String} thing.ownerId                   Thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [thing.api]                     Object for connector middleware/driver
- * @apiSuccess {String} [thing.api.url]                 BaseURL of the connector
- * @apiSuccess {String} [thing.api.access_token]        Access token of the connector
- * @apiSuccess {Object} [thing.direct]                  Object describing how directly reaching the Thing, bypassing CMC-Iot
- * @apiSuccess {String} [thing.direct.url]              URL for Thing direct access
- * @apiSuccess {String} [thing.direct.access_token]     Access token of Thing direct access
- * @apiSuccess {String} [thing.direct.username]         Username of Thing direct access
- * @apiSuccess {String} [thing.direct.password]         Password token of Thing direct access
+ * @apiSuccess {Object} thing.api                     Object for connector middleware/driver
+ * @apiSuccess {String} thing.api.url                 BaseURL of the connector
+ * @apiSuccess {String} thing.api.access_token        Access token of the connector
+ * @apiSuccess {Object} thing.direct                  Object describing how directly reaching the Thing, bypassing CMC-Iot
+ * @apiSuccess {String} thing.direct.url              URL for Thing direct access
+ * @apiSuccess {String} thing.direct.access_token     Access token of Thing direct access
+ * @apiSuccess {String} thing.direct.username         Username of Thing direct access
+ * @apiSuccess {String} thing.direct.password         Password token of Thing direct access
  * @apiSuccess {String} thing.vendorId                  Thing Vendor identifier
  * @apiSuccess {String} thing.siteId                    Thing Site identifier
  */
@@ -146,14 +139,14 @@ var conf = require('propertiesmanager').conf;
  * @apiSuccess {String} disabled                Thing status (enabled/disabled)
  * @apiSuccess {String} mobile                  Thing mobile status (can be moved/fixed position)
  * @apiSuccess {String} ownerId                 Thing owner identifier. Automatically set to the user associated with the access token
- * @apiSuccess {Object} [api]                   Object for connector middleware/driver
- * @apiSuccess {String} [api.url]               BaseURL of the connector
- * @apiSuccess {String} [api.access_token]      Access token of the connector
- * @apiSuccess {Object} [direct]                Object describing how directly reaching the Thing, bypassing CMC-Iot
- * @apiSuccess {String} [direct.url]            URL for Thing direct access
- * @apiSuccess {String} [direct.access_token]   Access token of Thing direct access
- * @apiSuccess {String} [direct.username]       Username of Thing direct access
- * @apiSuccess {String} [direct.password]       Password token of Thing direct access
+ * @apiSuccess {Object} api                   Object for connector middleware/driver
+ * @apiSuccess {String} api.url               BaseURL of the connector
+ * @apiSuccess {String} api.access_token      Access token of the connector
+ * @apiSuccess {Object} direct                Object describing how directly reaching the Thing, bypassing CMC-Iot
+ * @apiSuccess {String} direct.url            URL for Thing direct access
+ * @apiSuccess {String} direct.access_token   Access token of Thing direct access
+ * @apiSuccess {String} direct.username       Username of Thing direct access
+ * @apiSuccess {String} direct.password       Password token of Thing direct access
  * @apiSuccess {String} vendorId                Thing Vendor identifier
  * @apiSuccess {String} siteId                  Thing Site identifier
  */
@@ -477,6 +470,7 @@ module.exports.getThings = function (req, res, next) {
  * @apiDescription Returns a paginated list of all dismissed Things
  *
  * @apiUse ThingSearchFilterParams
+ * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /things/actions/searchDismissed?name=thing1_Crs4 thing2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
@@ -767,8 +761,8 @@ module.exports.deleteThing = function (req, res, next) {
  *                                          "timestamp": 1590364800,
  *                                          "value": 1
  *                                          "location": {"coordinates": [83.4,78.3]},
- *                                          "deviceId": "123",
- *                                          "unitId": "meter"
+ *                                          "deviceId": "543fdd60579e1281b8f6ae12",
+ *                                          "unitId": "543fdd60579e1281b8f6de22"
  *                                      },
  *                                      ...
  *                                   ],
@@ -920,69 +914,29 @@ module.exports.addDevices = function (req, res, next) {
  *
  * @apiDescription Returns a paginated list of filtered Observations from a Thing
  *
- * @apiParam (Body Parameter)   {Object[]}   [searchFilters]                 Filters array parent object
- * @apiParam (Body Parameter)   {Object}     [searchFilters.timestamp]       Observation timestamp parent object
- * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.From]  Time interval start
- * @apiParam (Body Parameter)   {Timestamp}  [searchFilters.timestamp.To]    Time interval end
- * @apiParam (Body Parameter)   {Object}     [searchFilters.value]           Observation value parent object
- * @apiParam (Body Parameter)   {Number}     [searchFilters.value.min]       Observation minimum value
- * @apiParam (Body Parameter)   {Number}     [searchFilters.value.max]       Observation maximum value
+ * @apiUse SearchObservationParams
+ * @apiParam (Body Parameter)   {Number}     [searchFilters.unitId]          Observation Unit identifier
  * @apiUse LocationCentreBodyParams
- * @apiParam (Body Parameter)   {Object}     [pagination]                    Pagination parent object
- * @apiParam (Body Parameter)   {Number}     [pagination.skip]               Pagination skip parameter - skips the first `n` results
- * @apiParam (Body Parameter)   {Number}     [pagination.limit]              Pagination limit parameter - limits results total size to `n`
- * @apiParam (Body Parameter)   {Boolean}    [pagination.totalCount]         Pagination totalCount parameter. If true, in `_metadata` field `totalCount` parameter contains the total number of returned objects
- * @apiParam (Body Parameter)   {Object}     [options]                       Options parent object
- * @apiParam (Body Parameter)   {String}     [options.sortAsc]               Ordering parameter - orders results by ascending values
- * @apiParam (Body Parameter)   {String}     [options.sortDesc]              Ordering parameter - orders results by descending values
+ * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 GET /things/actions/getObservations
- *  Body: {searchFilters: [
- *                         {timestamp: {from: 1590364800, to: 1590364801},
- *                          value: {0, 100},
- *                          location: {centre:{coordinates: [0,0]},
- *                                    distance: 1,
- *                                    distanceOptions: {mode: "bbox"}
- *                                    }
- *                         }
- *                        ]
+ *  Body: {"searchFilters": [
+ *                              {"timestamp": {"from": 1590364800, "to": 1590364801},
+ *                               "value": {0, 100},
+ *                               "location": {"centre": {"coordinates": [0,0]},
+ *                               "distance": 1,
+ *                               "distanceOptions": {"mode": "bbox"}
+ *                              },
+ *                               "unitId": "543fdd60579e1281sdcf6da34"
+ *                              }
+ *                          ]
  *        }
  *
- * @apiSuccess {Object[]}   observations                        A paginated array list of Observation objects
- * @apiSuccess {String}     observations._id                    Observation id
- * @apiSuccess {Number}     observations.timestamp              Observation timestamp
- * @apiSuccess {Number}     observations.value                  Observation value
- * @apiSuccess {Object}     observations.location               Observation location parent object
- * @apiSuccess {Point}      observations.location.coordinates   Coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiSuccess {String}     observations.deviceId               Observation Device identifier
- * @apiSuccess {String}     observations.unitId                 Observation Unit identifier
- * @apiSuccess {String[]}   [distances]                         A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
+ * @apiUse GetAllObservationResource
+ * @apiSuccess {String[]}   distances     A paginated array list of the distances of each returned Observation from the search coordinates (if returnDistance is true)
  *
- * @apiSuccessExample {json} Example: 200 OK, Success Response
- *      {
- *       "observations": [
- *                        {
- *                         "_id": "1",
- *                         "timestamp": 1590364800,
- *                         "value": 1
- *                         "location": {"coordinates": [83.4,78.3]},
- *                         "deviceId": "543fdd60579e1281b8f6ce32",
- *                         "unitId": "meter"
- *                        },
- *                        ...
- *                       ],
- *       "distancies": [
- *                      "25",
- *                      "33",
- *                      ...
- *                     ],
- *       "_metadata": {
- *                     "skip":10,
- *                     "limit":50,
- *                     "totalCount":100
- *                    }
- *      }
+ * @apiUse SearchObservationResourceExample
  *
  * @apiUse Metadata
  * @apiUse Unauthorized

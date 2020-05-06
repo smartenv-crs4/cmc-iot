@@ -32,54 +32,54 @@ var async=require("async");
 //Begin macro
 /**
  * @apiDefine SiteBodyParams
- * @apiParam (Body Parameter) {Object}   site                           Site dictionary with all the fields
- * @apiParam (Body Parameter) {String}   site.name                      Site name
- * @apiParam (Body Parameter) {String}   site.description               Site description
- * @apiParam (Body Parameter) {Object}   site.location                  Object for geographical coordinates
- * @apiParam (Body Parameter) {Point}    site.location.coordinates      Site coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
- * @apiParam (Body Parameter) {ObjectId} [site.locatedInSiteId]         Site Foreign Key to "parent" site (where this site is located) (e.g. a room inside a building)
+ * @apiParam (Body Parameter)   {Object}        site                            Site dictionary with all the fields
+ * @apiParam (Body Parameter)   {String}        site.name                       Site name
+ * @apiParam (Body Parameter)   {String}        site.description                Site description
+ * @apiParam (Body Parameter)   {Object}        site.location                   Object for geographical coordinates
+ * @apiParam (Body Parameter)   {Point}         site.location.coordinates       Site coordinates point object in the format: [lon,lat] (e.g. [93.4,23.6])
+ * @apiParam (Body Parameter)   {ObjectId}      [site.locatedInSiteId]          Site Foreign Key to "parent" site (where this site is located) (e.g. a room inside a building)
  */
 /**
  * @apiDefine SiteQueryParams
- * @apiParam (Query Parameter) {String[]}   [sites]                     Search by site
- * @apiParam (Query Parameter) {String[]}   [name]                      Filter by site name
- * @apiParam (Query Parameter) {String[]}   [description]               Filter by site description
- * @apiParam (Query Parameter) {String[]}   [locatedInSiteId]           Filter by the "parent" site (where this site is located)
+ * @apiParam (Query Parameter)  {String[]}      [sites]                         Search by site
+ * @apiParam (Query Parameter)  {String[]}      [name]                          Filter by site name
+ * @apiParam (Query Parameter)  {String[]}      [description]                   Filter by site description
+ * @apiParam (Query Parameter)  {String[]}      [locatedInSiteId]               Filter by the "parent" site (where this site is located)
  */
 /**
  * @apiDefine PostSiteResource
- * @apiSuccess (201 - CREATED) {String} name                    Created site name
- * @apiSuccess (201 - CREATED) {String} description             Created site description
- * @apiSuccess (201 - CREATED) {Object} location                Created site location object
- * @apiSuccess (201 - CREATED) {Point}  location.coordinates    Created site coordinates
- * @apiSuccess (201 - CREATED) {String} [locatedInSiteId]       Created site identifier of "parent" location (where this site is located)
+ * @apiSuccess (201 - CREATED)  {String}        name                            Created site name
+ * @apiSuccess (201 - CREATED)  {String}        description                     Created site description
+ * @apiSuccess (201 - CREATED)  {Object}        location                        Created site location object
+ * @apiSuccess (201 - CREATED)  {Point}         location.coordinates            Created site coordinates
+ * @apiSuccess (201 - CREATED)  {String}        locatedInSiteId                 Created site identifier of "parent" location (where this site is located)
  */
 /**
  * @apiDefine PutSiteResource
- * @apiSuccess {String} name                    Updated site name
- * @apiSuccess {String} description             Updated site description
- * @apiSuccess {Object} location                Updated site location object
- * @apiSuccess {Point} location.coordinates     Updated site coordinates
- * @apiSuccess {String} [locatedInSiteId]       Updated site identifier of "parent" location (where this site is located)
+ * @apiSuccess                  {String}        name                            Updated site name
+ * @apiSuccess                  {String}        description                     Updated site description
+ * @apiSuccess                  {Object}        location                        Updated site location object
+ * @apiSuccess                  {Point}         location.coordinates            Updated site coordinates
+ * @apiSuccess                  {String}        locatedInSiteId                 Updated site identifier of "parent" location (where this site is located)
  */
 /**
  * @apiDefine GetAllSiteResource
- * @apiSuccess {Object[]} sites                     A paginated array list of Site objects
- * @apiSuccess {String} site._id                    Site identifier
- * @apiSuccess {String} site.name                   Site name
- * @apiSuccess {String} site.description            Site description
- * @apiSuccess {Object} site.location               Object for site location
- * @apiSuccess {Point} site.location.coordinates    Location coordinates
- * @apiSuccess {String} [site.locatedInSiteId]      Identifier of "parent" location (where this site is located)
+ * @apiSuccess                  {Object[]}      sites                           A paginated array list of Site objects
+ * @apiSuccess                  {String}        site._id                        Site identifier
+ * @apiSuccess                  {String}        site.name                       Site name
+ * @apiSuccess                  {String}        site.description                Site description
+ * @apiSuccess                  {Object}        site.location                   Object for site location
+ * @apiSuccess                  {Point}         site.location.coordinates       Location coordinates
+ * @apiSuccess                  {String}        site.locatedInSiteId            Identifier of "parent" location (where this site is located)
  */
 /**
  * @apiDefine GetSiteResource
- * @apiSuccess {String} _id                     Site identifier
- * @apiSuccess {String} name                    Site name
- * @apiSuccess {String} description             Site description
- * @apiSuccess {Object} location                Object for site location
- * @apiSuccess {Point}  location.coordinates    Location coordinates
- * @apiSuccess {String} [locatedInSiteId]       Identifier of "parent" location (where this site is located)
+ * @apiSuccess                  {String}        _id                             Site identifier
+ * @apiSuccess                  {String}        name                            Site name
+ * @apiSuccess                  {String}        description                     Site description
+ * @apiSuccess                  {Object}        location                        Object for site location
+ * @apiSuccess                  {Point}         location.coordinates            Location coordinates
+ * @apiSuccess                  {String}        locatedInSiteId                 Identifier of "parent" location (where this site is located)
  */
 /**
  * @apiDefine PostSiteResourceExample
@@ -240,7 +240,7 @@ module.exports.getLinkedSites = function(req, res, next) {
  * Body:{"location": {"coordinates":[83.4,78.3]}, "distance": "100", "distanceOptions": {"mode":"bbox"}}
  *
  * @apiSuccess  {String[]}      linkedSites     A paginated array list of Site ids
- * @apiSuccess  {String[]}      [distances]     A paginated array list of the distances of each returned Site from the search coordinates (if returnDistance is true)
+ * @apiSuccess  {String[]}      distances       A paginated array list of the distances of each returned Site from the search coordinates (if returnDistance is true)
  *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *     {

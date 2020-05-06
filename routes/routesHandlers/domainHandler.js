@@ -273,7 +273,44 @@ module.exports.deleteDomain = function (req, res, next) {
 };
 
 
-
+/**
+ * @api {post} /domains/actions/getDeviceTypes Get DeviceTypes
+ * @apiVersion 1.0.0
+ * @apiName DomainGetDeviceTypes
+ * @apiGroup Domains
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns all the DeviceTypes belonging to one or more Domains
+ *
+ * @apiParam (Body Parameter)   {String[]}     domains          Array list of Domain ids
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /domains/actions/getDeviceTypes
+ *  Body: {"domains": ["543fdd60579e1281b8f6ca41", "543fdd60579e1281b8f6ca42"]}
+ *
+ * @apiSuccess {String[]}       deviceType_domains                  Array list of all associations between the Domains passed as body parameter and their DeviceTypes
+ * @apiSuccess {String}         deviceType_domains.domainId         Domain identifier
+ * @apiSuccess {String}         deviceType_domains.deviceTypeId     DeviceType identifier
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *      {
+ *       "deviceType_domains": [
+ *                               {"domainId": "543fdd60579e1281b8f6ca41",
+ *                                "deviceTypeId": "543fdd60579e1281b8f6da52"
+ *                               },
+ *                               {"domainId": "543fdd60579e1281b8f6ca41",
+ *                                "deviceTypeId": "543fdd60579e1281b8f6da53"
+ *                               },
+ *                               ...
+ *                             ]
+ *      }
+ *
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiUse BadRequest
+ * @apiUse InternalServerError
+ * @apiUse NoContent
+ */
 module.exports.getDeviceTypes = function (req, res, next) {
     var id = req.params.id;
 
