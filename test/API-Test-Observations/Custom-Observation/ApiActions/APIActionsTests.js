@@ -237,6 +237,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(100);
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -244,6 +245,118 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
     });
 
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search by timestamp={from} filter and pagination skip=40';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({pagination:{skip:40},searchFilters:{timestamp:{from:From}}});
+            request.post({
+                url: APIURL + '/actions/search',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(60);
+                    results._metadata.skip.should.be.equal(40);
+                    results._metadata.limit.should.be.equal('-1');
+                    results._metadata.source.should.be.equal('Database');
+
+                }
+                done();
+            });
+        });
+
+    });
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search by timestamp={from} filter and pagination limit=30';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({pagination:{limit:30},searchFilters:{timestamp:{from:From}}});
+            request.post({
+                url: APIURL + '/actions/search',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(30);
+                    results._metadata.limit.should.be.equal(30);
+                    results._metadata.skip.should.be.equal(0);
+                    results._metadata.source.should.be.equal('Database');
+                }
+                done();
+            });
+        });
+
+    });
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search by timestamp={from} filter and pagination skip=10 limit=30';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({pagination:{skip:10,limit:30},searchFilters:{timestamp:{from:From}}});
+            request.post({
+                url: APIURL + '/actions/search',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(30);
+                    results._metadata.limit.should.be.equal(30)
+                    results._metadata.skip.should.be.equal(10)
+                    results._metadata.source.should.be.equal('Database');
+                }
+                done();
+            });
+        });
+
+    });
+
+    //TODO: Remove
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action search by timestamp={from} filter from Redis Cache';
+        it(testMessage, function (done) {
+
+            var bodyParam=JSON.stringify({pagination:{skip:0,limit:3},searchFilters:{devicesId:[deviceId]}});
+            request.post({
+                url: APIURL + '/actions/search',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: bodyParam
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testTypeMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(3);
+                    results._metadata.limit.should.be.equal(3)
+                    results._metadata.skip.should.be.equal(0)
+                    results._metadata.source.should.be.equal('Redis cache');
+                }
+                done();
+            });
+        });
+
+    });
 
     describe(testTypeMessage, function () {
         testMessage='must test API action search by timestamp={to} filter';
@@ -262,6 +375,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(100);
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -288,6 +402,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('observations');
                     results.observations.length.should.be.lessThan(100);
                     results.observations.length.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -374,6 +489,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(100);
                     results.observations[0].should.not.have.property("_id")
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -399,6 +515,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(100);
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -424,6 +541,7 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(50);
+                    results._metadata.source.should.be.equal('Database');
                 }
                 done();
             });
@@ -473,6 +591,7 @@ describe(testTypeMessage, function () {
                 var results = JSON.parse(body);
                 results.should.have.property('observations');
                 results.observations.length.should.be.equal(50);
+                results._metadata.source.should.be.equal('Database');
             }
             done();
         });

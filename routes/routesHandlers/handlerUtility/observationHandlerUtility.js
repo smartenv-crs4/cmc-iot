@@ -671,23 +671,59 @@ function mustSearchOnRedisFirst(searchFilters,pagination){
 
 };
 
+
+function searchOnDbAndPopulateRedis(devicesId,callBackFunction){
+
+    var observationsList=[];
+    async.each(devicesId, function(deviceId, callback) {
+        observationsDriver.find({deviceId:deviceId},null,{lean:true, sort:{timestamp:"desc"},skip:0, limit:conf.cmcIoTOptions.observationsCacheItems},function(err,deviceObservations){
+            if(err){
+                callback(err);
+            }else{
+                observationsList=observationsList.concat(deviceObservations);
+                redisHandler.saveObservationsToCache(deviceId,deviceObservations.reverse());
+                callback();
+            }
+        });
+    }, function(err) {
+        callBackFunction(err,{
+            observations:observationsList
+        });
+    });
+};
+
+
 // pagination(limit) must be set otherwise, search go onto database search branch
 function searchOnRedis(devicesId,pagination,callbackValues){
     var observationsList=[];
+    var notAvailableOnRedis=[];
     async.each(devicesId, function(deviceId, callback) {
-        redisHandler.getObservationsFromCache(deviceId,{limit:pagination.limit},function(err,deviceObservations){
-            observationsList=observationsList.concat(deviceObservations);
+        redisHandler.getObservationsFromCache(deviceId,{limit:pagination.limit,returnAsObject:true},function(err,deviceObservations){
+            if(deviceObservations.length>0)
+                observationsList=observationsList.concat(deviceObservations);
+            else notAvailableOnRedis.push(deviceId);
             callback(err);
         })
     }, function(err) {
         if( err ) {
             callbackValues(err,null);
         } else {
-            // limit must be set otherwise this block is not reachable due to execute branch searchOnDb
-            callbackValues(null,{
-                observations:_.sortBy(observationsList, "_id")
-            });
-            // callbackValues(null, _.sortBy(observationsList, "_id").slice(pagination.skip || 0, pagination.limit - 1));
+            if(notAvailableOnRedis.length>0){
+                searchOnDbAndPopulateRedis(devicesId,function(err,databaseObs){
+                    if(err) callbackValues(err,null);
+                    else{
+                        observationsList=observationsList.concat(databaseObs.observations);
+                        callbackValues(null,{
+                            observations:_.sortBy(observationsList, "timestamp").reverse(),
+                            source:"Redis Cache - Database"
+                        });
+                    }
+                })
+            }else{
+                callbackValues(null,{
+                    observations:_.sortBy(observationsList, "timestamp").reverse(),
+                });
+            }
         }
     });
 };
@@ -695,13 +731,13 @@ function searchOnRedis(devicesId,pagination,callbackValues){
 function  databaseSearch(searchFields,pagination,returnOnlyObservationsId,callBackFunction){
 
 
-    var fieldsToReturn= returnOnlyObservationsId ? "_id location" : null;
+    var fieldsToReturn= returnOnlyObservationsId ? "_id location timestamp" : null;
 
     observationUtility.validateSearchFieldsAndGetQuery(searchFields,function(err,queryObj){
         if(err){
             return callBackFunction(err,null);
         }else{
-            observationsDriver.find(queryObj.query,fieldsToReturn,{lean:true, sort:{_id:"desc"}},function(err,queryResults){
+            observationsDriver.find(queryObj.query,fieldsToReturn,{lean:true, sort:{timestamp:"desc"}},function(err,queryResults){
                 if(err){
                     return callBackFunction(err,null);
                 } else{
@@ -732,35 +768,15 @@ function  databaseSearch(searchFields,pagination,returnOnlyObservationsId,callBa
     });
 }
 
-function searchOnDbAndPopulateRedis(devicesId,pagination,callBackFunction){
-
-    var observationsList=[];
-    async.each(devicesId, function(deviceId, callback) {
-        observationsDriver.find({devicesId:[deviceId]},null,{skip:0, limit:conf.cmcIoTOptions.observationsCacheItems},false,function(err,deviceObservations){
-            if(err){
-                callback(err);
-            }else{
-                observationsList=observationsList.concat(deviceObservations);
-                redisHandler.saveObservationsToCache(deviceId,deviceObservations);
-                callback();
-            }
-        });
-
-    }, function(err) {
-        if( err ) {
-            callBackFunction(err,null);
-        } else {
-            callBackFunction(null,{
-                observations:_.sortBy(observationsList, "_id")
-            });
-        }
-    });
-
-};
-
 function setResponseWithMetadata(observations,pagination,source,callBackFunction){
 
     if(!pagination){
+        observations['_metadata']={
+            skip: 0,
+            limit: (pagination && pagination.limit) || "-1",
+            totalCount:(observations && observations.observations && observations.observations.length),
+            source:source
+        };
         callBackFunction(null,observations);
     }else{
         var foundedObservation=observations['observations'];
@@ -768,16 +784,13 @@ function setResponseWithMetadata(observations,pagination,source,callBackFunction
         var start=pagination.skip || 0;
         var stop=pagination.limit ? pagination.limit+start : undefined ;
 
-        //TODO: Remove
-        if(!foundedObservation)console.log(observations);
-
         observations['observations']=foundedObservation.slice(start, stop);
         if(distances)
             observations['distances']=distances.slice(start, stop);
 
         observations['_metadata']={
             skip: start,
-            limit: pagination.limit || "-1",
+            limit: (pagination && pagination.limit) || "-1",
             totalCount:foundedObservation.length,
             source:source
         };
@@ -800,17 +813,7 @@ module.exports.searchFilter= function(searchFields,pagination,returnOnlyObservat
             if(err){
                 callBackFunction(err,null);
             }else{
-                if(observationList.observations.length>0){
-                   setResponseWithMetadata(observationList,pagination,source,callBackFunction);
-                }else{ // search in Database and populate Redis
-                    searchOnDbAndPopulateRedis(searchFields.devicesId,pagination,function(err,observationList){
-                        if(err){
-                            callBackFunction(err,null);
-                        }else{
-                            setResponseWithMetadata(observationList,pagination,source,callBackFunction);
-                        }
-                    });
-                }
+                setResponseWithMetadata(observationList,pagination,observationList.source || source,callBackFunction);
             }
        });
    }else{
@@ -926,6 +929,7 @@ module.exports.findByIdAndRemove = function(id, options, callback) {
 
 /* GET Observations list */
 //TODO: da mettere il controllo redis o DB???
+// provare a commentare e se mnon serve rimuoivere queta risorsa find()
 module.exports.find = function(conditions, fields, options, callback) {
     observationsDriver.find(conditions, fields, options,callback);
 };

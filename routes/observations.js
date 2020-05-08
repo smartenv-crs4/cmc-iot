@@ -43,13 +43,14 @@ var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 // unitsId: { ids:}
 router.post('/actions/search', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["searchFilters"]),mongosecurity.parseForOperators, function(req, res, next) {
     req.statusCode=200;
+    req.dbPagination=req.body.pagination ? {skip:(req.body.pagination.skip || 0 ) , limit: (req.body.pagination.limit || undefined)} : null;
     observationsHandler.searchFilter(req, res, next)
-})
+});
 
 /* Create observation */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.postCreateObservation(req, res, next)
-})
+});
 
 
 
@@ -57,13 +58,13 @@ router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.valid
 /* Update observation */
 router.put('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeUpdated"),authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.updateObservation(req, res, next)
-})
+});
 
 
 /* Delete observation */
 router.delete('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeDeleted"),authorisationManager.checkToken], function(req, res, next) {
     observationsHandler.deleteObservation(req, res, next)
-})
+});
 
 
 /* Query parsing modules */
@@ -72,17 +73,17 @@ router.use(parseRequestMiddleware.parseFields);
 /* Read observation */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     observationsHandler.getObservationById(req, res, next)
-})
+});
 
 
-router.use(parseRequestMiddleware.parseOptions)
-router.use(mongosecurity.parseForOperators)
+router.use(parseRequestMiddleware.parseOptions);
+router.use(mongosecurity.parseForOperators);
 
 
 /* GET observations list */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("observations"), function(req, res, next) {
-    observationsHandler.getObservations(req, res, next)
-})
+    observationsHandler.getObservations(req, res, next);
+});
 
 
-module.exports = router
+module.exports = router;

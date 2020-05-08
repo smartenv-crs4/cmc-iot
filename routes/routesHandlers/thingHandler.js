@@ -961,7 +961,9 @@ module.exports.getObservations = function (req, res, next) {
                     res.httpResponse(err, req.statusCode, foundedObservations);
                 });
             }else{
-                res.httpResponse(null, req.statusCode, {observations: [], _metadata:req.dbPagination});
+                var metadata=req.dbPagination;
+                metadata['source']="Database";
+                res.httpResponse(null, req.statusCode, {observations: [], _metadata:metadata});
             }
         }
     });

@@ -23,6 +23,7 @@
 
 var should = require('should/should');
 var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
+var redisHandler=require('../../../../routes/routesHandlers/handlerUtility/redisHandler');
 var _=require('underscore');
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
 var conf = require('propertiesmanager').conf;
@@ -156,6 +157,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
                     done();
                 }
             });
@@ -179,6 +181,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
                 }
                 done();
             });
@@ -203,6 +206,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     var results = JSON.parse(body);
                     results.should.have.property('observations');
                     results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
                 }
                 done();
             });
@@ -212,6 +216,313 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
 
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from Redis [Results ordered by tiestamp]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + deviceId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                    }
+                }
+                done();
+            });
+        });
+    });
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from Redis [Results ordered by timestamp and pagination]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + deviceId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                    }
+                }
+
+                observationUtility.create({value:11,deviceId:deviceId,unitId:unitId,location:results.observations[0].location},function(error,newObs){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        request.post({
+                            url: APIURL +'/' + deviceId +'/actions/getObservations',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({pagination:{skip:0,limit:1},searchFilters: {}})
+                        }, function (error, response, body) {
+
+                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var results = JSON.parse(body);
+                                results.should.have.property('observations');
+                                results.observations.length.should.be.equal(1);
+                                results._metadata.source.should.be.equal("Redis cache");
+                                results.observations[0].value.should.be.equal(newObs.value);
+                                results.observations[0].deviceId.should.be.equal(newObs.deviceId.toString());
+                                results.observations[0].unitId.should.be.equal(newObs.unitId.toString());
+                                results.observations[0].timestamp.should.be.equal(newObs.timestamp);
+                                results.observations[0]._id.should.be.equal(newObs._id.toString());
+                            }
+                            done();
+                        });
+                    }
+                });
+            });
+        });
+    });
+
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from database [Results ordered by timestamp and pagination]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + deviceId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {unitId:unitId}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.pagination.limit);
+                    results._metadata.source.should.be.equal("Database");
+                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                    }
+                }
+
+                observationUtility.create({value:11,deviceId:deviceId,unitId:unitId,location:results.observations[0].location},function(error,newObs){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        request.post({
+                            url: APIURL +'/' + deviceId +'/actions/getObservations',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({pagination:{skip:0,limit:1},searchFilters: {unitId:unitId}})
+                        }, function (error, response, body) {
+
+                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var results = JSON.parse(body);
+                                results.should.have.property('observations');
+                                results.observations.length.should.be.equal(1);
+                                results._metadata.source.should.be.equal("Database");
+                                results.observations[0].value.should.be.equal(newObs.value);
+                                results.observations[0].deviceId.should.be.equal(newObs.deviceId.toString());
+                                results.observations[0].unitId.should.be.equal(newObs.unitId.toString());
+                                results.observations[0].timestamp.should.be.equal(newObs.timestamp);
+                                results.observations[0]._id.should.be.equal(newObs._id.toString());
+                            }
+                            done();
+                        });
+                    }
+                });
+            });
+        });
+    });
+
+
+
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from Redis and database [Results ordered by timestamp and pagination]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + deviceId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                    }
+                }
+
+                observationUtility.create({value:11,deviceId:deviceId,unitId:unitId,location:results.observations[0].location},function(error,newObs){
+                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                    else{
+                        request.post({
+                            url: APIURL +'/' + deviceId +'/actions/getObservations',
+                            headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                            body: JSON.stringify({pagination:{skip:0,limit:1},searchFilters: {}})
+                        }, function (error, response, body) {
+
+                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                            else {
+                                response.statusCode.should.be.equal(200);
+                                var results = JSON.parse(body);
+                                results.should.have.property('observations');
+                                results.observations.length.should.be.equal(1);
+                                results._metadata.source.should.be.equal("Redis cache");
+                                results.observations[0].value.should.be.equal(newObs.value);
+                                results.observations[0].deviceId.should.be.equal(newObs.deviceId.toString());
+                                results.observations[0].unitId.should.be.equal(newObs.unitId.toString());
+                                results.observations[0].timestamp.should.be.equal(newObs.timestamp);
+                                results.observations[0]._id.should.be.equal(newObs._id.toString());
+                            }
+
+                            observationUtility.findByIdAndUpdate(newObs._id,{value:12},function(error,updatedObs){
+                                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                else{
+                                    // wait redis to sync
+                                    setTimeout(function(){
+                                        redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                            else{
+                                                redisObs.length.should.be.equal(0);
+                                                request.post({
+                                                    url: APIURL +'/' + deviceId +'/actions/getObservations',
+                                                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                                                    body: JSON.stringify({pagination:{skip:0,limit:1},searchFilters: {}})
+                                                }, function (error, response, body) {
+                                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                    else {
+                                                        var results = JSON.parse(body);
+                                                        results.should.have.property('observations');
+                                                        results.observations.length.should.be.equal(1);
+                                                        results._metadata.source.should.be.equal("Redis Cache - Database");
+                                                        results.observations[0].value.should.be.equal(updatedObs.value);
+                                                        results.observations[0].deviceId.should.be.equal(newObs.deviceId.toString());
+                                                        results.observations[0].unitId.should.be.equal(newObs.unitId.toString());
+                                                        results.observations[0].timestamp.should.be.equal(newObs.timestamp);
+                                                        results.observations[0]._id.should.be.equal(newObs._id.toString());
+                                                    }
+                                                    redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                                        if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                        else{
+                                                            redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                            redisObs[0].value.should.be.equal(updatedObs.value);
+                                                            redisObs[0].deviceId.should.be.equal(newObs.deviceId.toString());
+                                                            redisObs[0].unitId.should.be.equal(newObs.unitId.toString());
+                                                            redisObs[0].timestamp.should.be.equal(newObs.timestamp);
+                                                            redisObs[0]._id.should.be.equal(newObs._id.toString());
+                                                            done();
+                                                        }
+                                                    })
+                                                });
+                                            }
+                                        })
+                                    },10);
+                                }
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    });
+
+
+
+    describe(testTypeMessage, function () {
+        this.timeout(0);
+        testMessage='must test API action getObservations from Redis [test branch where redis cache is void and should be populated]';
+        it(testMessage, function (done) {
+
+            redisHandler.getObservationsFromCache(deviceId,function (error,redisObs) {
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else{
+                    redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+
+                    request.post({
+                        url: APIURL +'/' + deviceId +'/actions/getObservations',
+                        headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                        body: JSON.stringify({searchFilters: {}})
+                    }, function (error, response, body) {
+
+                        if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                        else {
+                            response.statusCode.should.be.equal(200);
+                            var results = JSON.parse(body);
+                            results.should.have.property('observations');
+                            results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                            results._metadata.source.should.be.equal("Redis cache");
+                            for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                                results.observations[obsIndex].timestamp.should.be.lessThanOrEqual(results.observations[obsIndex-1].timestamp);
+                            }
+                        }
+
+                        observationUtility.findByIdAndUpdate(results.observations[0]._id,{value:11},function(error,updatedObs){
+                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                            else{
+                                // wait redis to sync
+                                setTimeout(function(){
+                                    redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                        if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                        else{
+                                            redisObs.length.should.be.equal(0);
+                                            request.post({
+                                                url: APIURL +'/' + deviceId +'/actions/getObservations',
+                                                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                                                body: JSON.stringify({searchFilters: {}})
+                                            }, function (error, response, body) {
+
+                                                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                else {
+                                                    response.statusCode.should.be.equal(200);
+                                                    var results = JSON.parse(body);
+                                                    results.should.have.property('observations');
+                                                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                    results._metadata.source.should.be.equal("Redis Cache - Database");
+                                                    for(var obsIndex=1; obsIndex<results.observations;++obsIndex){
+                                                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                                                    }
+                                                }
+                                                redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                    else{
+                                                        redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                        done();
+                                                    }
+                                                })
+                                            });
+                                        }
+                                    })
+                                },10);
+
+                            }
+                        });
+
+                    });
+                }
+            });
+        });
+    });
 
 
     describe(testTypeMessage, function () {
@@ -289,6 +600,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(60);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -321,11 +633,11 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(60);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
         });
-
     });
 
 
@@ -355,6 +667,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results._metadata.should.have.property('totalCount');
                     results.observations.length.should.be.lessThanOrEqual(60);
                     results.observations.length.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -444,6 +757,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.observations.length.should.be.greaterThan(0);
                     results._metadata.totalCount.should.be.lessThanOrEqual(60);
                     results._metadata.totalCount.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -480,6 +794,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.observations.length.should.be.greaterThan(0);
                     results._metadata.totalCount.should.be.lessThanOrEqual(60);
                     results._metadata.totalCount.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -513,6 +828,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.lessThanOrEqual(25);
                     results._metadata.totalCount.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -1031,6 +1347,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(1);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1078,6 +1395,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(2);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1125,6 +1443,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(5);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1173,6 +1492,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1222,6 +1542,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(1);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1269,6 +1590,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(2);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1315,6 +1637,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(5);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1363,6 +1686,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                         for(res in results.observations){
                             results.observations[res].should.not.have.property("observationId");
                             results.observations[res].should.not.have.property("distance");
@@ -1418,6 +1742,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1476,6 +1801,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(5);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1528,6 +1854,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1578,6 +1905,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                         for(res in results.observations){
                             results.distances[res].should.be.lessThanOrEqual(test_distance);
                         }
@@ -1648,6 +1976,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1695,6 +2024,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1741,6 +2071,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1789,7 +2120,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                             results._metadata.should.have.property('limit');
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
-                            results._metadata.totalCount.should.be.equal(nUpdate);;
+                            results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1845,6 +2177,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                                     results._metadata.should.have.property('totalCount');
                                     results._metadata.totalCount.should.be.equal(nUpdate);
+                                    results._metadata.source.should.be.equal("Database");
                                 }
                                 done();
                             });
@@ -1906,6 +2239,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                                             results._metadata.should.have.property('totalCount');
                                             results._metadata.totalCount.should.be.equal(nUpdate);
+                                            results._metadata.source.should.be.equal("Database");
                                         }
                                         done();
                                     });
@@ -1984,6 +2318,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                                 results._metadata.limit.should.be.equal(conf.pagination.limit);
                                                 results._metadata.should.have.property('totalCount');
                                                 results._metadata.totalCount.should.be.equal(9);
+                                                results._metadata.source.should.be.equal("Database");
                                                 for(res in results.observations){
                                                     results.distances[res].should.be.lessThanOrEqual(test_distance);
                                                 }

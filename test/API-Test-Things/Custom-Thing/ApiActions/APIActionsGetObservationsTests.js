@@ -24,6 +24,7 @@
 var should = require('should/should');
 var observationUtility = require('../../../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
 var devicesDriver = require('../../../../DBEngineHandler/drivers/deviceDriver');
+var redisHandler=require('../../../../routes/routesHandlers/handlerUtility/redisHandler');
 var _=require('underscore');
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
 var conf = require('propertiesmanager').conf;
@@ -36,7 +37,8 @@ var geoLatLon=require('../../../../routes/routesHandlers/handlerUtility/geoLatLo
 var webUiToken;
 var testTypeMessage="POST /things/:id/actions/sendObservations";
 var testMessage;
-var observationId,thingId,unitId,voidThingId;
+var observationId,thingId,unitId,voidThingId,deviceId;
+var deviceToChange
 var searchFilter;
 var From,To,Middle;
 var pagination={skip:0,limit:conf.pagination.limit};
@@ -69,7 +71,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
     beforeEach(function (done) {
         From=new Date().getTime();
         observationDocuments.createDocuments(40, function (err, ForeignKeys) {
-            var deviceToChange=ForeignKeys.deviceId;
+            deviceToChange=ForeignKeys.deviceId;
             voidThingId=ForeignKeys.thingId;
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - beforreEach - Observations.create ---> " + err);
             setTimeout(function(){ // to create other 50 with a different timestamo
@@ -79,6 +81,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     observationId = ForeignKeys.observationId;
                     thingId=ForeignKeys.thingId;
                     unitId=ForeignKeys.unitId;
+                    deviceId=ForeignKeys.deviceId;
                     searchFilter={
                         timestamp:{
                             from:new Date().getTime(),
@@ -315,8 +318,134 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
     });
 
 
+    describe(testTypeMessage, function () {
+        testMessage='must test API action getObservations from Redis [Results ordered by timestamp]';
+        it(testMessage, function (done) {
+
+            request.post({
+                url: APIURL +'/' + thingId +'/actions/getObservations',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                body: JSON.stringify({searchFilters: {}})
+            }, function (error, response, body) {
+
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('observations');
+                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                    results._metadata.source.should.be.equal("Redis cache");
+                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                        results.observations[obsIndex].timestamp.should.be.lessThanOrEqual(results.observations[obsIndex-1].timestamp);
+                    }
+                }
+                done();
+            });
+        });
+
+    });
 
 
+
+
+    describe(testTypeMessage, function () {
+        this.timeout(0);
+        testMessage='must test API action getObservations from Redis [test branch where redis cache is void and should be populated]';
+        it(testMessage, function (done) {
+
+            redisHandler.getObservationsFromCache(deviceId,function (error,redisObs) {
+                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                else{
+                    redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                    redisHandler.getObservationsFromCache(deviceToChange,function (error,redisObs) {
+                        if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                        else{
+                            redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+
+                            request.post({
+                                url: APIURL +'/' + thingId +'/actions/getObservations',
+                                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                                body: JSON.stringify({searchFilters: {}})
+                            }, function (error, response, body) {
+
+                                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                else {
+                                    response.statusCode.should.be.equal(200);
+                                    var results = JSON.parse(body);
+                                    results.should.have.property('observations');
+                                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                                    results._metadata.source.should.be.equal("Redis cache");
+                                    for(var obsIndex=1; obsIndex<results.observations.length;++obsIndex){
+                                        results.observations[obsIndex].timestamp.should.be.lessThanOrEqual(results.observations[obsIndex-1].timestamp);
+                                    }
+                                }
+
+                                observationUtility.findByIdAndUpdate(results.observations[0]._id,{value:11},function(error,updatedObs){
+                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                    else{
+                                        // wait redis to sync
+                                        setTimeout(function(){
+                                            redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                else{
+                                                    redisHandler.getObservationsFromCache(deviceToChange,{returnAsObject:true},function (error,redisObsBis) {
+                                                        if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                        else{
+                                                            if(redisObsBis.length>redisObs.length) {
+                                                                redisObs.length.should.be.equal(0);
+                                                                redisObsBis.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                            }else{
+                                                                redisObsBis.length.should.be.equal(0);
+                                                                redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                            }
+
+                                                            request.post({
+                                                                url: APIURL +'/' + thingId +'/actions/getObservations',
+                                                                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
+                                                                body: JSON.stringify({searchFilters: {}})
+                                                            }, function (error, response, body) {
+
+                                                                if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                                else {
+                                                                    response.statusCode.should.be.equal(200);
+                                                                    var results = JSON.parse(body);
+                                                                    results.should.have.property('observations');
+                                                                    results.observations.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems*2);
+                                                                    results._metadata.source.should.be.equal("Redis Cache - Database");
+                                                                    for(var obsIndex=1; obsIndex<results.observations;++obsIndex){
+                                                                        results.observations[obsIndex].timestamp.should.be.lessThan(results.observations[obsIndex-1].timestamp);
+                                                                    }
+                                                                }
+                                                                redisHandler.getObservationsFromCache(deviceId,{returnAsObject:true},function (error,redisObs) {
+                                                                    if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                                    else{
+                                                                        redisObs.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                                        redisHandler.getObservationsFromCache(deviceToChange,{returnAsObject:true},function (error,redisObsBis) {
+                                                                            if(error) consoleLogError.printErrorLog(testMessageMessage +": " + testMessage +" -->" + error.message);
+                                                                            else{
+                                                                                redisObsBis.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
+                                                                                done();
+                                                                            }
+                                                                        })
+                                                                    }
+                                                                })
+                                                            });
+                                                        }
+                                                    })
+                                                }
+                                            })
+                                        },10);
+
+                                    }
+                                });
+
+                            });
+                        }
+                    })
+                }
+            });
+        });
+    });
 
 
     describe(testTypeMessage, function () {
@@ -394,6 +523,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -429,6 +559,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -463,6 +594,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.should.have.property('totalCount');
                     results.observations.length.should.be.lessThanOrEqual(100);
                     results.observations.length.should.be.greaterThan(0);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -494,6 +626,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.source.should.be.equal("Database");
                     for(req in results.observations) {
                         if (results.observations[req + 1]) {
                             results.observations[req].timestamp.should.be.greaterThanOrEqual(results.observations[req + 1].timestamp);
@@ -531,6 +664,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(false);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -616,6 +750,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results.observations.length.should.be.lessThanOrEqual(100);
                     results.observations.length.should.be.greaterThan(0);
                     results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -651,6 +786,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results.observations.length.should.be.lessThanOrEqual(100);
                     results.observations.length.should.be.greaterThan(0);
                     results._metadata.totalCount.should.be.equal(100);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -683,6 +819,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                     results._metadata.should.have.property('totalCount');
                     results._metadata.totalCount.should.be.equal(50);
+                    results._metadata.source.should.be.equal("Database");
                 }
                 done();
             });
@@ -1200,6 +1337,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(1);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1246,6 +1384,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(2);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1292,6 +1431,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(5);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1339,6 +1479,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1387,6 +1528,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(1);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1433,6 +1575,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(2);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1478,6 +1621,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(5);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1525,6 +1669,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                         for(res in results.observations){
                             results.observations[res].should.not.have.property("observationId");
                             results.observations[res].should.not.have.property("distance");
@@ -1582,6 +1727,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1637,6 +1783,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(5);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1688,6 +1835,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.greaterThanOrEqual(9);
+                        results._metadata.source.should.be.equal("Database");
                     }
                     done();
                 });
@@ -1737,6 +1885,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                         results._metadata.limit.should.be.equal(conf.pagination.limit);
                         results._metadata.should.have.property('totalCount');
                         results._metadata.totalCount.should.be.equal(9);
+                        results._metadata.source.should.be.equal("Database");
                         for(res in results.observations){
                             results.distances[res].should.be.lessThanOrEqual(test_distance);
                         }
@@ -1807,6 +1956,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1853,6 +2003,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1898,6 +2049,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -1946,6 +2098,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                             results._metadata.should.have.property('totalCount');
                             results._metadata.totalCount.should.be.equal(nUpdate);
+                            results._metadata.source.should.be.equal("Database");
                         }
                         done();
                     });
@@ -2000,6 +2153,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                                     results._metadata.limit.should.be.equal(conf.pagination.limit);
                                     results._metadata.should.have.property('totalCount');
                                     results._metadata.totalCount.should.be.equal(nUpdate);
+                                    results._metadata.source.should.be.equal("Database");
                                 }
                                 done();
                             });
@@ -2060,6 +2214,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                                             results._metadata.limit.should.be.equal(conf.pagination.limit);
                                             results._metadata.should.have.property('totalCount');
                                             results._metadata.totalCount.should.be.equal(nUpdate);
+                                            results._metadata.source.should.be.equal("Database");
                                         }
                                         done();
                                     });
@@ -2137,6 +2292,7 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
                                                 results._metadata.limit.should.be.equal(conf.pagination.limit);
                                                 results._metadata.should.have.property('totalCount');
                                                 results._metadata.totalCount.should.be.equal(9);
+                                                results._metadata.source.should.be.equal("Database");
                                                 for(res in results.observations){
                                                     results.distances[res].should.be.lessThanOrEqual(test_distance);
                                                 }

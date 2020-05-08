@@ -86,7 +86,7 @@ module.exports.getObservationsFromCache = function (deviceId,options,callbackFun
 
 module.exports.removeObservationsFromCache = function (devicesId,callback) {
     if(devicesId.length>0)
-        redisDriver.deleteKeys(devicesId,callback)
+        redisDriver.deleteKeys(devicesId,callback);
 };
 
 
