@@ -227,7 +227,6 @@ function deleteThingById(id,res){
     });
 }
 
-
 /**
  * @api {post} /things/:id/actions/disable Disable Thing
  * @apiVersion 1.0.0

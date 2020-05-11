@@ -16,6 +16,11 @@ exports.stopTime=function(testName) {
     tests[testName]=moment(end.diff(start)).utc().format("HH:mm:ss");
 };
 
+exports.stopTimeRaw=function() {
+    end=moment(new Date()).utc();
+    return(moment(end.diff(start)).utc());
+};
+
 exports.printReport=function() {
     console.log("REPORT-REPORT-REPORT-REPORT-REPORT-REPORT-REPORT-REPORT-REPORT-REPORT");
    for (var key in tests){

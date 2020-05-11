@@ -24,6 +24,7 @@ var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
 var thingDriver = require('../../../DBEngineHandler/drivers/thingDriver');
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var async = require('async');
+var conf=require('propertiesmanager').conf;
 
 var _ = require('underscore');
 
@@ -192,7 +193,7 @@ function getDevLocation(deviceInfo,callback){
 
 module.exports.getDeviceLocation =function (deviceInfo,callback){
     getDevLocation(deviceInfo,callback);
-}
+};
 
 
 module.exports.getDeviceStatus=function getDeviceStatus(deviceId,extractLocation,callback){
@@ -308,4 +309,29 @@ module.exports.getThingStatus=function getThingStatus(thingId,callback){
         Err.name = "BadRequestError";
         callback(Err);
     }
+};
+
+function getDeviceObservationsRedisNotification(id) {
+    return({
+        redisService:conf.redisPushNotification.connection,
+        channel:conf.redisPushNotification.notificationChannelsPrefix.observations+ id
+    });
+};
+
+
+
+module.exports.getDeviceObservationsRedisNotification =getDeviceObservationsRedisNotification;
+
+
+module.exports.getThingObservationsRedisNotification = function(id,callback) {
+    deviceDriver.findAll({thingId:id},"_id",{},function(err,devicesId){
+        if(err) callback(err);
+        else{
+            var redisNotification={};
+            for(var deviceId in devicesId.devices){
+                redisNotification[devicesId.devices[deviceId]._id]= getDeviceObservationsRedisNotification(devicesId.devices[deviceId]._id);
+            }
+            callback(null, redisNotification);
+        }
+    });
 };

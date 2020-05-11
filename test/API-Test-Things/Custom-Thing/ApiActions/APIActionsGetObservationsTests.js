@@ -118,7 +118,9 @@ describe('Things API Test - [ACTIONS getObservations TESTS]', function () {
     afterEach(function (done) {
         observationDocuments.deleteDocuments(function (err, elm) {
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - afterEach - deleteMany ---> " + err);
-            done()
+            redisHandler.flushDb(function(){
+                done()
+            });
         });
     });
 

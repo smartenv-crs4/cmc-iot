@@ -24,6 +24,7 @@
 require('./Custom-ApiAction/CRUD-Tests');
 require('./Custom-ApiAction/searchFilterTests');
 require('./Custom-ApiAction/dataValidationTests');
+require('./Custom-ApiAction/ApiActions/RedisObservationsNotification');
 require('./From_Template/accessTokenSecurityTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');

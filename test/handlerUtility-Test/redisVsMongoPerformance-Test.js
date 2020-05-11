@@ -22,6 +22,7 @@
 
 var db = require("../../connectionsHandler/mongooseConnection");
 var observationUtility = require('../../routes/routesHandlers/handlerUtility/observationHandlerUtility');
+var observationDriver=require('../../DBEngineHandler/drivers/observationDriver');
 var observationDocuments = require('../SetTestenv/createObservationsDocuments');
 var consoleLogError = require('../Utility/errorLogs');
 var redisHandler = require('../../DBEngineHandler/drivers/redisDriver');
@@ -32,7 +33,9 @@ var _ = require('underscore');
 var observation;
 var testType = "Redis Handler Test Functions";
 var testMessage = "";
-var deviceId;
+var deviceId,unitId;
+var testTime=require('../Utility/TestTime');
+var numbers=200;
 
 
 describe('Redis Handler Test', function () {
@@ -58,12 +61,12 @@ describe('Redis Handler Test', function () {
         observationDocuments.createDocuments(1, function (err, ForeignKeys) {
             if (err) consoleLogError.printErrorLog("Redis Handler Test - beforeEach ---> " + err);
             deviceId = ForeignKeys.deviceId;
+            unitId = ForeignKeys.unitId;
+
             observationUtility.findById(ForeignKeys.observationId, function (err, obs) {
                 if (err) consoleLogError.printErrorLog("Redis Handler Test - beforeEach ---> " + err);
                 observation = obs;
-                redisHandler.flushall(function (err, data) {
-                    done();
-                });
+                done();
             })
         });
     });
@@ -80,184 +83,373 @@ describe('Redis Handler Test', function () {
 
 
     describe(testType, function () {
-        testMessage = "must test single observation save and read";
-        it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation], function (err, data) {
-                if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                data.should.be.equal(1);
-                redisHandler.getObservations(deviceId, function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    _.isArray(data).should.be.equal(true);
-                    data[0].should.not.have.property("deviceId");
-                    data[0].should.not.have.property("value");
-                    data[0].should.not.have.property("unitId");
-                    done();
-                });
-            })
-        });
-    });
-
-    describe(testType, function () {
-        testMessage = "must test single observation save and read as Obj";
-        it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation], function (err, data) {
-                if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                data.should.be.equal(1);
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    _.isArray(data).should.be.equal(true);
-                    data[0].deviceId.should.be.equal(observation.deviceId.toString());
-                    data[0].unitId.should.be.equal(observation.unitId.toString());
-                    data[0].value.should.be.equal(observation.value);
-                    done();
-                });
-            })
-        });
-    });
-
-
-    describe(testType, function () {
-        testMessage = "must test 2 observation save and read as Obj";
-        it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation, observation], function (err, data) {
-                if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                data.should.be.equal(2);
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    _.isArray(data).should.be.equal(true);
-                    data.length.should.be.equal(2);
-                    data[0].deviceId.should.be.equal(observation.deviceId.toString());
-                    data[0].unitId.should.be.equal(observation.unitId.toString());
-                    data[0].value.should.be.equal(observation.value);
-                    data[1].deviceId.should.be.equal(observation.deviceId.toString());
-                    data[1].unitId.should.be.equal(observation.unitId.toString());
-                    data[1].value.should.be.equal(observation.value);
-                    done();
-                });
-            })
-        });
-    });
-
-
-    describe(testType, function () {
-        testMessage = "must test 2 observation save and read";
-        it(testMessage, function (done) {
-            redisHandler.addObservations(deviceId, [observation, observation], function (err, data) {
-                if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                data.should.be.equal(2);
-                redisHandler.getObservations(deviceId, false, function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    _.isArray(data).should.be.equal(true);
-                    data.length.should.be.equal(2);
-                    data[0].should.not.have.property("deviceId");
-                    data[0].should.not.have.property("value");
-                    data[0].should.not.have.property("unitId");
-                    done();
-                });
-            })
-        });
-    });
-
-
-    describe(testType, function () {
         this.timeout(0);
-        testMessage = "must test 20 observation single save and 5 read";
+        testMessage = "must test " + numbers + " observation items creations";
         it(testMessage, function (done) {
+            var range = _.range(numbers);
 
-            var range = _.range(0, 20);
-            async.eachSeries(range, function (value, clb) {
-                observation.value = value;
-                redisHandler.addObservations(deviceId, [observation], function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
-                    clb();
-                })
-            }, function (err) {
-                redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    _.isArray(data).should.be.equal(true);
-                    data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
-                    data[0].deviceId.should.be.equal(observation.deviceId.toString());
-                    data[0].unitId.should.be.equal(observation.unitId.toString());
-                    data[1].deviceId.should.be.equal(observation.deviceId.toString());
-                    data[1].unitId.should.be.equal(observation.unitId.toString());
-                    data[0].value.should.be.equal(19);
-                    data[1].value.should.be.equal(18);
-                    data[2].value.should.be.equal(17);
-                    data[3].value.should.be.equal(16);
-                    data[4].value.should.be.equal(15);
-                    done();
-                });
-            });
-        });
-    });
+            async.series([
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationDriver.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
 
-    describe(testType, function () {
-        this.timeout(0);
-        testMessage = "must test 20 observation multiple save and 5 read";
-        it(testMessage, function (done) {
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw()); //0
+                        });
 
-            var range = _.range(0, 20);
-            var obs = [];
-            async.eachSeries(range, function (value, clb) {
-                observation.value = value;
-                obs.push(JSON.parse(JSON.stringify(observation)));
-                clb();
-            }, function (err) {
-                redisHandler.addObservations(deviceId, obs, function (err, data) {
+                    },
+                    function(callback) {
+                        observationDriver.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted); //1
+                        });
+
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//2
+                        });
+                    },
+                    function(callback) {
+                        observationUtility.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted); //3
+                        });
+
+                    }
+                ],
+                function(err, results) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
-                    redisHandler.getObservations(deviceId, {returnAsObject: true}, function (err, data) {
-                        if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                        _.isArray(data).should.be.equal(true);
-                        data.length.should.be.equal(conf.cmcIoTOptions.observationsCacheItems);
-                        data[0].deviceId.should.be.equal(observation.deviceId.toString());
-                        data[0].unitId.should.be.equal(observation.unitId.toString());
-                        data[1].deviceId.should.be.equal(observation.deviceId.toString());
-                        data[1].unitId.should.be.equal(observation.unitId.toString());
-                        data[0].value.should.be.equal(19);
-                        data[1].value.should.be.equal(18);
-                        data[2].value.should.be.equal(17);
-                        data[3].value.should.be.equal(16);
-                        data[4].value.should.be.equal(15);
+                    else{
+                        results[0].should.be.lessThanOrEqual(results[2]);
+                        console.log("Creation without Redis: "+results[0].format('x'));
+                        console.log("Creatiion With Redis: "+results[2].format('x'));
                         done();
-                    });
-                })
-            });
+                    }
+                });
+
         });
     });
+
 
     describe(testType, function () {
         this.timeout(0);
-        testMessage = "must test getObservat6ion limit option";
+        testMessage = "must test " + numbers + " observation items Reads with limit=1";
         it(testMessage, function (done) {
+            var range = _.range(numbers);
 
-            var range = _.range(0, 20);
-            var obs = [];
-            async.eachSeries(range, function (value, clb) {
-                observation.value = value;
-                obs.push(JSON.parse(JSON.stringify(observation)));
-                clb();
-            }, function (err) {
-                redisHandler.addObservations(deviceId, obs, function (err, data) {
+            async.series([
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationDriver.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done"); //0
+                        });
+
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId],unitsId:[unitId]},{limit:1},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Database");
+                                    foundedObj.observations.length.should.be.equal(1);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//1
+                        });
+                    },
+                    function(callback) {
+                        observationDriver.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted); //2
+                        });
+
+                    },
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done");//0
+                        });
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId]},{limit:1},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Redis cache");
+                                    foundedObj.observations.length.should.be.equal(1);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//4
+                        });
+                    },
+                    function(callback) {
+                        observationUtility.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted);
+                        });
+
+                    }
+                ],
+                function(err, results) {
                     if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    data.should.be.lessThanOrEqual(conf.cmcIoTOptions.observationsCacheItems);
-                    redisHandler.getObservations(deviceId, {returnAsObject: true, limit:2}, function (err, data) {
-                        if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                        _.isArray(data).should.be.equal(true);
-                        data.length.should.be.equal(2);
-                        data[0].deviceId.should.be.equal(observation.deviceId.toString());
-                        data[0].unitId.should.be.equal(observation.unitId.toString());
-                        data[1].deviceId.should.be.equal(observation.deviceId.toString());
-                        data[1].unitId.should.be.equal(observation.unitId.toString());
-                        data[0].value.should.be.equal(19);
-                        data[1].value.should.be.equal(18);
+                    else{
+                        results[1].should.be.greaterThanOrEqual(results[4]);
+                        console.log("Read without Redis Cache: "+ results[1].format('x'));
+                        console.log("Read With Redis Cache: "+results[4].format('x'));
                         done();
-                    });
-                })
-            });
+                    }
+                });
         });
     });
 
+
+    describe(testType, function () {
+        this.timeout(0);
+        testMessage = "must test " + numbers + " observation items Reads with limit=5";
+        it(testMessage, function (done) {
+            var range = _.range(numbers);
+
+            async.series([
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationDriver.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done");//0
+                        });
+
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId],unitsId:[unitId]},{limit:5},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Database");
+                                    foundedObj.observations.length.should.be.equal(5);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//0
+                        });
+                    },
+                    function(callback) {
+                        observationDriver.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted);//2
+                        });
+
+                    },
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done");//3
+                        });
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId]},{limit:5},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Redis cache");
+                                    foundedObj.observations.length.should.be.equal(5);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//4
+                        });
+                    },
+                    function(callback) {
+                        observationUtility.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted);//5
+                        });
+
+                    }
+                ],
+                function(err, results) {
+                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                    else{
+                        results[1].should.be.greaterThanOrEqual(results[4]);
+                        console.log("Read without Redis Cache: "+ results[1].format('x'));
+                        console.log("Read With Redis Cache: "+results[4].format('x'));
+                        done();
+                    }
+                });
+        });
+    });
+
+
+    describe(testType, function () {
+        this.timeout(0);
+        testMessage = "must test " + numbers + " observation items Creation and Read with limit=5";
+        it(testMessage, function (done) {
+            var range = _.range(numbers);
+
+            async.series([
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationDriver.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done");//0
+                        });
+
+                    },
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId],unitsId:[unitId]},{limit:5},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Database");
+                                    foundedObj.observations.length.should.be.equal(5);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//1
+                        });
+                    },
+                    function(callback) {
+                        observationDriver.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted);//2
+                        });
+
+                    },
+                    function(callback) {
+                        testTime.startTime();
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) throw err;
+                                cb();
+                            });
+
+                        }, function(err){
+                            callback(null, "done");//3
+                        });
+                    },
+                    function(callback) {
+                        async.eachSeries(range, function(e,cb){
+                            observationUtility.searchFilter({devicesId:[deviceId]},{limit:5},false,function(err,foundedObj){
+                                if(err) callback(err);
+                                else{
+                                    foundedObj._metadata.source.should.be.equal("Redis cache");
+                                    foundedObj.observations.length.should.be.equal(5);
+                                    cb();
+                                }
+                            })
+
+                        }, function(err){
+                            callback(null, testTime.stopTimeRaw());//4
+                        });
+                    },
+                    function(callback) {
+                        observationUtility.deleteMany({},null,function(err,deleted){
+                            callback(err, deleted);//5
+                        });
+
+                    }
+                ],
+                function(err, results) {
+                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                    else{
+                        results[1].should.be.greaterThanOrEqual(results[4]);
+                        console.log("Read without Redis Cache: "+ results[1].format('x'));
+                        console.log("Read With Redis Cache: "+results[4].format('x'));
+                        done();
+                    }
+                });
+        });
+    });
 
 });

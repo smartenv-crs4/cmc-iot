@@ -30,6 +30,7 @@ var roles=require('./testconfig');
 var setupEnvironmentDefaults=require('../../bin/environmentDefaults/setupDefault');
 var errorHandler=require('../Utility/errorLogs');
 var redisConnection=require("../../connectionsHandler/redisConnection");
+var redisNotificationConnection=require("../../connectionsHandler/redisPushNotificationConnection");
 
 var authHost = conf.authUrl;
 
@@ -80,6 +81,16 @@ exports.setAuthMsMicroservice=function(doneCallback){
                         throw (new Error("Redis cache Service required as must but isn't available"));
                     } else {
                         callback(null, "Redis Done");
+                    }
+                });
+            },
+            function (callback) { //connect to Redis notification
+
+                redisNotificationConnection.connect(function (err, connection) {
+                    if (err && conf.redisPushNotification.must) {
+                        throw (new Error("Redis notification Service required as must but isn't available"));
+                    } else {
+                        callback(null, "Redis Push Done");
                     }
                 });
             },
@@ -306,6 +317,7 @@ exports.resetAuthMsStatus = function(callback) {
         else{
             server.close();
             redisConnection.disconnect();
+            redisNotificationConnection.disconnect();
             db.disconnect(function (err, res) {
                 if (err) console.log("!!! ERROR:--> Error in resetAuthMsStatus function due to can't clean test environment" + err);
                 callback(null);

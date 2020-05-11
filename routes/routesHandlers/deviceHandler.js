@@ -532,7 +532,7 @@ module.exports.deleteDevice = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
-//TODO: Remove Modificato
+//TODO @guido Modificato
 
 module.exports.getObservations = function (req, res, next) {
     var deviceId=req.params.id;

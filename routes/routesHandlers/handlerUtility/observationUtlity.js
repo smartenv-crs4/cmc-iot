@@ -23,11 +23,14 @@
 
 var observationsDriver = require('../../../DBEngineHandler/drivers/observationDriver');
 var redisHandler = require('./redisHandler');
+var redisNotificationServiceHandler = require('../../../DBEngineHandler/drivers/redisPushNotificationDriver');
 var thingAndDeviceHandlerUtility = require("./thingAndDeviceHandlerUtility");
 var siteDriver = require('../../../DBEngineHandler/drivers/siteDriver');
 var locationSearchUtility = require("./locationSearchUtility");
+var conf=require('propertiesmanager').conf;
 var async = require('async');
 var _ = require('underscore');
+var redisNotificationPrefix=conf.redisPushNotification.notificationChannelsPrefix.observations;
 
 
 const observationsUtilityFunctions = {
@@ -404,8 +407,10 @@ const observationsUtilityFunctions = {
     create(observation, callback) {
         observationsDriver.create(observation, function (err, createdObservation) {
             if (callback) callback(err, createdObservation);
-            if (createdObservation)
+            if (createdObservation) {
                 redisHandler.saveSingleObservationToCache(createdObservation);
+                redisNotificationServiceHandler.publish(redisNotificationPrefix+createdObservation.deviceId,JSON.stringify(createdObservation));
+            }
         });
     }
 };

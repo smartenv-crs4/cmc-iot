@@ -97,6 +97,8 @@ function customTestConfig(config){
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"PUT"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"DELETE"},
+                {URI:"/apiActions/device/:id/action/getDeviceObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
+                {URI:"/apiActions/thing/:id/action/getThingObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
                 {URI:"/domains", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/domains",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/domains/:id", token:testConfig.authApptokens, method:"GET"},

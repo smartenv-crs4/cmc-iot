@@ -23,6 +23,7 @@
 
 var deviceDriver = require('../../../DBEngineHandler/drivers/deviceDriver');
 var observationUtility = require('./observationHandlerUtility');
+var conf=require('propertiesmanager').conf;
 
 
 /* Delete devices. */
@@ -51,6 +52,8 @@ module.exports.deleteDevice = function (id,callback) {
             }
         }
     });
-
 };
+
+
+
 

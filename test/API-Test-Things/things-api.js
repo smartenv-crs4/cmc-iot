@@ -26,6 +26,7 @@ require('./Custom-Thing/CRUD-Tests');
 require('./Custom-Thing/ApiActions/APIActionsTests');
 require('./Custom-Thing/ApiActions/APIActionsCreateObservationsTests');
 require('./Custom-Thing/ApiActions/APIActionsGetObservationsTests');
+require('./Custom-Thing/ApiActions/APIActionsRedisNotification');
 require('./From_Template/accessTokenSecurityTests');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');

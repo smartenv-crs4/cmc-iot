@@ -22,6 +22,8 @@
 
 
 var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
+var ThingAndDeviceUtility=require('./handlerUtility/thingAndDeviceHandlerUtility');
+
 
 
 //Begin macro
@@ -127,6 +129,18 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  *     }
  */
 //End macro
+
+//TODO: @guido Documentare
+module.exports.getDeviceObservationsRedisNotification = function(req, res, next) {
+    res.httpResponse(null,req.statusCode, ThingAndDeviceUtility.getDeviceObservationsRedisNotification(req.params.id));
+};
+//TODO: @guido Documentare
+module.exports.getThingObservationsRedisNotification = function(req, res, next) {
+    ThingAndDeviceUtility.getThingObservationsRedisNotification(req.params.id,function(err,response){
+        res.httpResponse(err,req.statusCode,response);
+    });
+};
+
 
 
 /**

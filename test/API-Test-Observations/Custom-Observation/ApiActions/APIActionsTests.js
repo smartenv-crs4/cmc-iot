@@ -329,8 +329,6 @@ describe('Observations API Test - [ACTIONS TESTS]', function () {
 
     });
 
-    //TODO: Remove
-
     describe(testTypeMessage, function () {
         testMessage='must test API action search by timestamp={from} filter from Redis Cache';
         it(testMessage, function (done) {

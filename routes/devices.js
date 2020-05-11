@@ -63,6 +63,8 @@ router.post('/:id/actions/sendObservations', [authorisationManager.checkToken],m
 });
 
 
+
+
 /* devices observations Search Filters*/
 // timestamp: {From:, To;}
 // value: {min:, max:}

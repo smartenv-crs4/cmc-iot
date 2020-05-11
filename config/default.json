@@ -66,6 +66,11 @@
       "maxRetryTime": 10000,
       "logError": true,
       "logCommandsFailWhenRedisIsDown": false,
+      "notificationChannelsPrefix":{
+        "observations": "observations:",
+        "device": "device:",
+        "thing": "thing:"
+      },
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -142,6 +147,11 @@
       "maxRetryTime": 10000,
       "logError": true,
       "logCommandsFailWhenRedisIsDown": false,
+      "notificationChannelsPrefix":{
+        "observations": "observations:",
+        "device": "device:",
+        "thing": "thing:"
+      },
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,
@@ -237,7 +247,12 @@
       "totalRetryTime": 100,
       "maxRetryTime": 2,
       "logError": true,
-      "logCommandsFailWhenRedisIsDown": false,
+      "logCommandsFailWhenRedisIsDown": true,
+      "notificationChannelsPrefix":{
+        "observations": "observations:",
+        "device": "device:",
+        "thing": "thing:"
+      },
       "connection": {
         "host": "127.0.0.1",
         "port":  6379,

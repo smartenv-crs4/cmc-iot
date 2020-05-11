@@ -111,7 +111,9 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
             if (err) consoleLogError.printErrorLog("Observation APIActionsTests.js - afterEach - deleteMany ---> " + err);
             observationUtility.find({},function(err,data){
                 data.length.should.be.equal(0);
-                done()
+                redisHandler.flushDb(function(){
+                    done()
+                });
             });
 
         });

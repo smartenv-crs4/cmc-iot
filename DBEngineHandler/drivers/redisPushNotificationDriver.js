@@ -28,78 +28,155 @@ var log=require('../../routes/utility/logHandlerUtility');
 
 var redisClient;
 var redisStatus=false;
+var redisOptions=null;
+var errorNotAvailable=new Error("Redis Notification Service is not Available");;
 
+
+// module.exports.connect = function (connectionsOptions,callback) {
+//         var options={};
+//         var atemptSteeps=10;
+//         var total_retry_time= connectionsOptions.totalRetryTime;
+//         var max_retry_time=connectionsOptions.maxRetryTime;
+//
+//         options['url']="redis://:" +
+//                         connectionsOptions.connection.password +
+//                         "@" +
+//                         connectionsOptions.connection.host +
+//                         ":"+
+//                         connectionsOptions.connection.port +
+//                         "/" +
+//                         connectionsOptions.connection.db;
+//
+//         options["retry_strategy"]=function(opt) {
+//             if (opt.error && opt.error.code === "ECONNREFUSED") {
+//                 // End reconnecting on a specific error and flush all commands with
+//                 // a individual error
+//                 console.log("The push notification server refused the connection");
+//
+//             }
+//             if (opt.total_retry_time > total_retry_time) {
+//                 // End reconnecting after a specific timeout and flush all commands
+//                 // with a individual error
+//                 console.log("Retry time exhausted");
+//                 return new Error("Retry time exhausted");
+//             }
+//
+//
+//             var next= Math.min(Math.pow(2,opt.attempt) * atemptSteeps, max_retry_time);
+//
+//             console.log("Attempt N° " + opt.attempt);
+//             console.log("Retry in " + next + " ms");
+//             return next;
+//         };
+//
+//         try{
+//             redisClient = redis.createClient(options);
+//
+//             redisClient.on("ready", function (error) {
+//                 log.printLog('Connected to redis push notification service ' + connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
+//                 callback(null, 'Connected to redis push notification service' +  connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
+//                 callback=function(){}; // close callback
+//             });
+//
+//             redisClient.on("error", function (error) {
+//                 log.printLog('Redis push notification service connection Error ' +error);
+//                 callback(error);
+//                 callback=function(){}; // close callback
+//             });
+//         }catch (ex) {
+//            throw (ex);
+//         }
+//
+// };
 
 module.exports.connect = function (connectionsOptions,callback) {
-        var options={};
-        var atemptSteeps=10;
-        var total_retry_time= connectionsOptions.totalRetryTime;
-        var max_retry_time=connectionsOptions.maxRetryTime;
+    var options={};
+    var atemptSteeps=10;
+    var total_retry_time= connectionsOptions.totalRetryTime;
+    var max_retry_time=connectionsOptions.maxRetryTime;
+    redisOptions=connectionsOptions;
 
-        options['url']="redis://:" +
-                        connectionsOptions.connection.password +
-                        "@" +
-                        connectionsOptions.connection.host +
-                        ":"+
-                        connectionsOptions.connection.port +
-                        "/" +
-                        connectionsOptions.connection.db;
+    options['url']="redis://:" +
+        connectionsOptions.connection.password +
+        "@" +
+        connectionsOptions.connection.host +
+        ":"+
+        connectionsOptions.connection.port +
+        "/" +
+        connectionsOptions.connection.db;
 
-        options["retry_strategy"]=function(opt) {
-            if (opt.error && opt.error.code === "ECONNREFUSED") {
-                // End reconnecting on a specific error and flush all commands with
-                // a individual error
-                console.log("The push notification server refused the connection");
+    options["retry_strategy"]=function(opt) {
+        if (opt.error && opt.error.code === "ECONNREFUSED") {
+            // End reconnecting on a specific error and flush all commands with
+            // a individual error
+            console.log("The push notification service server refused the connection");
 
-            }
-            if (opt.total_retry_time > total_retry_time) {
-                // End reconnecting after a specific timeout and flush all commands
-                // with a individual error
-                console.log("Retry time exhausted");
-                return new Error("Retry time exhausted");
-            }
-
-
-            var next= Math.min(Math.pow(2,opt.attempt) * atemptSteeps, max_retry_time);
-
-            console.log("Attempt N° " + opt.attempt);
-            console.log("Retry in " + next + " ms");
-            return next;
-        };
-
-        try{
-            redisClient = redis.createClient(options);
-
-            redisClient.on("ready", function (error) {
-                log.printLog('Connected to redis push notification service ' + connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
-                callback(null, 'Connected to redis push notification service' +  connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
-                callback=function(){}; // close callback
-            });
-
-            redisClient.on("error", function (error) {
-                log.printLog('Redis push notification service connection Error ' +error);
-                callback(error);
-                callback=function(){}; // close callback
-            });
-        }catch (ex) {
-           throw (ex);
+        }
+        if (opt.total_retry_time > total_retry_time) {
+            // End reconnecting after a specific timeout and flush all commands
+            // with a individual error
+            console.log("Retry time exhausted");
+            return new Error("Retry time exhausted");
         }
 
+
+        var next= Math.min(Math.pow(2,opt.attempt) * atemptSteeps, max_retry_time);
+
+        console.log("Attempt N° " + opt.attempt);
+        console.log("Retry in " + next + " ms");
+        return next;
+    };
+
+    try{
+        redisClient = redis.createClient(options);
+
+        redisClient.on("ready", function (error) {
+            redisStatus=true;
+            log.printLog('Connected to redis push notification service ' + connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
+            callback(null, 'Connected to redis push notification service ' +  connectionsOptions.connection.host + ":" + connectionsOptions.connection.port);
+            callback=function(){}; // close callback
+        });
+
+        redisClient.on("error", function (error) {
+            if(!(error instanceof redis.ReplyError)) {
+                redisStatus=false;
+                callback(error);
+                callback = function () {}; // close callback
+            }
+            if(connectionsOptions.logError)
+                log.printLog('Redis push notification service connection Error ' + error);
+        });
+    }catch (ex) {
+        throw (ex);
+    }
 };
 
-
+function redisNotAvalilable(callback){
+    if(callback) {
+        callback(errorNotAvailable);
+    }
+    if(redisOptions && redisOptions.logCommandsFailWhenRedisIsDown)
+        log.printLog("Redis Notification Service is not Available");
+}
 
 module.exports.disconnect = function (callback) {
-    if(redisClient)
+    if(redisStatus) {
+        redisStatus=false;
         redisClient.quit(callback);
+    }
+    else{
+        redisNotAvalilable(callback);
+    }
 };
 
 
-module.exports.flushall = function (callback) {
-    if(redisClient)
+module.exports.flushDb = function (callback) {
+    if(redisStatus)
         redisClient.flushall(callback);
+    else{
+        redisNotAvalilable(callback);
+    }
 };
-
 
 module.exports.on = function (event,callback) {
     redisClient.on(event, callback);
@@ -112,12 +189,13 @@ module.exports.getRedisStatus = function () {
 };
 
 module.exports.publish = function (channel,message,callback) {
-    redisClient.publish(channel,message,callback);
+    if(redisStatus)
+        redisClient.publish(channel,message,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
 };
 
-module.exports.subscribe = function (channel,callback) {
-    redisClient.subscribe(channel,callback);
-};
 
 
 
