@@ -314,13 +314,21 @@ module.exports.getThingStatus=function getThingStatus(thingId,callback){
 function getDeviceObservationsRedisNotification(id) {
     return({
         redisService:conf.redisPushNotification.connection,
-        channel:conf.redisPushNotification.notificationChannelsPrefix.observations+ id
+        channel:conf.redisPushNotification.notificationChannelsPrefix.observation+ id
+    });
+}
+function getDeviceRedisNotification(id) {
+    return({
+        redisService:conf.redisPushNotification.connection,
+        channel:conf.redisPushNotification.notificationChannelsPrefix.device+ id
     });
 };
 
 
-
 module.exports.getDeviceObservationsRedisNotification =getDeviceObservationsRedisNotification;
+
+
+module.exports.getDeviceRedisNotification =getDeviceRedisNotification;
 
 
 module.exports.getThingObservationsRedisNotification = function(id,callback) {
@@ -330,6 +338,24 @@ module.exports.getThingObservationsRedisNotification = function(id,callback) {
             var redisNotification={};
             for(var deviceId in devicesId.devices){
                 redisNotification[devicesId.devices[deviceId]._id]= getDeviceObservationsRedisNotification(devicesId.devices[deviceId]._id);
+            }
+            callback(null, redisNotification);
+        }
+    });
+};
+
+
+module.exports.getThingRedisNotification = function(id,callback) {
+    deviceDriver.findAll({thingId:id},"_id",{},function(err,devicesId){
+        if(err) callback(err);
+        else{
+            var redisNotification={
+                redisService:conf.redisPushNotification.connection,
+                channel:conf.redisPushNotification.notificationChannelsPrefix.thing+ id
+            };
+            redisNotification['devices']={};
+            for(var deviceId in devicesId.devices){
+                redisNotification['devices'][devicesId.devices[deviceId]._id]= getDeviceRedisNotification(devicesId.devices[deviceId]._id);
             }
             callback(null, redisNotification);
         }

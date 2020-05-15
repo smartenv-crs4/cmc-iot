@@ -24,7 +24,9 @@ var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var thingAndDeviceHandlerUtility=require("./handlerUtility/thingAndDeviceHandlerUtility");
+var redisPushNotification=require('../../DBEngineHandler/drivers/redisPushNotificationDriver');
 var conf = require('propertiesmanager').conf;
+var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.device;
 var _=require('underscore');
 
 
@@ -203,6 +205,16 @@ module.exports.postCreateDevice = function (req, res, next) {
     });
 };
 
+function redisNotification(id,message,action){
+
+    var msg={
+        action:action,
+        message:message
+    };
+    redisPushNotification.publish(deviceChannelPrefix+id,JSON.stringify(msg));
+}
+
+
 
 /**
  * @api {put} /devices Update a Device
@@ -244,6 +256,7 @@ module.exports.updateDevice = function (req, res, next) {
 
                 deviceDriver.findByIdAndUpdateStrict(req.params.id, req.body.device,["disabled","dismissed"],req.dbQueryFields,function (err, results) {
                     res.httpResponse(err,null,results);
+                    if(results) redisNotification(req.params.id,results,"Device Update");
                 });
             }
         }
@@ -302,13 +315,14 @@ module.exports.updateDevice = function (req, res, next) {
  * @apiUse NoContent
  */
 function enableDisableDeviceById(currentDevice,action,res){
-    if(currentDevice.disabled|=action) {
+    if(currentDevice.disabled!=action) {
         deviceDriver.findByIdAndUpdate(currentDevice._id, {disabled: action}, function (err, updatedDevice) {
-            if (updatedDevice) updatedDevice["dismissed"] = undefined;
+            if (updatedDevice) updatedDevice["dismissed"] = undefined; // dismissed is an internal field and must be not returned
             res.httpResponse(err, 200, updatedDevice);
+            if(updatedDevice) redisNotification(updatedDevice._id,updatedDevice,"Enable/Disable Device");
         });
     }else{
-        if (currentDevice) currentDevice["dismissed"] = undefined;
+        if (currentDevice) currentDevice["dismissed"] = undefined; // dismissed is an internal field and must be not returned
         res.httpResponse(null, 200, currentDevice);
     }
 }
@@ -483,10 +497,12 @@ module.exports.getDevices = function (req, res, next) {
  * @apiUse NoContent
  */
 module.exports.deleteDevice = function (req, res, next) {
-
     var id = req.params.id;
     deviceUtility.deleteDevice(id,function(err,deletedDevice){
         res.httpResponse(err,null,deletedDevice);
+        if(deletedDevice) {
+            redisNotification(id,deletedDevice,"This channel must be dismissed because the linked device was deleted. Please unsubscribe");
+        }
     });
 };
 

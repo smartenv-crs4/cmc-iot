@@ -31,7 +31,9 @@ var config = require('propertiesmanager').conf;
 var _=require('underscore');
 var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
-
+var redisPushNotification=require('../../DBEngineHandler/drivers/redisPushNotificationDriver');
+var thingChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.thing;
+var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.device;
 
 //Begin macro
 /**
@@ -224,8 +226,21 @@ var conf = require('propertiesmanager').conf;
 function deleteThingById(id,res){
     thingDriver.findByIdAndRemove(id, function (err,deletedThing ) {
         res.httpResponse(err,null,deletedThing);
+        redisNotification(id,deletedThing,"This channel must be dismissed because the linked Thing was deleted. Please unsubscribe");
     });
 }
+
+function redisNotification(id,message,action,isADevice){
+    var msg=JSON.stringify({
+        action:action,
+        message:message
+    });
+    if(isADevice)
+        redisPushNotification.publish(deviceChannelPrefix+id,msg);
+    else
+        redisPushNotification.publish(thingChannelPrefix+id,msg);
+}
+
 
 /**
  * @api {post} /things/:id/actions/disable Disable Thing
@@ -279,6 +294,7 @@ function enableDisableThingById(currentThing,action,res){
         thingDriver.findByIdAndUpdate(currentThing._id,{disabled:action}, function (err, updatedThing) {
             if (updatedThing) updatedThing["dismissed"]=undefined;
             res.httpResponse(err,200,updatedThing);
+            if(updatedThing) redisNotification(currentThing._id,updatedThing,"Enable/Disable Thing");
         });
     }else{
         if (currentThing) currentThing["dismissed"]=undefined;
@@ -294,6 +310,7 @@ function enableDisableDeviceId(deviceId,thingId,action,callback){
         if(err){
             return callback(err);
         }else{
+            if(disabledDevice) redisNotification(deviceId,disabledDevice,"Enable/Disable Device",true);
             if(action){
                 // create associated device disabled
                 disabledDeviceDriver.create({deviceId:deviceId,thingId:thingId},function(err,disabledDeviceList){
@@ -382,6 +399,7 @@ module.exports.updateThing = function (req, res, next) {
                     } else {
                         thingDriver.findByIdAndUpdateStrict(req.params.id, req.body.thing, ["dismissed", "disabled"], req.dbQueryFields ,function (err, results) {
                             res.httpResponse(err, null, results);
+                            redisNotification(req.params.id,results,"Thing Update");
                         });
                     }
                 }
@@ -699,12 +717,14 @@ module.exports.deleteThing = function (req, res, next) {
                                 dismiss=true;
                             }
                             callbackDevice();
+                            redisNotification(device._id,deletedDevice,"This channel must be dismissed because the linked device was deleted. Please unsubscribe",true);
                         }
                     });
                 }, function(err) {
                     if(dismiss){  // there are devices(dismissed) with observation then thing must be dismissed and owner change to cmc-IoT
                         thingDriver.findByIdAndUpdate(id, {disabled:true,dismissed: true,ownerId:config.cmcIoTThingsOwner._id}, function (err, dismissedThing) {
                             res.httpResponse(err,null,dismissedThing);
+                            redisNotification(id,dismissedThing,"This channel must be dismissed because the linked Thing was deleted. Please unsubscribe");
                         });
                     }else{ // there aren't devices(dismissed) with observation then thing must be deleted
                        deleteThingById(id,res);
@@ -893,6 +913,7 @@ module.exports.addDevices = function (req, res, next) {
 
                             };
                             res.httpResponse(null, 200, resp);
+                            redisNotification(thingId,resp,"Add Devices");
                         });
                     }
                 }

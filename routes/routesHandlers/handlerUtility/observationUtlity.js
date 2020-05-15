@@ -30,7 +30,7 @@ var locationSearchUtility = require("./locationSearchUtility");
 var conf=require('propertiesmanager').conf;
 var async = require('async');
 var _ = require('underscore');
-var redisNotificationPrefix=conf.redisPushNotification.notificationChannelsPrefix.observations;
+var redisNotificationPrefix=conf.redisPushNotification.notificationChannelsPrefix.observation;
 
 
 const observationsUtilityFunctions = {

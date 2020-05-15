@@ -76,7 +76,7 @@ function calculateDistance(items,centralPoint,maxDistance){
         if(currentCoordinates.length>0){
             var sitePoint = new geoLatLon(currentCoordinates[0],currentCoordinates[1]);
             currentDistance=centralPoint.rhumbDistanceTo(sitePoint);
-            if(!(maxDistance && currentDistance>maxDistance)){
+            if(!(maxDistance && currentDistance>=maxDistance)){
                 distanceCalculated[items[r]._id]=currentDistance
             }
         }

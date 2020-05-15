@@ -160,13 +160,15 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results.should.have.property('redisService');
                     results.redisService.should.have.properties('host','port','db','password');
                     results.should.have.property('channel');
-                    results.channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.observations+deviceId);
+                    results.channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.observation+deviceId);
                     done();
                 }
             });
 
         });
     });
+
+    testTypeMessage="POST /device/:id/actions/getThingObservationsRedisNotification";
 
     describe(testTypeMessage, function () {
         testMessage="must test getThingObservationsRedisNotification Api Action";
@@ -185,7 +187,66 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     results[deviceId].should.have.properties('redisService');
                     results[deviceId].should.have.properties('channel');
                     results[deviceId].redisService.should.have.properties('host','port','db','password');
-                    results[deviceId].channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.observations+deviceId);
+                    results[deviceId].channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.observation+deviceId);
+                    done();
+                }
+            });
+        });
+    });
+
+
+    testTypeMessage="POST /device/:id/actions/getDeviceRedisNotification";
+    describe(testTypeMessage, function () {
+        testMessage="must test getDeviceRedisNotification Api Action";
+        it(testMessage, function (done) {
+
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/device/' + deviceId +'/action/getDeviceRedisNotification',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+                    results.should.have.property('redisService');
+                    results.redisService.should.have.properties('host','port','db','password');
+                    results.should.have.property('channel');
+                    results.channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.device+deviceId);
+                    done();
+                }
+            });
+
+        });
+    });
+
+    testTypeMessage="POST /device/:id/actions/getThingRedisNotification";
+
+    describe(testTypeMessage, function () {
+        testMessage="must test getThingRedisNotification Api Action";
+        it(testMessage, function (done) {
+
+            //body: JSON.stringify({observations:observations})
+            request.post({
+                url: APIURL +'/thing/' + thingId +'/action/getThingRedisNotification',
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    response.statusCode.should.be.equal(200);
+                    var results = JSON.parse(body);
+
+                    results.should.have.property('redisService');
+                    results.should.have.property('channel');
+                    results.should.have.property('devices');
+                    results.redisService.should.have.properties('host','port','db','password');
+                    results.channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.thing + thingId);
+
+                    results.devices.should.have.property(deviceId);
+                    results.devices[deviceId].should.have.properties('redisService');
+                    results.devices[deviceId].should.have.properties('channel');
+                    results.devices[deviceId].redisService.should.have.properties('host','port','db','password');
+                    results.devices[deviceId].channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.device+deviceId);
                     done();
                 }
             });

@@ -141,6 +141,17 @@ module.exports.getThingObservationsRedisNotification = function(req, res, next) 
     });
 };
 
+//TODO: @guido Documentare
+module.exports.getDeviceRedisNotification = function(req, res, next) {
+    res.httpResponse(null,req.statusCode, ThingAndDeviceUtility.getDeviceRedisNotification(req.params.id));
+};
+//TODO: @guido Documentare
+module.exports.getThingRedisNotification = function(req, res, next) {
+    ThingAndDeviceUtility.getThingRedisNotification(req.params.id,function(err,response){
+        res.httpResponse(err,req.statusCode,response);
+    });
+};
+
 
 
 /**

@@ -39,6 +39,18 @@ router.post('/thing/:id/action/getThingObservationsRedisNotification',[authorisa
   apiActionsHandler.getThingObservationsRedisNotification(req,res,next);
 });
 
+//TODO: @guido da documentare
+router.post('/device/:id/action/getDeviceRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+  req.statusCode=200;
+  apiActionsHandler.getDeviceRedisNotification(req,res,next);
+});
+
+//TODO: @guido da documentare
+router.post('/thing/:id/action/getThingRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+  req.statusCode=200;
+  apiActionsHandler.getThingRedisNotification(req,res,next);
+});
+
 
 
 /* Create apiActions */

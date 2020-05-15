@@ -67,7 +67,7 @@
       "logError": true,
       "logCommandsFailWhenRedisIsDown": false,
       "notificationChannelsPrefix":{
-        "observations": "observations:",
+        "observation": "observation:",
         "device": "device:",
         "thing": "thing:"
       },
@@ -148,7 +148,7 @@
       "logError": true,
       "logCommandsFailWhenRedisIsDown": false,
       "notificationChannelsPrefix":{
-        "observations": "observations:",
+        "observation": "observations:",
         "device": "device:",
         "thing": "thing:"
       },
@@ -249,7 +249,7 @@
       "logError": true,
       "logCommandsFailWhenRedisIsDown": true,
       "notificationChannelsPrefix":{
-        "observations": "observations:",
+        "observation": "observations:",
         "device": "device:",
         "thing": "thing:"
       },

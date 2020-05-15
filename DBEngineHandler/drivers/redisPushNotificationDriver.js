@@ -29,7 +29,7 @@ var log=require('../../routes/utility/logHandlerUtility');
 var redisClient;
 var redisStatus=false;
 var redisOptions=null;
-var errorNotAvailable=new Error("Redis Notification Service is not Available");;
+var errorNotAvailable=new Error("Redis Notification Service is not Available");
 
 
 // module.exports.connect = function (connectionsOptions,callback) {
