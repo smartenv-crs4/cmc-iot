@@ -31,7 +31,7 @@ var observationsUtility=require('../../../../routes/routesHandlers/handlerUtilit
 var conf = require('propertiesmanager').conf;
 var request = require('request');
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
-var APIURLActions = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/apiActions";
+// var APIURLActions = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/apiActions";
 var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
 var async = require('async');
@@ -173,7 +173,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
             request.post({
-                url: APIURLActions  + '/thing/' + thingId +'/action/getThingObservationsRedisNotification',
+                url: APIURL  + '/' + thingId +'/actions/getThingObservationsRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -233,7 +233,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
             request.post({
-                url: APIURLActions  + '/thing/' + thingId +'/action/getThingRedisNotification',
+                url: APIURL  + '/' + thingId +'/actions/getThingRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -308,7 +308,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
             request.post({
-                url: APIURLActions  + '/thing/' + thingId +'/action/getThingRedisNotification',
+                url: APIURL  + '/' + thingId +'/actions/getThingRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -377,7 +377,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
             request.post({
-                url: APIURLActions  + '/thing/' + thingId +'/action/getThingRedisNotification',
+                url: APIURL  + '/' + thingId +'/actions/getThingRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -458,7 +458,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
                 else {
                     request.post({
-                        url: APIURLActions  + '/thing/' + thingId +'/action/getThingRedisNotification',
+                        url: APIURL  + '/' + thingId +'/actions/getThingRedisNotification',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     }, function (error, response, body) {
                         if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -569,7 +569,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
                 else {
                     request.post({
-                        url: APIURLActions  + '/thing/' + thingId +'/action/getThingRedisNotification',
+                        url: APIURL  + '/' + thingId +'/actions/getThingRedisNotification',
                         headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken},
                     }, function (error, response, body) {
                         if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);

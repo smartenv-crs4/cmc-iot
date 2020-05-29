@@ -52,6 +52,8 @@ function customTestConfig(config){
                 {URI:"/devices/:id/actions/disable",token:testConfig.authApptokens, method:"POST"},
                 {URI:"/devices/:id/actions/enable",token:testConfig.authApptokens, method:"POST"},
                 {URI:"/devices/actions/searchDismissed",token:testConfig.authApptokens, method:"POST"},
+                {URI:"/devices/:id/actions/getDeviceRedisNotification", token:testConfig.authApptokens, method:"POST"},
+                {URI:"/devices/:id/actions/getDeviceObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
                 {URI:"/things", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/things/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/things/:id", token:testConfig.authApptokens, method:"DELETE"},
@@ -63,6 +65,8 @@ function customTestConfig(config){
                 {URI:"/things/:id/actions/enable",token:testConfig.authApptokens, method:"POST"},
                 {URI:"/things/:id/actions/addDevices",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/things/:id/actions/getObservations",token:testConfig.authApptokens, method:"POST"},
+                {URI:"/things/:id/actions/getThingObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
+                {URI:"/things/:id/actions/getThingRedisNotification", token:testConfig.authApptokens, method:"POST"},
                 {URI:"/vendors", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/vendors",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/vendors/:id", token:testConfig.authApptokens, method:"GET"},
@@ -97,10 +101,9 @@ function customTestConfig(config){
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"PUT"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"DELETE"},
-                {URI:"/apiActions/device/:id/action/getDeviceObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
-                {URI:"/apiActions/device/:id/action/getDeviceRedisNotification", token:testConfig.authApptokens, method:"POST"},
-                {URI:"/apiActions/thing/:id/action/getThingObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
-                {URI:"/apiActions/thing/:id/action/getThingRedisNotification", token:testConfig.authApptokens, method:"POST"},
+
+
+
                 {URI:"/domains", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/domains",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/domains/:id", token:testConfig.authApptokens, method:"GET"},

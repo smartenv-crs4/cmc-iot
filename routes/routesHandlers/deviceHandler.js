@@ -611,3 +611,15 @@ module.exports.createObservations = function (req, res, next) {
         res.httpResponse(err,200,observations);
     });
 };
+
+
+
+//TODO: @guido Documentare
+module.exports.getDeviceObservationsRedisNotification = function(req, res, next) {
+    res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceObservationsRedisNotification(req.params.id));
+};
+
+//TODO: @guido Documentare
+module.exports.getDeviceRedisNotification = function(req, res, next) {
+    res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceRedisNotification(req.params.id));
+};

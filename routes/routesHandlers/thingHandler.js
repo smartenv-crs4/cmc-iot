@@ -990,3 +990,20 @@ module.exports.getObservations = function (req, res, next) {
 
 
 };
+
+
+
+//TODO: @guido Documentare
+module.exports.getThingObservationsRedisNotification = function(req, res, next) {
+    thingAndDeviceHandlerUtility.getThingObservationsRedisNotification(req.params.id,function(err,response){
+        res.httpResponse(err,req.statusCode,response);
+    });
+};
+
+
+//TODO: @guido Documentare
+module.exports.getThingRedisNotification = function(req, res, next) {
+    thingAndDeviceHandlerUtility.getThingRedisNotification(req.params.id,function(err,response){
+        res.httpResponse(err,req.statusCode,response);
+    });
+};

@@ -28,7 +28,8 @@ var _=require('underscore');
 var observationDocuments = require('../../../SetTestenv/createObservationsDocuments');
 var conf = require('propertiesmanager').conf;
 var request = require('request');
-var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/apiActions";
+var APIURLThing = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/things";
+var APIURLDevices = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/devices";
 var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
 var webUiToken;
@@ -127,7 +128,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
             //body: JSON.stringify({observations:observations})
             request.post({
-                url: APIURL +'/device/' + deviceId +'/action/getDeviceObservationsRedisNotification',
+                url: APIURLDevices +'/' + deviceId +'/actions/getDeviceObservationsRedisNotification',
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
                 else {
@@ -150,7 +151,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
             //body: JSON.stringify({observations:observations})
             request.post({
-                url: APIURL +'/device/' + deviceId +'/action/getDeviceObservationsRedisNotification',
+                url: APIURLDevices +'/' + deviceId +'/actions/getDeviceObservationsRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -176,7 +177,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
             //body: JSON.stringify({observations:observations})
             request.post({
-                url: APIURL +'/thing/' + thingId +'/action/getThingObservationsRedisNotification',
+                url: APIURLThing +'/' + thingId +'/actions/getThingObservationsRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -202,7 +203,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
             //body: JSON.stringify({observations:observations})
             request.post({
-                url: APIURL +'/device/' + deviceId +'/action/getDeviceRedisNotification',
+                url: APIURLDevices +'/' + deviceId +'/actions/getDeviceRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);
@@ -228,7 +229,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
             //body: JSON.stringify({observations:observations})
             request.post({
-                url: APIURL +'/thing/' + thingId +'/action/getThingRedisNotification',
+                url: APIURLThing +'/' + thingId +'/actions/getThingRedisNotification',
                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
             }, function (error, response, body) {
                 if (error) consoleLogError.printErrorLog(testTypeMessage+": '" + testMessage + "'  -->" + error.message);

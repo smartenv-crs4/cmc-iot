@@ -37,6 +37,8 @@ var apiAction= conf.customSchema.apiActionSchema || {
 
 var apiActionSchema = new Schema(apiAction, {strict: "throw"});
 
+apiActionSchema.index({ actionName: 1, deviceTypeId: 1 }, { unique: true });
+
 // Static method to retrieve resource WITH metadata
 apiActionSchema.statics.findAll = function (conditions, fields, options, callback) {
     return extendedFunction.findAll(this, 'apiActions', conditions, fields, options, callback);

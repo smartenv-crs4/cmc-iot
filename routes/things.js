@@ -80,6 +80,19 @@ router.post('/:id/actions/getObservations', [authorisationManager.checkToken],mo
 });
 
 
+//TODO: @guido da documentare
+router.post('/:id/actions/getThingObservationsRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+    req.statusCode=200;
+    thingsHandler.getThingObservationsRedisNotification(req,res,next);
+});
+
+//TODO: @guido da documentare
+router.post('/:id/actions/getThingRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+    req.statusCode=200;
+    thingsHandler.getThingRedisNotification(req,res,next);
+});
+
+
 // </actions>
 
 

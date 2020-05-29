@@ -928,8 +928,6 @@ module.exports.findByIdAndRemove = function(id, options, callback) {
 };
 
 /* GET Observations list */
-//TODO: da mettere il controllo redis o DB???
-// provare a commentare e se mnon serve rimuoivere queta risorsa find()
 module.exports.find = function(conditions, fields, options, callback) {
     observationsDriver.find(conditions, fields, options,callback);
 };

@@ -63,8 +63,6 @@ router.post('/:id/actions/sendObservations', [authorisationManager.checkToken],m
 });
 
 
-
-
 /* devices observations Search Filters*/
 // timestamp: {From:, To;}
 // value: {min:, max:}
@@ -74,6 +72,29 @@ router.post('/:id/actions/getObservations', [authorisationManager.checkToken],mo
   req.statusCode=200;
   devicesHandler.getObservations(req, res, next);
 });
+
+
+
+//TODO: @guido da documentare
+router.post('/:id/actions/getDeviceObservationsRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+  req.statusCode=200;
+  devicesHandler.getDeviceObservationsRedisNotification(req,res,next);
+});
+
+
+//TODO: @guido da documentare
+router.post('/:id/actions/getDeviceRedisNotification',[authorisationManager.checkToken], function(req, res, next) {
+  req.statusCode=200;
+  devicesHandler.getDeviceRedisNotification(req,res,next);
+});
+
+
+//TODO: @guido da documentare
+router.post('/:id/actions/:actionName',[authorisationManager.checkToken],function(req, res, next) {
+  req.disableDevice=false;
+  devicesHandler.disableEnableDevice(req,res,next);
+});
+
 
 // </Actions>
 

@@ -22,7 +22,6 @@
 
 
 var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
-var ThingAndDeviceUtility=require('./handlerUtility/thingAndDeviceHandlerUtility');
 
 
 
@@ -129,28 +128,6 @@ var ThingAndDeviceUtility=require('./handlerUtility/thingAndDeviceHandlerUtility
  *     }
  */
 //End macro
-
-//TODO: @guido Documentare
-module.exports.getDeviceObservationsRedisNotification = function(req, res, next) {
-    res.httpResponse(null,req.statusCode, ThingAndDeviceUtility.getDeviceObservationsRedisNotification(req.params.id));
-};
-//TODO: @guido Documentare
-module.exports.getThingObservationsRedisNotification = function(req, res, next) {
-    ThingAndDeviceUtility.getThingObservationsRedisNotification(req.params.id,function(err,response){
-        res.httpResponse(err,req.statusCode,response);
-    });
-};
-
-//TODO: @guido Documentare
-module.exports.getDeviceRedisNotification = function(req, res, next) {
-    res.httpResponse(null,req.statusCode, ThingAndDeviceUtility.getDeviceRedisNotification(req.params.id));
-};
-//TODO: @guido Documentare
-module.exports.getThingRedisNotification = function(req, res, next) {
-    ThingAndDeviceUtility.getThingRedisNotification(req.params.id,function(err,response){
-        res.httpResponse(err,req.statusCode,response);
-    });
-};
 
 
 
