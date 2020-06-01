@@ -170,7 +170,7 @@ describe('Devices API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("device validation failed: typeId: Cast to ObjectID failed for value \"typeId\" at path \"typeId\"");
+                    results.message.should.be.equal("device validation failed: typeId: Cast to ObjectId failed for value \"typeId\" at path \"typeId\"");
                 }
                 done();
             });
