@@ -31,6 +31,8 @@ var apiAction= conf.customSchema.apiActionSchema || {
     method:{type:String,required:true, enum: ["GET","POST","PUT","DELETE"],default:"GET"},
     header:{type:Object,required:true, default:{"Content-Type": "application/json" , "Accept":"application/json"}},
     bodyPrototype:{type:Object, default:null},
+    queryPrototype:{type:Object, default:null},
+    responsePrototype:{type:Object, default:null},
     deviceTypeId:{type:mongoose.ObjectId, required:true}
 };
 

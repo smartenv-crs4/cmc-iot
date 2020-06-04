@@ -21,13 +21,17 @@
  */
 
 var deviceDriver = require('../../DBEngineHandler/drivers/deviceDriver');
+var apiActionsDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
+var thingDriver = require('../../DBEngineHandler/drivers/thingDriver');
 var deviceUtility=require('./handlerUtility/deviceUtility');
 var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var thingAndDeviceHandlerUtility=require("./handlerUtility/thingAndDeviceHandlerUtility");
 var redisPushNotification=require('../../DBEngineHandler/drivers/redisPushNotificationDriver');
+var request=require('request');
 var conf = require('propertiesmanager').conf;
 var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.device;
 var _=require('underscore');
+var queryString=require('querystring');
 
 
 
@@ -622,4 +626,66 @@ module.exports.getDeviceObservationsRedisNotification = function(req, res, next)
 //TODO: @guido Documentare
 module.exports.getDeviceRedisNotification = function(req, res, next) {
     res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceRedisNotification(req.params.id));
+};
+
+
+
+
+//TODO: @guido Documentare
+module.exports.actionHandler = function(req, res, next) {
+    var id = req.params.id;
+    //TODO: develop a redis cache to get typeId
+    deviceDriver.findById(id,"typeId thingId",{},function(error,device){
+       if(error){
+           res.httpResponse(error,null,null);
+       } else{
+            if(device) {
+                apiActionsDriver.findOne({
+                    actionName: req.params.actionName,
+                    deviceTypeId: device.typeId
+                }, "", {}, function (error, apiAction) {
+                    if(error){
+                        res.httpResponse(error,null,null);
+                    } else{
+                        if(apiAction){
+                            thingDriver.findById(device.thingId,"api",{},function(error,thing){
+                                if(error){
+                                    res.httpResponse(error,null,null);
+                                } else{
+                                    var headers=req.headers;
+                                    headers['Authorization']= "Bearer " + thing.api.access_token;
+                                    var body=req.body;
+                                    body["access_token"]=thing.api.access_token;
+                                    var query=req.query;
+                                    query["access_token"]=thing.api.access_token;
+                                    var requestToDevice={
+                                        method:apiAction.method,
+                                        url: thing.api.url+"/"+id+"/"+apiAction.actionName + "?"+queryString.stringify(query),
+                                        headers: headers,
+                                        body: JSON.stringify(body)
+                                    };
+
+                                    request(requestToDevice, function (error, response, body) {
+                                        var statusCode= req.statusCode;
+                                        var responseBody=body;
+                                        if(response && !((response.statusCode>=200)&&(response.statusCode<=299))){
+                                           statusCode=response.statusCode;
+                                           responseBody=JSON.parse(body);
+                                           responseBody['responseFrom']="device " + id
+                                        }
+                                        res.httpResponse(error,statusCode, responseBody);
+                                    });
+                                }
+                            });
+                        }else{
+                            next(); // not found
+                        }
+                    }
+                });
+            }else{
+                next(); // not found
+            }
+       }
+    });
+
 };

@@ -27,6 +27,7 @@ require('./Custom-Device/dataValidationTests');
 require('./Custom-Device/ApiActions/APIActionsTests');
 require('./Custom-Device/ApiActions/APIActionsCreateObservationsTests');
 require('./Custom-Device/ApiActions/APIActionsGetObservationsTests');
+require('./Custom-Device/ApiActions/APIActionsCallDeviceRemoteApiTests');
 require('./Custom-Device/ApiActions/APIActionsRedisNotification');
 require('./From_Template/requestParserValidationTests');
 require('./From_Template/sqlInjectionSecurityTests');

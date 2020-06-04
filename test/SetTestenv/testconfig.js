@@ -54,6 +54,10 @@ function customTestConfig(config){
                 {URI:"/devices/actions/searchDismissed",token:testConfig.authApptokens, method:"POST"},
                 {URI:"/devices/:id/actions/getDeviceRedisNotification", token:testConfig.authApptokens, method:"POST"},
                 {URI:"/devices/:id/actions/getDeviceObservationsRedisNotification", token:testConfig.authApptokens, method:"POST"},
+                {URI:"/devices/:id/actions/:actionName", token:testConfig.authApptokens, method:"GET"},
+                {URI:"/devices/:id/actions/:actionName", token:testConfig.authApptokens, method:"POST"},
+                {URI:"/devices/:id/actions/:actionName", token:testConfig.authApptokens, method:"PUT"},
+                {URI:"/devices/:id/actions/:actionName", token:testConfig.authApptokens, method:"DELETE"},
                 {URI:"/things", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/things/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/things/:id", token:testConfig.authApptokens, method:"DELETE"},
@@ -101,9 +105,7 @@ function customTestConfig(config){
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"PUT"},
                 {URI:"/apiActions/:id", token:testConfig.authApptokens, method:"DELETE"},
-
-
-
+                {URI:"/apiActions/test/:id/:actionName", token:testConfig.adminTokens, method:"GET"},
                 {URI:"/domains", token:testConfig.authApptokens, method:"GET"},
                 {URI:"/domains",token:testConfig.adminTokens, method:"POST"},
                 {URI:"/domains/:id", token:testConfig.authApptokens, method:"GET"},

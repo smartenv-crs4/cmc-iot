@@ -35,6 +35,9 @@ function customResp(res,statusCode,body){
         case 422:
             res.boom.badData(body);
             break;
+        case 404:
+            res.boom.notFound(body || "Resource not found");
+            break;
         default:
             res.status(statusCode).send(body);
     }

@@ -90,9 +90,9 @@ router.post('/:id/actions/getDeviceRedisNotification',[authorisationManager.chec
 
 
 //TODO: @guido da documentare
-router.post('/:id/actions/:actionName',[authorisationManager.checkToken],function(req, res, next) {
-  req.disableDevice=false;
-  devicesHandler.disableEnableDevice(req,res,next);
+router.all('/:id/actions/:actionName',[authorisationManager.checkToken],function(req, res, next) {
+  req.statusCode=200;
+  devicesHandler.actionHandler(req,res,next);
 });
 
 

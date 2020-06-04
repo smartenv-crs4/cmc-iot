@@ -45,7 +45,6 @@ router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.valid
 });
 
 
-
 /* Read apiActions. */
 router.get('/:id',[authorisationManager.checkToken],parseRequestMiddleware.parseFields, function(req, res, next) {
   apiActionsHandler.getApiActionById(req,res,next);
@@ -58,6 +57,17 @@ router.use(mongoSecurity.parseForOperators);
 router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFields,parseRequestMiddleware.parseIds("apiActions"), function(req, res, next) {
   req.query.dismissed=false; // dismissed apiActions must be removed from query results
   apiActionsHandler.getApiActions(req,res,next);
+});
+
+
+/* Read apiActions. */
+//todo remove and extend with APIExtender
+router.get('/test/:id/:actionName',[authorisationManager.checkToken], function(req, res, next) {
+  res.httpResponse(null, null, {
+    device:req.params.id,
+    actionName:req.params.actionName,
+    actionParams:req.query
+  });
 });
 
 module.exports = router;
