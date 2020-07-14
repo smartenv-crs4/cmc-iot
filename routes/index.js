@@ -42,4 +42,9 @@ router.get('/configuration',[authorisationManager.checkToken], function(req, res
   res.status(200).send(conf);
 });
 
+/* GET environment info page. */
+router.get('/running_env', function(req, res) {
+  res.status(200).send({conf:conf});
+});
+
 module.exports = router;

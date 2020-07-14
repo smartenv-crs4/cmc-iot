@@ -35,7 +35,7 @@ var testType = "Redis Handler Test Functions";
 var testMessage = "";
 var deviceId,unitId;
 var testTime=require('../Utility/TestTime');
-var numbers=200;
+var numbers=2000;
 
 
 describe('Redis Handler Test', function () {

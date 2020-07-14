@@ -25,9 +25,11 @@ var mongoose = require('mongoose');
 var conf = require('propertiesmanager').conf;
 
 
+var dbAuth= conf.dbAuth.user ? conf.dbAuth.user + ":" + conf.dbAuth.psw + "@" : "";
+var authSource= conf.dbAuth.user ? "?authSource=admin" : "";
+var dbUrl =  "mongodb://" + dbAuth + conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName + authSource;
 
-
-var dbUrl =  'mongodb://'+conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName;
+//var dbUrl =  'mongodb://'+conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName;
 
 var options = {
     server: {socketOptions: {keepAlive: 1, connectTimeoutMS: 30000}},
