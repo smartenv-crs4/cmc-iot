@@ -1,6 +1,3 @@
 [submodule "cmc-devices"]
 	path = cmc-devices
 	url = ../cmc-devices.git
-[submodule "cmc-history"]
-	path = cmc-history
-	url = ../cmc-history.git
