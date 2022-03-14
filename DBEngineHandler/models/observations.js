@@ -29,6 +29,7 @@ var conf = require('propertiesmanager').conf;
 var observation = conf.customSchema.observationSchema || {
     timestamp: {type: Number, index: true, required: true},
     value: {type: Number, index: true, required: true},
+    jobId:{type:String, required:false},
     location: {
         type: {type: String, enum: ['Point']},
         coordinates: {type: [Number], default:null}
@@ -43,7 +44,6 @@ observationSchema.pre('validate', function(next) {
 
     if (!this.timestamp) {
         this.timestamp=new Date().getTime();
-
     }
     next();
 });

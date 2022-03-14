@@ -344,7 +344,7 @@ module.exports.postCreateDeviceType = function(req, res, next) {
     deviceTypeDriver.create(req.body.deviceType, function(err, results) {
         if (err) return (res.httpResponse(err, null, null))
         else {
-            var domains = req.body.domains
+            var domains = req.body.domains;
             async.each(domains, function(domainId, callback) {
 
                 deviceTypeDomainDriver.create({

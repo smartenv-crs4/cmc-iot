@@ -1000,13 +1000,13 @@ module.exports.validateAndCreateThingObservations = function (thingId, observati
                                 if(errRestore){
                                     callback(errRestore,null);
                                 }else{
-                                    callback(err,null)
+                                    callback(err,null);
                                 }
                             });
                         }
                     });
                 }else{
-                    callback(err,null)
+                    callback(err,null);
                 }
            });
        } else{
