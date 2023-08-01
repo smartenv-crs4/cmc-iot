@@ -652,7 +652,7 @@ module.exports.actionHandler = function(req, res, next) {
                                 if(error){
                                     res.httpResponse(error,null,null);
                                 } else{
-                                    var headers=req.headers;
+                                    var headers=apiAction.header;
                                     headers['Authorization']= "Bearer " + thing.api.access_token;
                                     var body=req.body;
                                     body["access_token"]=thing.api.access_token;
@@ -664,6 +664,7 @@ module.exports.actionHandler = function(req, res, next) {
                                         headers: headers,
                                         body: JSON.stringify(body)
                                     };
+
 
                                     request(requestToDevice, function (error, response, body) {
                                         var statusCode= req.statusCode;
