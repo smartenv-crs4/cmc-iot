@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                           *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
