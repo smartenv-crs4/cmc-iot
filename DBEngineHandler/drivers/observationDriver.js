@@ -25,6 +25,7 @@ var observationModel = require('../models/observations').Observation;
 var mongooseError = require('../../routes/utility/mongooseError');
 var mongoose = require('mongoose');
 var async=require('async');
+var conf=require('propertiesmanager').conf;
 
 
 /* GET Observations list */
@@ -35,7 +36,25 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* Create Observations. */
 module.exports.create = function(observation, callback) {
-    observationModel.create(observation, callback);
+    if(conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp){
+        observationModel.find({deviceId:observation.deviceId, timestamp:observation.timestamp},"_id",function(err,obs){
+            if(err){
+                callback(err,null);
+            }else{
+                if(obs.length>0) {
+                    var Err = new Error("An observation for device " + observation.deviceId + " already exists at timestamp " + observation.timestamp);
+                    Err.name = "DuplicatedObservation";
+                    Err.duplicated=true;
+                    callback(Err);
+                } else
+                    observationModel.create(observation, callback);
+
+            }
+        });
+    } else {
+        observationModel.create(observation, callback);
+    }
+
 };
 
 // /* Create Observations. */

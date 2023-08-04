@@ -1246,4 +1246,115 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
 
 
 
+
+    testMessageMessage="duplicate observation in same timeStamp not Allowed";
+
+    describe(testMessageMessage, function () {
+        var testMessage="must test an error on observation creation with same timestamp for same device ";
+        it(testMessage, function (done) {
+
+
+            testObservationDef.timestamp=0;
+            request.post({
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: JSON.stringify({observation:testObservationDef})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('_id');
+                    results.should.have.property('value');
+                    results.should.have.property('location');
+                    results.should.have.property('unitId');
+                    results.should.have.property('deviceId');
+                    results.should.have.property('timestamp');
+                    results.value.should.be.eql(testObservationDef.value);
+                    observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                    observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
+                    results.timestamp.should.be.eql(testObservationDef.timestamp);
+                }
+
+                //send duplicate
+                request.post({
+                    url: APIURL,
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                    body: JSON.stringify({observation:testObservationDef})
+                }, function (error, response, body) {
+                    if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
+                    else {
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(422);
+                        results.should.have.property('statusCode');
+                        results.should.have.property('error');
+                        results.should.have.property('message');
+                        results.message.indexOf("already exists at timestamp 0").should.be.greaterThanOrEqual(0);
+                    }
+                    done();
+                });
+            });
+        });
+    });
+
+
+
+    testMessageMessage="duplicate observation in same timeStamp  Allowed";
+
+    describe(testMessageMessage, function () {
+        var testMessage="must test an observation creation with same timestamp for same device ";
+        it(testMessage, function (done) {
+
+            conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=false;
+            testObservationDef.timestamp=0;
+            request.post({
+                url: APIURL,
+                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                body: JSON.stringify({observation:testObservationDef})
+            }, function (error, response, body) {
+                if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
+                else {
+                    var results = JSON.parse(body);
+                    response.statusCode.should.be.equal(201);
+                    results.should.have.property('_id');
+                    results.should.have.property('value');
+                    results.should.have.property('location');
+                    results.should.have.property('unitId');
+                    results.should.have.property('deviceId');
+                    results.should.have.property('timestamp');
+                    results.value.should.be.eql(testObservationDef.value);
+                    observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                    observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
+                    results.timestamp.should.be.eql(testObservationDef.timestamp);
+                }
+
+                //send duplicate
+                request.post({
+                    url: APIURL,
+                    headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.testConfig.adminToken},
+                    body: JSON.stringify({observation:testObservationDef})
+                }, function (error, response, body) {
+                    if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
+                    else {
+                        var results = JSON.parse(body);
+                        response.statusCode.should.be.equal(201);
+                        results.should.have.property('_id');
+                        results.should.have.property('value');
+                        results.should.have.property('location');
+                        results.should.have.property('unitId');
+                        results.should.have.property('deviceId');
+                        results.should.have.property('timestamp');
+                        results.value.should.be.eql(testObservationDef.value);
+                        observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                        observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
+                        results.timestamp.should.be.eql(testObservationDef.timestamp);
+                    }
+                    conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=true;
+                    done();
+                });
+            });
+        });
+    });
+
+
 });

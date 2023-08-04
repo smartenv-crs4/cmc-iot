@@ -27,6 +27,28 @@ var deviceCreateDocuments=require('./createDevicesDocuments');
 var unitCreateDocuments=require('./createUnitsDocuments');
 
 
+
+function createObservation(observation,callback){
+    observationUtility.create(observation,function(err,newObservation){
+        if(err){
+            if (err.duplicated){
+                setTimeout(() => {
+                    observation.timestamp=new Date().getTime();
+                    observationUtility.create(observation,function(err,newObservation){
+                        if(err) throw err;
+                        else callback(err,newObservation);
+                    });
+                }, "100");
+            }else{
+                throw err;
+            }
+        }else callback(err,newObservation);
+    });
+};
+
+module.exports.createObservation=createObservation;
+
+
 module.exports.createDocuments=function(numbers,callback){
 
     var range = _.range(numbers);
@@ -38,7 +60,7 @@ module.exports.createDocuments=function(numbers,callback){
                if(!err){
                    async.eachSeries(range, function(e,cb){
 
-                       observationUtility.create({
+                       createObservation({
                            timestamp:new Date().getTime(),
                            value:e,
                            deviceId:deviceForeignKey.deviceId,

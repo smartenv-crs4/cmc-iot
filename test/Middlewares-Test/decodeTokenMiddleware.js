@@ -32,6 +32,7 @@ var should = require('should/should');
 describe('Decode Token Midleware API', function () {
 
     before(function (done) {
+        console.log("BEFORE ALL");
         commonFunctioTest.setAuthMsMicroservice(function(err){
             if (err) consoleLogError.printErrorLog("decodeTokenMidleware.js - before - setAuthMsMicroservice ---> " + err);
             done();
@@ -39,6 +40,7 @@ describe('Decode Token Midleware API', function () {
     });
 
     after(function (done) {
+        console.log("AFTER ALL");
         commonFunctioTest.resetAuthMsStatus(function(err){
             if (err) consoleLogError.printErrorLog("decodeTokenMidleware.js - after - resetAuthMsStatus ---> " + err);
             done();
@@ -47,12 +49,13 @@ describe('Decode Token Midleware API', function () {
 
 
     beforeEach(function (done) {
-
+        console.log("BEFORE EACH");
        done();
     });
 
 
     afterEach(function (done) {
+       console.log("After EACH");
        done();
     });
 

@@ -133,6 +133,9 @@ exports.handleError= function(res,err){
         case "NotExistError":
             unprocessableError(res,err,"Not available thing/device",false);
             break;
+        case "DuplicatedObservation":
+            badDataError(res,err,"Not available thing/device",false);
+            break;
         default:
             handleOtherErrors(res,err);
     }

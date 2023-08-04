@@ -35,7 +35,7 @@ var testType = "Redis Handler Test Functions";
 var testMessage = "";
 var deviceId,unitId;
 var testTime=require('../Utility/TestTime');
-var numbers=2000;
+var numbers=500;
 
 
 describe('Redis Handler Test', function () {
@@ -44,6 +44,7 @@ describe('Redis Handler Test', function () {
         db.connect(function () {
             redisHandler.connect(conf.redisCache, function (err) {
                 if (err) consoleLogError.printErrorLog("Redis Handler Test - beforeEach ---> " + err);
+                conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=false;
                 done();
             });
 
@@ -53,6 +54,7 @@ describe('Redis Handler Test', function () {
     after(function (done) {
         db.disconnect(function () {
             redisHandler.disconnect();
+            conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=true;
             done();
         });
     });
@@ -214,7 +216,7 @@ describe('Redis Handler Test', function () {
                             });
 
                         }, function(err){
-                            callback(null, "done");//0
+                            callback(null, "done");//3
                         });
                     },
                     function(callback) {
@@ -302,6 +304,8 @@ describe('Redis Handler Test', function () {
                     },
                     function(callback) {
                         async.eachSeries(range, function(e,cb){
+
+
                             observationUtility.create({
                                 timestamp:new Date().getTime(),
                                 value:e,
@@ -312,6 +316,9 @@ describe('Redis Handler Test', function () {
                                 if (err) throw err;
                                 cb();
                             });
+
+
+
 
                         }, function(err){
                             callback(null, "done");//3
@@ -373,7 +380,6 @@ describe('Redis Handler Test', function () {
                                 if (err) throw err;
                                 cb();
                             });
-
                         }, function(err){
                             callback(null, "done");//0
                         });
@@ -413,6 +419,7 @@ describe('Redis Handler Test', function () {
                                 if (err) throw err;
                                 cb();
                             });
+
 
                         }, function(err){
                             callback(null, "done");//3

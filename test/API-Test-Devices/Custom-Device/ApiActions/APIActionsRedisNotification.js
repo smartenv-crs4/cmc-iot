@@ -31,6 +31,7 @@ var request = require('request');
 var commonFunctioTest = require("../../../SetTestenv/testEnvironmentCreation");
 var consoleLogError = require('../../../Utility/errorLogs');
 var async = require('async');
+const log = require("../../../../routes/utility/logHandlerUtility");
 var webUiToken;
 var testTypeMessage="POST /devices/:id/actions/sendObservations";
 var testMessage;
@@ -42,6 +43,8 @@ var connectionsOptions=conf.redisPushNotification;
 var redisHandler;
 var APIURL = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/devices";
 // var APIURLActions = conf.testConfig.testUrl + ":" + conf.microserviceConf.port + "/apiActions";
+
+var redisDriver=require("../../../../DBEngineHandler/drivers/redisDriver");
 
 
 
@@ -163,7 +166,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
         this.timeout(5000);
         testMessage="must test redis device observations notification";
         it(testMessage, function (done) {
-
             redisHandler=redis.createClient(options);
             request.post({
                 url: APIURL  + '/' + deviceId +'/actions/getDeviceObservationsRedisNotification',
@@ -196,7 +198,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     var range = _.range(100);
                     async.eachSeries(range, function(e,cb){
                         callback=cb;
-                        observationUtility.create({
+                        observationDocuments.createObservation({
                             timestamp:new Date().getTime(),
                             value:e,
                             deviceId:deviceId,
@@ -215,6 +217,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                     });
                 }
             });
+
+
         });
     });
 

@@ -222,6 +222,34 @@ module.exports.llen = function (key,callback) {
     }
 };
 
+
+module.exports.subscribe = function (channel,callback) {
+    if(redisStatus)
+        redisClient.subscribe(channel,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+module.exports.unsubscribe = function (channel,callback) {
+    if(redisStatus)
+        redisClient.unsubscribe(channel,callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
+
+module.exports.quit = function (callback) {
+    if(redisStatus)
+        redisClient.quit(callback);
+    else{
+        redisNotAvalilable(callback);
+    }
+};
+
+
 /*
 module.exports.addObservations = function (deviceId,observations,callback) {
     observations=observations.slice(-observationsCacheItems);

@@ -219,7 +219,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        testMessage='must test API action getObservations from Redis [Results ordered by tiestamp]';
+        testMessage='must test API action getObservations from Redis [Results ordered by timestamp]';
         it(testMessage, function (done) {
 
             request.post({
@@ -1283,7 +1283,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     function localizeObservations(centrePoint,numberForBB,bBNumber,distance,deltaDistance,returnCallback){
 
         var start=new geoLatLon(centrePoint[0],centrePoint[1]);
-        observationUtility.find({},function(err,results){
+        observationUtility.find({deviceId:deviceId},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": localizeObservations -->" + err.message);
             var currentLoc=[];
             var tmpLatLon;
@@ -1292,11 +1292,10 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                 distMin=(distance*bbox)+deltaDistance;
                 distMax=(distance*(bbox+1));
                 for (var observation=0;observation<numberForBB;++observation){
-                    tmpLatLon=start.destinationPoint(Math.floor(Math.random()*(distMax-distMin))+distMin,Math.floor(Math.random()*361));
+                    tmpLatLon=start.destinationPoint(Math.floor(Math.random()*(distMax-distMin))+distMin, Math.floor(Math.random()*361));
                     currentLoc.push([tmpLatLon.lon,tmpLatLon.lat]);
                 }
             }
-
             async.eachOf(currentLoc, function(location,index, callback) {
 
                 observationUtility.findByIdAndUpdate(results[index]._id,{location:{coordinates:location}},function(err,res){
@@ -1309,7 +1308,6 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
             });
         });
     }
-
 
     describe(testTypeMessage, function () {
         testMessage='must test API action search [10 observations saved, get one or more observation]';
@@ -1921,7 +1919,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
     function setObservationsUpdate(number,updateRecord,returnCallback){
 
-        observationUtility.find({},function(err,results){
+        observationUtility.find({deviceId:deviceId},function(err,results){
             if(err) consoleLogError.printErrorLog(testTypeMessage +": setObservationsUpdate -->" + err.message);
 
             var range = _.range(number);

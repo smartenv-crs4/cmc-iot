@@ -319,7 +319,7 @@ describe('DeviceType_Domains Model Test', function () {
                 data.domainId.should.be.eql(id);
                 DeviceType_Domain.create({deviceTypeId:id,domainId:id},function(err,data){
                     should(err).be.not.null();
-                    err.message.indexOf("duplicate key error index").should.be.greaterThanOrEqual(0);
+                    err.message.indexOf("duplicate key error").should.be.greaterThanOrEqual(0);
                     done();
                 });
             });

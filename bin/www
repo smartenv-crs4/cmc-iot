@@ -50,6 +50,7 @@ function disconnect(){
             console.log('Disconnected from database');
         }
         redisConnection.disconnect();
+        redisPushNotificationConnection.disconnect();
         process.exit(1);
     });
 }

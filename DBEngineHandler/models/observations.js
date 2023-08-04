@@ -22,6 +22,7 @@
 
 
 var mongoose = require('mongoose');
+const _ = require("underscore");
 var findAllFn = require('./metadata').findAll;
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
@@ -42,7 +43,8 @@ var observationSchema = new Schema(observation, {strict: "throw"});
 
 observationSchema.pre('validate', function(next) {
 
-    if (!this.timestamp) {
+   // if (!this.timestamp) {
+    if ((this.timestamp== undefined) || (this.timestamp==null)) {
         this.timestamp=new Date().getTime();
     }
     next();

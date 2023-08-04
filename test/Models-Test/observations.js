@@ -24,6 +24,7 @@ var db = require("../../connectionsHandler/mongooseConnection");
 var Observation = require('../../DBEngineHandler/drivers/observationDriver');
 var observationDocuments = require('../SetTestenv/createObservationsDocuments');
 var should = require('should/should');
+var conf=require('propertiesmanager').conf;
 
 
 describe('Observations Model Test', function () {
@@ -307,7 +308,7 @@ describe('Observations Model Test', function () {
 
     describe('updateObservation()', function () {
 
-        it('must update a observation', function (done) {
+        it('must not update an observation', function (done) {
 
             Observation.findByIdAndUpdate(Observation.ObjectId(), {value: 0}, function (err, updatedObservation) {
                 should(err).be.null();
@@ -316,6 +317,99 @@ describe('Observations Model Test', function () {
             });
         });
     });
+
+
+    describe('duplicate observation in same timeStamp not Allowed()', function () {
+
+        it('must test an error on observation creation with same timestamp for same device ', function (done) {
+
+
+            Observation.findOne({value:1}, null, function (err, observation) {
+
+                if (err) throw err;
+                else {
+                    observation.should.have.property('timestamp');
+                    observation.should.have.property('value');
+                    observation.should.have.property('deviceId');
+                    observation.should.have.property('unitId');
+                    var updateValue = 3;
+                    Observation.findByIdAndUpdate(observation._id, {value: updateValue,timestamp:0}, function (err, updatedObservation) {
+                        should(err).be.null();
+                        updatedObservation._id.should.be.eql(observation._id);
+                        updatedObservation.value.should.be.eql(updateValue);
+
+                        Observation.findById(observation._id, function (err, findObservation) {
+                            should(err).be.null();
+                            should(findObservation).be.not.null();
+                            findObservation.value.should.be.eql(updateValue);
+                            findObservation.timestamp.should.be.eql(0);
+                            findObservation.value.should.be.not.eql(observation.value);
+                            Observation.create({
+                                timestamp:0,
+                                value:1,
+                                deviceId:updatedObservation.deviceId,
+                                unitId:updatedObservation.unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                should(err).be.not.null();
+                                done();
+                            });
+                        });
+                    });
+                }
+            });
+
+
+        });
+    });
+
+
+    describe('duplicate observation in same timeStamp Allowed()', function () {
+
+        it('must test observation creation with same timestamp for same device ', function (done) {
+
+
+            conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=false;
+            Observation.findOne({value:1}, null, function (err, observation) {
+
+                if (err) throw err;
+                else {
+                    observation.should.have.property('timestamp');
+                    observation.should.have.property('value');
+                    observation.should.have.property('deviceId');
+                    observation.should.have.property('unitId');
+                    var updateValue = 3;
+                    Observation.findByIdAndUpdate(observation._id, {value: updateValue,timestamp:0}, function (err, updatedObservation) {
+                        should(err).be.null();
+                        updatedObservation._id.should.be.eql(observation._id);
+                        updatedObservation.value.should.be.eql(updateValue);
+
+                        Observation.findById(observation._id, function (err, findObservation) {
+                            should(err).be.null();
+                            should(findObservation).be.not.null();
+                            findObservation.value.should.be.eql(updateValue);
+                            findObservation.timestamp.should.be.eql(0);
+                            findObservation.value.should.be.not.eql(observation.value);
+                            Observation.create({
+                                timestamp:0,
+                                value:1,
+                                deviceId:updatedObservation.deviceId,
+                                unitId:updatedObservation.unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                should(err).be.null();
+                                conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp=true;
+                                done();
+                            });
+                        });
+                    });
+                }
+            });
+
+
+        });
+    });
+
 
 
 });
