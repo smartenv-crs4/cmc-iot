@@ -653,7 +653,7 @@ module.exports.actionHandler = function(req, res, next) {
                                     res.httpResponse(error,null,null);
                                 } else{
                                     var headers=apiAction.header;
-                                    headers['Authorization']= "Bearer " + thing.api.access_token;
+                                    //headers['Authorization']= "Bearer " + thing.api.access_token;
                                     var body=req.body;
                                     body["access_token"]=thing.api.access_token;
                                     var query=req.query;

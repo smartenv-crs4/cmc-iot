@@ -48,13 +48,12 @@ module.exports.create = function(observation, callback) {
                     callback(Err);
                 } else
                     observationModel.create(observation, callback);
-
             }
         });
     } else {
         observationModel.create(observation, callback);
     }
-
+    //observationModel.create(observation, callback);
 };
 
 // /* Create Observations. */

@@ -1254,6 +1254,7 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
         it(testMessage, function (done) {
 
 
+
             testObservationDef.timestamp=0;
             request.post({
                 url: APIURL,
@@ -1284,12 +1285,27 @@ describe('Observations API Test - [DATA VALIDATION]', function () {
                 }, function (error, response, body) {
                     if (error) consoleLogError.printErrorLog(testMessageMessage+": '" + testMessage + "'  -->" + error.message);
                     else {
-                        var results = JSON.parse(body);
-                        response.statusCode.should.be.equal(422);
-                        results.should.have.property('statusCode');
-                        results.should.have.property('error');
-                        results.should.have.property('message');
-                        results.message.indexOf("already exists at timestamp 0").should.be.greaterThanOrEqual(0);
+                        if(conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp) {
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(422);
+                            results.should.have.property('statusCode');
+                            results.should.have.property('error');
+                            results.should.have.property('message');
+                            results.message.indexOf("already exists at timestamp 0").should.be.greaterThanOrEqual(0);
+                        }else{
+                            var results = JSON.parse(body);
+                            response.statusCode.should.be.equal(201);
+                            results.should.have.property('_id');
+                            results.should.have.property('value');
+                            results.should.have.property('location');
+                            results.should.have.property('unitId');
+                            results.should.have.property('deviceId');
+                            results.should.have.property('timestamp');
+                            results.value.should.be.eql(testObservationDef.value);
+                            observationUtility.ObjectId(results.unitId).should.be.eql(observationUtility.ObjectId(testObservationDef.unitId));
+                            observationUtility.ObjectId(results.deviceId).should.be.eql(observationUtility.ObjectId(testObservationDef.deviceId));
+                            results.timestamp.should.be.eql(testObservationDef.timestamp);
+                        }
                     }
                     done();
                 });
