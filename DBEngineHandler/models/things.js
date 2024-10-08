@@ -66,7 +66,7 @@ thingSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUp
 // validate api.url direct.url
 thingSchema.pre('validate', function(next) {
 
-    var espressione = new RegExp('^https?:\\/\\/(((www\\.)?\\w+(\\.\\w+)*\\.\\D{2})|(localhost)|(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))((:\\d+)?((\\/\\w*)+)?)?(\\?{0,1}\\w+)?$','i');
+    var espressione = new RegExp('^https?:\\/\\/(((www\\.)?(\\w+|-+)+(\\.\\w+)*\\.\\D{2})|(localhost)|(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))((:\\d+)?((\\/\\w*)+)?)?(\\?{0,1}\\w+)?$','i');
 
 
     if(this.api && this.api.url) {
