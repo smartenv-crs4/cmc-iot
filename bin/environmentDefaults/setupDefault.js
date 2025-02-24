@@ -41,14 +41,14 @@ module.exports.setupDefaults = function (callbackResponse) {
 
                     var responseBody;
 
-                    if(response.statusCode==200)
+                    if (response.statusCode == 200)
                         responseBody = JSON.parse(body);
-                    else responseBody = {_metadata:{totalCount:0}};
+                    else responseBody = {_metadata: {totalCount: 0}};
 
-                        for (var index = 0; index < responseBody._metadata.totalCount; ++index) {
-                            if (config.cmcIoTThingsOwner.tokenType.indexOf(responseBody.userandapptypes[index].name) >= 0)
-                                index = responseBody._metadata.totalCount + 1;
-                        }
+                    for (var index = 0; index < responseBody._metadata.totalCount; ++index) {
+                        if (config.cmcIoTThingsOwner.tokenType.indexOf(responseBody.userandapptypes[index].name) >= 0)
+                            index = responseBody._metadata.totalCount + 1;
+                    }
 
                     if (index == responseBody._metadata.totalCount) { // if not exist create it
                         //create tokentype
@@ -70,7 +70,6 @@ module.exports.setupDefaults = function (callbackResponse) {
                 });
             },
             function (callback) { // create cmc-IoT External APP(To mange dismissed Things)
-
 
 
                 var rqparams = {

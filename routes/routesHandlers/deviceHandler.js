@@ -665,17 +665,9 @@ module.exports.actionHandler = function(req, res, next) {
                                         body: JSON.stringify(body)
                                     };
 
-
-                                    //TODO: Remove
-                                    console.log(requestToDevice);
-
                                     request(requestToDevice, function (error, response, body) {
                                         var statusCode= req.statusCode;
                                         var responseBody=body;
-
-                                        //TODO: Remove
-                                        console.log(responseBody);
-
 
                                         if(response && !((response.statusCode>=200)&&(response.statusCode<=299))){
                                            statusCode=response.statusCode;

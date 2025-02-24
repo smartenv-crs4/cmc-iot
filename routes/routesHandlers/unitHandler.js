@@ -24,7 +24,6 @@
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
 var observationUtility = require('./handlerUtility/observationHandlerUtility')
 
-
 //Begin macro
 /**
  * @apiDefine UnitBodyParams
