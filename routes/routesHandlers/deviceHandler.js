@@ -665,17 +665,18 @@ module.exports.actionHandler = function(req, res, next) {
                                         body: JSON.stringify(body)
                                     };
 
-                                    request(requestToDevice, function (error, response, body) {
-                                        var statusCode= req.statusCode;
-                                        var responseBody=body;
-
-                                        if(response && !((response.statusCode>=200)&&(response.statusCode<=299))){
-                                           statusCode=response.statusCode;
-                                           responseBody=JSON.parse(body);
-                                           responseBody['responseFrom']="device " + id
-                                        }
-                                        res.httpResponse(error,statusCode, responseBody);
-                                    });
+                                    request(requestToDevice).pipe(res);
+                                    // request(requestToDevice, function (error, response, body) {
+                                    //     var statusCode= req.statusCode;
+                                    //     var responseBody=body;
+                                    //
+                                    //     if(response && !((response.statusCode>=200)&&(response.statusCode<=299))){
+                                    //        statusCode=response.statusCode;
+                                    //        responseBody=JSON.parse(body);
+                                    //        responseBody['responseFrom']="device " + id
+                                    //     }
+                                    //     res.httpResponse(error,statusCode, responseBody);
+                                    // });
                                 }
                             });
                         }else{
