@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -665,7 +665,22 @@ module.exports.actionHandler = function(req, res, next) {
                                         body: JSON.stringify(body)
                                     };
 
-                                    request(requestToDevice).pipe(res);
+                                    var proxiedRequest = request(requestToDevice);
+                                    proxiedRequest.on('error', function (proxyError) {
+                                        if (res.headersSent || res.writableEnded) {
+                                            return;
+                                        }
+
+                                        var Err = new Error("Cannot reach device '" + id + "': " + proxyError.message);
+                                        Err.name = "DeviceConnectionError";
+                                        Err.code = proxyError.code;
+                                        Err.errno = proxyError.errno;
+                                        Err.address = proxyError.address;
+                                        Err.port = proxyError.port;
+                                        res.httpResponse(Err, 502, null);
+                                    });
+
+                                    proxiedRequest.pipe(res);
                                     // request(requestToDevice, function (error, response, body) {
                                     //     var statusCode= req.statusCode;
                                     //     var responseBody=body;
