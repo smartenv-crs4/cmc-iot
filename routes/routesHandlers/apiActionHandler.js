@@ -23,6 +23,13 @@
 
 var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
 
+/*
+ * ApiAction handler.
+ *
+ * Owns CRUD for action templates attached to DeviceTypes and used by the
+ * dynamic action dispatch path.
+ */
+
 
 
 //Begin macro
@@ -30,7 +37,7 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiDefine ApiActionBodyParams
  * @apiParam (Body Parameter) {Object}      apiAction                       ApiAction dictionary with all the fields
  * @apiParam (Body Parameter) {String}      apiAction.actionName            ApiAction URL
- * @apiParam (Body Parameter) {String}      [apiAction.method]              ApiAction HTTP method. Accepted values are `["GET","POST","PUT","DELETE"]`. Default is `GET`
+ * @apiParam (Body Parameter) {String}      apiAction.method                ApiAction HTTP method. Accepted values are `GET`, `POST`, `PUT`, `DELETE`. Optional, default is `GET`
  * @apiParam (Body Parameter) {Object}      [apiAction.header]              ApiAction HTTP header. Default is `{"Content-Type": "application/json" , "Accept":"application/json"}`
  * @apiParam (Body Parameter) {Object}      [apiAction.bodyPrototype]       ApiAction HTTP body prototype
  * @apiParam (Body Parameter) {ObjectId}    apiAction.deviceTypeId          ApiAction Foreign Key to DeviceType (See `/deviceTypes` API reference)
@@ -162,6 +169,7 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new ApiAction resource. */
 module.exports.postCreateApiAction = function(req, res, next) {
     apiActionDriver.create(req.body.apiAction, function(err, results) {
         res.httpResponse(err, null, results)
@@ -170,13 +178,15 @@ module.exports.postCreateApiAction = function(req, res, next) {
 
 
 /**
- * @api {put} /domains Update an ApiAction
+ * @api {put} /apiActions/:id Update an ApiAction
  * @apiVersion 1.0.0
  * @apiName PutApiAction
  * @apiGroup ApiActions
  * @apiPermission Access Token
  *
  * @apiDescription Updates an ApiAction object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The ApiAction identifier
  *
  * @apiUse ApiActionBodyParams
  *
@@ -195,6 +205,7 @@ module.exports.postCreateApiAction = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update an existing ApiAction by id. */
 module.exports.updateApiAction = function(req, res, next) {
     apiActionDriver.findByIdAndUpdate(req.params.id, req.body.apiAction, function(err, results) {
         res.httpResponse(err, null, results)
@@ -226,6 +237,7 @@ module.exports.updateApiAction = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one ApiAction by id. */
 module.exports.getApiActionById = function(req, res, next) {
     var id = req.params.id
     apiActionDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -257,6 +269,7 @@ module.exports.getApiActionById = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List ApiActions with query filters and projection. */
 module.exports.getApiActions = function(req, res, next) {
     apiActionDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, req.statusCode, results)
@@ -265,7 +278,7 @@ module.exports.getApiActions = function(req, res, next) {
 
 
 /**
- * @api {delete} /devices/:id Delete ApiAction
+ * @api {delete} /apiActions/:id Delete ApiAction
  * @apiVersion 1.0.0
  * @apiName DeleteApiActionById
  * @apiGroup ApiActions
@@ -286,6 +299,7 @@ module.exports.getApiActions = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete an ApiAction by id. */
 module.exports.deleteApiAction = function(req, res, next) {
     var id = req.params.id
     apiActionDriver.findByIdAndRemove(id, function(err, deletedApiAction) {

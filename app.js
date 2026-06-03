@@ -43,7 +43,16 @@ var domainsRouter = require('./routes/domains');
 
 var app = express();
 
-// TODO add plugins mode compliance
+/*
+ * Express application bootstrap.
+ *
+ * Wiring order is important:
+ * 1) Core parsers and static assets
+ * 2) Shared response helpers
+ * 3) Feature routers
+ * 4) 404 fallback
+ * 5) Centralized error handler
+ */
 
 
 // view engine setup
@@ -54,11 +63,14 @@ app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use('/doc', express.static('doc',{root:'doc'}));
+/* Serve generated API documentation under /doc. */
+app.use('/doc', express.static(path.join(__dirname, 'doc')));
 app.use(express.static(path.join(__dirname, 'public')));
+/* Extend response object with boom helpers and custom httpResponse adapter. */
 app.use(boom());
 app.use(httpResponse);
 
+/* Mount resource routers under their API prefixes. */
 app.use('/', indexRouter);
 app.use('/devices', devicesRouter);
 app.use('/things', thingsRouter);
@@ -72,13 +84,13 @@ app.use('/apiActions', apiActionsRouter);
 app.use('/domains', domainsRouter);
 
 
-// catch 404 and forward to error handler
+/* Fallback 404 for unmatched routes. */
 app.use(function(req, res, next) {
   res.boom.notFound("The resource was not found");
 });
 
 
-// error handler
+/* Centralized error handler used by all routes and middleware. */
 app.use(function(err, req, res, next) {
   // set locals, only providing error in development
   // render the error page

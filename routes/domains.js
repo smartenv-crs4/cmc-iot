@@ -27,43 +27,52 @@ var authorisationManager=require('./middlewares/authorisationMiddleware');
 var domainsHandler=require('./routesHandlers/domainHandler');
 var mongoSecurity=require('./middlewares/mongoDbinjectionSecurity');
 
+/*
+ * Domain router.
+ *
+ * Provides standard CRUD and a domain-specific action
+ * to retrieve associated DeviceTypes for a selected domain id.
+ */
+
 
 
 // ----------- <Actions> -----------
+/* Return DeviceTypes linked to the specified domain id. */
 router.post('/:id/actions/getDeviceTypes',[authorisationManager.checkToken],function(req, res, next) {
   domainsHandler.getDeviceTypes(req,res,next);
 });
 // ----------- </Actions> -----------
 
 
-/* Create domains */
+/* Create a new domain resource. */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domain"]), function(req, res, next) {
   domainsHandler.postCreateDomain(req,res,next);
 });
 
 
-/* Delete domains. */
+/* Delete one domain by id. */
 router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
   domainsHandler.deleteDomain(req,res,next);
 });
 
 
-/* Update domains. */
+/* Update one domain by id using req.body.domain. */
 router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domain"]), function(req, res, next) {
   domainsHandler.updateDomain(req,res,next);
 });
 
 
 
-/* Read domains. */
+/* Read one domain with optional field projection. */
 router.get('/:id',[authorisationManager.checkToken],parseRequestMiddleware.parseFields, function(req, res, next) {
   domainsHandler.getDomainById(req,res,next);
 });
 
+/* Parse query options and sanitize operators for list endpoint below. */
 router.use(parseRequestMiddleware.parseOptions);
 router.use(mongoSecurity.parseForOperators);
 
-/* GET domains listing. */
+/* List domains with projection and id-array filter support. */
 router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFields,parseRequestMiddleware.parseIds("domains"), function(req, res, next) {
   req.query.dismissed=false; // dismissed domains must be removed from query results
   domainsHandler.getDomains(req,res,next);

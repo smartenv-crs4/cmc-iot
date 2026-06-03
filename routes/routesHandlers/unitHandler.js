@@ -24,6 +24,13 @@
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
 var observationUtility = require('./handlerUtility/observationHandlerUtility')
 
+/*
+ * Unit handler.
+ *
+ * Manages measurement units and guards deletion when Observations still
+ * reference the unit.
+ */
+
 //Begin macro
 /**
  * @apiDefine UnitBodyParams
@@ -171,6 +178,7 @@ var observationUtility = require('./handlerUtility/observationHandlerUtility')
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new unit. */
 module.exports.postCreateUnit = function(req, res, next) {
     unitDriver.create(req.body.unit, function(err, results) {
         res.httpResponse(err,null,results);
@@ -201,6 +209,7 @@ module.exports.postCreateUnit = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List units with filters and projection. */
 module.exports.getUnits = function(req, res, next) {
     unitDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err,null,results);
@@ -232,6 +241,7 @@ module.exports.getUnits = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one unit by id. */
 module.exports.getUnitById = function(req, res, next) {
     var id = req.params.id
     unitDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -241,13 +251,15 @@ module.exports.getUnitById = function(req, res, next) {
 
 
 /**
- * @api {put} /units Update a Unit
+ * @api {put} /units/:id Update a Unit
  * @apiVersion 1.0.0
  * @apiName PutUnit
  * @apiGroup Units
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Unit object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Unit identifier
  *
  * @apiUse UnitBodyParams
  *
@@ -266,6 +278,7 @@ module.exports.getUnitById = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update a unit by id. */
 module.exports.updateUnit = function(req, res, next) {
     unitDriver.findByIdAndUpdate(req.params.id, req.body.unit, function(err, results) {
         res.httpResponse(err,null,results);
@@ -296,6 +309,7 @@ module.exports.updateUnit = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a unit only when no Observation references remain. */
 module.exports.deleteUnit = function(req, res, next) {
     var id = req.params.id
     observationUtility.findAll({unitId: id}, null, {totalCount: true}, function (err, results) {

@@ -26,6 +26,13 @@ var apiActionsDriver = require('../../DBEngineHandler/drivers/apiActionDriver')
 var deviceTypeDomainDriver = require('../../DBEngineHandler/drivers/deviceType_domainDriver')
 var async = require("async")
 
+/*
+ * DeviceType handler.
+ *
+ * Manages DeviceType CRUD plus association of Domain identifiers that are
+ * used to group device templates semantically.
+ */
+
 
 //Begin macro
 /**
@@ -176,6 +183,7 @@ function addDomainHandler(id, req, res, next) {
     })
 }
 
+/* Append domain associations to a DeviceType. */
 module.exports.addDomains = function(req, res, next) {
     var id = req.params.id
     addDomainHandler(id, req, res, next)
@@ -208,6 +216,7 @@ module.exports.addDomains = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Remove a subset of domain associations from a DeviceType. */
 module.exports.removeDomains = function(req, res, next) {
     var id = req.params.id
     var results = []
@@ -253,6 +262,7 @@ module.exports.removeDomains = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Replace the full domain association set for a DeviceType. */
 module.exports.setDomains = function(req, res, next) {
     var id = req.params.id
     deviceTypeDomainDriver.deleteMany({deviceTypeId: id}, function(err) {
@@ -287,6 +297,7 @@ module.exports.setDomains = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read the domain associations of a DeviceType. */
 module.exports.getDomains = function(req, res, next) {
     var id = req.params.id
     deviceTypeDomainDriver.aggregate([
@@ -340,6 +351,7 @@ module.exports.getDomains = function(req, res, next) {
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a DeviceType and its initial domain relations. */
 module.exports.postCreateDeviceType = function(req, res, next) {
     deviceTypeDriver.create(req.body.deviceType, function(err, results) {
         if (err) return (res.httpResponse(err, null, null))
@@ -386,6 +398,7 @@ module.exports.postCreateDeviceType = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List DeviceTypes with filters and projection. */
 module.exports.getDeviceTypes = function(req, res, next) {
     deviceTypeDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -417,6 +430,7 @@ module.exports.getDeviceTypes = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one DeviceType by id. */
 module.exports.getDeviceTypeById = function(req, res, next) {
     var id = req.params.id
     deviceTypeDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -426,13 +440,15 @@ module.exports.getDeviceTypeById = function(req, res, next) {
 
 
 /**
- * @api {put} /domains Update a DeviceType
+ * @api {put} /deviceTypes/:id Update a DeviceType
  * @apiVersion 1.0.0
  * @apiName PutDeviceType
  * @apiGroup DeviceTypes
  * @apiPermission Access Token
  *
  * @apiDescription Updates a DeviceType object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The DeviceType identifier
  *
  * @apiUse DeviceTypeBodyParams
  *
@@ -451,6 +467,7 @@ module.exports.getDeviceTypeById = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update one DeviceType by id. */
 module.exports.updateDeviceType = function(req, res, next) {
     deviceTypeDriver.findByIdAndUpdate(req.params.id, req.body.deviceType, function(err, results) {
         res.httpResponse(err, null, results)
@@ -480,6 +497,7 @@ module.exports.updateDeviceType = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a DeviceType and dependent associations. */
 module.exports.deleteDeviceType = function(req, res, next) {
     var id = req.params.id
 

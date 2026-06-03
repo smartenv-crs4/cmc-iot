@@ -28,21 +28,32 @@ var authorisationManager = require('./middlewares/authorisationMiddleware')
 var deviceTypesHandler = require('./routesHandlers/deviceTypeHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
+/*
+ * DeviceType router.
+ *
+ * Includes standard CRUD plus relationship management actions for Domain links.
+ * Domain actions all operate on the DeviceType identified by :id.
+ */
+
 
 // --------  <Actions> -----------
 
+/* Append domain associations to an existing DeviceType. */
 router.post('/:id/actions/addDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
     deviceTypesHandler.addDomains(req,res,next);
 });
 
+/* Remove a subset of domain associations from an existing DeviceType. */
 router.post('/:id/actions/removeDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
     deviceTypesHandler.removeDomains(req,res,next);
 });
 
+/* Replace all domain associations for a DeviceType with the provided set. */
 router.post('/:id/actions/setDomains',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["domains"]),function(req, res, next) {
     deviceTypesHandler.setDomains(req,res,next);
 });
 
+/* Retrieve domains associated with a DeviceType. */
 router.post('/:id/actions/getDomains',[authorisationManager.checkToken],function(req, res, next) {
     deviceTypesHandler.getDomains(req,res,next);
 });
@@ -51,37 +62,37 @@ router.post('/:id/actions/getDomains',[authorisationManager.checkToken],function
 // --------  </Actions> -----------
 
 
-/* Create deviceType */
+/* Create a DeviceType and its initial Domain mapping set. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType","domains"]), function(req, res, next) {
     deviceTypesHandler.postCreateDeviceType(req, res, next)
 })
 
 
-/* Read deviceType */
+/* Read one DeviceType resource. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     deviceTypesHandler.getDeviceTypeById(req, res, next)
 })
 
 
-/* Update deviceType */
+/* Update one DeviceType using req.body.deviceType. */
 router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["deviceType"]), function(req, res, next) {
     deviceTypesHandler.updateDeviceType(req, res, next)
 })
 
 
-/* Delete deviceType */
+/* Delete one DeviceType and related associations where applicable. */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
     deviceTypesHandler.deleteDeviceType(req, res, next)
 })
 
 
-/*Query parsing modules */
+/* Shared query parsing modules applied to listing routes declared below. */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET deviceTypes list */
+/* List DeviceTypes with optional filters and id-array expansion. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("deviceTypes"), function(req, res, next) {
     deviceTypesHandler.getDeviceTypes(req, res, next)
 })

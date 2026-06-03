@@ -28,38 +28,45 @@ var authorisationManager = require('./middlewares/authorisationMiddleware')
 var observedPropertiesHandler = require('./routesHandlers/observedPropertyHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
+/*
+ * ObservedProperty router.
+ *
+ * Straightforward CRUD endpoints with common projection/options parsing
+ * and query operator sanitization for listing.
+ */
 
-/* Create ObservedProperty */
+
+/* Create a new observed property from req.body.observedProperty. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observedProperty"]), function(req, res, next) {
     observedPropertiesHandler.postCreateObservedProperty(req, res, next)
 })
 
 
-/* Read ObservedProperty */
+/* Read one observed property by id. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     observedPropertiesHandler.getObservedPropertyById(req, res, next)
 })
 
 
-/* Update ObservedProperty */
+/* Update one observed property by id. */
 router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observedProperty"]), function(req, res, next) {
     observedPropertiesHandler.updateObservedProperty(req, res, next)
 })
 
 
-/* Delete ObservedProperty */
+/* Delete one observed property by id. */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
     observedPropertiesHandler.deleteObservedProperty(req, res, next)
 })
 
 
-/* Query parsing modules */
+/* Shared parsers/sanitizers for listing operations declared below. */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET ObservedProperties list */
+/* List observed properties with id-array filter support. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("observedProperties"), function(req, res, next) {
     observedPropertiesHandler.getObservedProperties(req, res, next)
 })

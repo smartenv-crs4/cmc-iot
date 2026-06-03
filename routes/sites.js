@@ -28,50 +28,59 @@ var authorisationManager = require('./middlewares/authorisationMiddleware');
 var sitesHandler = require('./routesHandlers/siteHandler');
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 
+/*
+ * Site router.
+ *
+ * Provides CRUD plus topology/geospatial actions:
+ * - linked site graph resolution
+ * - search by distance from a location
+ */
 
 
+/* Resolve transitive linked sites starting from an input site id list. */
 router.post('/actions/getLinkedSites',parseRequestMiddleware.validateBody(["sites"]),mongosecurity.parseForOperators,function(req, res, next) {
     req.statusCode=200;
     sitesHandler.getLinkedSites(req,res,next);
 });
 
+/* Geospatial search around a location using distance and mode options. */
 router.post('/actions/searchSitesByLocation',parseRequestMiddleware.validateBody(["location","distance","distanceOptions"]),mongosecurity.parseForOperators,function(req, res, next) {
     req.statusCode=200;
     sitesHandler.searchSitesByLocation(req,res,next);
 });
 
 
-/* Create site */
+/* Create a new site resource. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {
     sitesHandler.postCreateSite(req, res, next)
 })
 
 
-/* Read site */
+/* Read one site by id. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     sitesHandler.getSiteById(req, res, next)
 })
 
 
-/* Update site */
+/* Update one site by id. */
 router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["site"]), function(req, res, next) {
     sitesHandler.updateSite(req, res, next)
 })
 
 
-/* Delete site */
+/* Delete one site by id. */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
     sitesHandler.deleteSite(req, res, next)
 })
 
 
-/*Query parsing modules */
+/* Shared query parsing/sanitization for list endpoint below. */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET sites list */
+/* List sites with optional filters and id-array query expansion. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("sites"), function(req, res, next) {
     sitesHandler.getSites(req, res, next)
 })

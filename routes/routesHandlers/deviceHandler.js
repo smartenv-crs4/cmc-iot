@@ -33,6 +33,13 @@ var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.de
 var _=require('underscore');
 var queryString=require('querystring');
 
+/*
+ * Device handler.
+ *
+ * Coordinates device CRUD, enable/disable flows, observation management,
+ * Redis notification helpers and the dynamic action proxy.
+ */
+
 
 
 // Begin Macro
@@ -185,6 +192,7 @@ var queryString=require('querystring');
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new Device resource. */
 module.exports.postCreateDevice = function (req, res, next) {
 
     var device=req.body.device;
@@ -221,13 +229,15 @@ function redisNotification(id,message,action){
 
 
 /**
- * @api {put} /devices Update a Device
+ * @api {put} /devices/:id Update a Device
  * @apiVersion 1.0.0
  * @apiName PutDevice
  * @apiGroup Devices
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Device object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Device identifier
  *
  * @apiUse DeviceBodyParams
  *
@@ -245,6 +255,7 @@ function redisNotification(id,message,action){
  * @apiSampleRequest off
  */
 // TODO notificare tramite redis???
+/* Update a Device by id while preserving protected flags. */
 module.exports.updateDevice = function (req, res, next) {
 
 
@@ -331,6 +342,7 @@ function enableDisableDeviceById(currentDevice,action,res){
     }
 }
 
+/* Toggle a Device between enabled and disabled state. */
 module.exports.disableEnableDevice = function (req, res, next) {
     if(req.disableDevice==undefined){
         const err = new Error("req.disableDevice==undefined. It must be true to disable or false to enable");
@@ -410,6 +422,7 @@ module.exports.disableEnableDevice = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one Device by id. */
 module.exports.getDeviceById = function (req, res, next) {
 
     var id = req.params.id;
@@ -443,6 +456,7 @@ module.exports.getDeviceById = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List Devices with filters, projections and pagination. */
 module.exports.getDevices = function (req, res, next) {
     deviceDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
         res.httpResponse(err,req.statusCode,results);
@@ -451,7 +465,7 @@ module.exports.getDevices = function (req, res, next) {
 
 
 /**
- * @api {post} /actions/searchDismissed Get all dismissed Devices
+ * @api {post} /devices/actions/searchDismissed Get all dismissed Devices
  * @apiVersion 1.0.0
  * @apiName SearchDismissedDevices
  * @apiGroup Devices
@@ -463,7 +477,8 @@ module.exports.getDevices = function (req, res, next) {
  * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/actions/searchDismissed?name=dev1_Crs4 dev2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
+ * HTTP/1.1 POST /devices/actions/searchDismissed
+ * Body: {"searchFilters": {"name": ["dev1_Crs4", "dev2_Crs4"]}, "pagination": {"skip": 0, "limit": 50}}
  *
  * @apiUse Metadata
  * @apiUse GetAllDeviceResource
@@ -500,6 +515,7 @@ module.exports.getDevices = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a Device and trigger downstream cleanup. */
 module.exports.deleteDevice = function (req, res, next) {
     var id = req.params.id;
     deviceUtility.deleteDevice(id,function(err,deletedDevice){
@@ -513,7 +529,7 @@ module.exports.deleteDevice = function (req, res, next) {
 
 
 /**
- * @api {post} /devices/actions/getObservations Get Observations
+ * @api {post} /devices/:id/actions/getObservations Get Observations
  * @apiVersion 1.0.0
  * @apiName DeviceGetObservations
  * @apiGroup Devices
@@ -521,23 +537,27 @@ module.exports.deleteDevice = function (req, res, next) {
  *
  * @apiDescription Returns a paginated list of filtered Observations from a Device
  *
+ * @apiParam (URL Parameter)    {String}     id                               Device identifier
+ *
  * @apiUse SearchObservationParams
- * @apiParam (Body Parameter)   {Number}     [searchFilters.unitId]          Observation Unit identifier
+ * @apiParam (Body Parameter)   {String[]}   [searchFilters.unitsId]         Observation Unit identifiers
  * @apiUse LocationCentreBodyParams
  * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/actions/getObservations
- *  Body: {"searchFilters": [
- *                              {"timestamp": {"from": 1590364800, "to": 1590364801},
- *                               "value": {0, 100},
- *                               "location": {"centre": {"coordinates": [0,0]},
- *                               "distance": 1,
- *                               "distanceOptions": {"mode": "bbox"}
- *                                    },
- *                               "unitId": "543fdd60579e1281sdcf6da34"
- *                              }
- *                          ]
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/getObservations
+ *  Body: {
+ *          "searchFilters": {
+ *            "timestamp": {"from": 1590364800, "to": 1590364801},
+ *            "value": {"min": 0, "max": 100},
+ *            "location": {
+ *              "centre": {"coordinates": [0,0]},
+ *              "distance": 1,
+ *              "distanceOptions": {"mode": "bbox", "returnDistance": true}
+ *            },
+ *            "unitsId": ["543fdd60579e1281sdcf6da34"]
+ *          },
+ *          "pagination": {"skip": 0, "limit": 50}
  *        }
  *
  * @apiUse GetAllObservationResource
@@ -554,9 +574,11 @@ module.exports.deleteDevice = function (req, res, next) {
  */
 //TODO @guido Modificato
 
+/* Search observations scoped to one Device. */
 module.exports.getObservations = function (req, res, next) {
     var deviceId=req.params.id;
     var searchFilters=req.body.searchFilters || {};
+    /* Force the search to remain constrained to the requested Device. */
     searchFilters["devicesId"] = [deviceId];
     observationUtility.searchFilter(searchFilters,req.dbPagination,false, function (err, foundedObservations) {
         res.httpResponse(err, req.statusCode, foundedObservations);
@@ -566,7 +588,7 @@ module.exports.getObservations = function (req, res, next) {
 
 
 /**
- * @api {post} /devices/actions/sendObservations Add Observations
+ * @api {post} /devices/:id/actions/sendObservations Add Observations
  * @apiVersion 1.0.0
  * @apiName DeviceSendObservations
  * @apiGroup Devices
@@ -574,12 +596,14 @@ module.exports.getObservations = function (req, res, next) {
  *
  * @apiDescription Add one or more Observations associated with a Device. An Observation must be valid in compliance with its Unit-Value constraints
  *
- * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
- * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
- * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
+ * @apiParam (URL Parameter)    {String}    id                          Device identifier
+ *
+ * @apiBody  {Object[]}  observations                Array list of Observation objects
+ * @apiBody  {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiBody  {Number}    observations.value          Observation value
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /devices/actions/sendObservations
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/sendObservations
  *  Body: {"observations": [
  *                          {"unitId": "543fdd60579e1281b8f6da92",
  *                           "value": 33,
@@ -609,8 +633,10 @@ module.exports.getObservations = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Create one or more observations for a Device. */
 module.exports.createObservations = function (req, res, next) {
     var id = req.params.id;
+    /* Validate each observation against the current Device before creating it. */
     observationUtility.validateAndCreateObservations(id,req.body.observations,function(err, observations){
         res.httpResponse(err,200,observations);
     });
@@ -619,11 +645,13 @@ module.exports.createObservations = function (req, res, next) {
 
 
 //TODO: @guido Documentare
+/* Return the Redis notification payload for device observation channels. */
 module.exports.getDeviceObservationsRedisNotification = function(req, res, next) {
     res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceObservationsRedisNotification(req.params.id));
 };
 
 //TODO: @guido Documentare
+/* Return the Redis notification payload for device channels. */
 module.exports.getDeviceRedisNotification = function(req, res, next) {
     res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceRedisNotification(req.params.id));
 };
@@ -632,14 +660,17 @@ module.exports.getDeviceRedisNotification = function(req, res, next) {
 
 
 //TODO: @guido Documentare
+/* Proxy a dynamic action request to the matching ApiAction definition. */
 module.exports.actionHandler = function(req, res, next) {
     var id = req.params.id;
     //TODO: develop a redis cache to get typeId
+    /* Resolve the Device first because the action template depends on its DeviceType. */
     deviceDriver.findById(id,"typeId thingId",{},function(error,device){
        if(error){
            res.httpResponse(error,null,null);
        } else{
             if(device) {
+                /* Select the action template for the current DeviceType and requested action name. */
                 apiActionsDriver.findOne({
                     actionName: req.params.actionName,
                     deviceTypeId: device.typeId
@@ -648,6 +679,7 @@ module.exports.actionHandler = function(req, res, next) {
                         res.httpResponse(error,null,null);
                     } else{
                         if(apiAction){
+                            /* Retrieve the Thing connection details used to proxy the call. */
                             thingDriver.findById(device.thingId,"api",{},function(error,thing){
                                 if(error){
                                     res.httpResponse(error,null,null);
@@ -665,6 +697,7 @@ module.exports.actionHandler = function(req, res, next) {
                                         body: JSON.stringify(body)
                                     };
 
+                                    /* Execute the outgoing request and surface transport failures as 502. */
                                     var proxiedRequest = request(requestToDevice);
                                     proxiedRequest.on('error', function (proxyError) {
                                         if (res.headersSent || res.writableEnded) {

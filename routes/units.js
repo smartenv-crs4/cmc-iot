@@ -28,38 +28,45 @@ var authorisationManager = require('./middlewares/authorisationMiddleware')
 var unitsHandler = require('./routesHandlers/unitHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
+/*
+ * Unit router.
+ *
+ * CRUD endpoints for measurement units plus shared parsing/sanitization
+ * middleware for list queries.
+ */
 
-/* Create unit */
+
+/* Create a new unit resource from req.body.unit. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["unit"]), function(req, res, next) {
     unitsHandler.postCreateUnit(req, res, next)
 })
 
 
-/* Read unit */
+/* Read one unit by id. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     unitsHandler.getUnitById(req, res, next)
 })
 
 
-/* Update unit */
+/* Update one unit by id. */
 router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["unit"]), function(req, res, next) {
     unitsHandler.updateUnit(req, res, next)
 })
 
 
-/* Delete unit */
+/* Delete one unit by id. */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
     unitsHandler.deleteUnit(req, res, next)
 })
 
 
-/*Query parsing modules */
+/* Shared list-query parsing and operator sanitization. */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET units list */
+/* List units with id-array filter support. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("units"), function(req, res, next) {
     unitsHandler.getUnits(req, res, next)
 })

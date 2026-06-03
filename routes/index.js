@@ -25,24 +25,34 @@ var router = express.Router();
 var conf = require('propertiesmanager').conf;
 var authorisationManager=require('./middlewares/authorisationMiddleware');
 
-/* GET home page. */
+/*
+ * Bootstrap and diagnostic endpoints.
+ *
+ * These routes expose runtime metadata used by operators and UI tooling:
+ * - Service landing page
+ * - Environment name
+ * - Full resolved configuration (token protected)
+ * - Running environment snapshot
+ */
+
+/* Render landing page for quick sanity checks. */
 router.get('/', function(req, res, next) {
   res.render('index', { title: 'CMC IoT Microservice by Express' , description:conf.microserviceConf.description});
 });
 
 
-// get env setting used by consule
+/* Expose the active environment identifier used by console clients. */
 router.get('/env', function(req, res, next) {
   res.status(200).send({env:conf.env});
 });
 
 
-// get env setting used by
+/* Return the full resolved configuration (restricted to authenticated clients). */
 router.get('/configuration',[authorisationManager.checkToken], function(req, res, next) {
   res.status(200).send(conf);
 });
 
-/* GET environment info page. */
+/* Return runtime configuration wrapper used by legacy monitors. */
 router.get('/running_env', function(req, res) {
   res.status(200).send({conf:conf});
 });

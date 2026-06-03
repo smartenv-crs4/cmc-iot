@@ -27,6 +27,10 @@ var extendedFunction = require('./metadata');
 
 
 
+/*
+ * Thing schema definition.
+ * Custom schema can be injected through configuration; fallback below is default.
+ */
 var thing= conf.customSchema.thingSchema || {
     name:{type:String,required:true},
     description:{type:String,required:true},
@@ -52,18 +56,18 @@ var thing= conf.customSchema.thingSchema || {
 
 var thingSchema = new Schema(thing, {strict: "throw"});
 
-// Static method to retrieve resource WITH metadata
+/* Retrieve Thing collections with metadata envelope support. */
 thingSchema.statics.findAll = function (conditions, fields, options, callback) {
     return extendedFunction.findAll(this, 'things', conditions, fields, options, callback);
 };
 
-// Static method to retrieve resource WITH metadata
+/* Strict update utility that blocks updates to protected fields. */
 thingSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
     return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
 };
 
 
-// validate api.url direct.url
+/* Validate optional URL fields before persistence. */
 thingSchema.pre('validate', function(next) {
 
     var espressione = new RegExp('^https?:\\/\\/(((www\\.)?(\\w+|-+)+(\\.\\w+)*\\.\\D{2})|(localhost)|(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))((:\\d+)?((\\/\\w*)+)?)?(\\?{0,1}\\w+)?$','i');
@@ -86,11 +90,6 @@ thingSchema.pre('validate', function(next) {
     }
 
     return next();
-
-    // You can also throw a synchronous error
-    //^https?:\/\/\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}
-    //^https?:\/\/(((www\.)?\w+(\.\w+)+)|(localhost))((:\d+)?((\/\w*)+)?)?(\?{0,1}\w+)?$
-    // ^https?:\/\/(((www\.)?\w+(\.\w+)*\.\D{2})|(localhost)|(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}))((:\d+)?((\/\w*)+)?)?(\?{0,1}\w+)?$
 });
 
 

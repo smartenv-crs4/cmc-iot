@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -46,6 +46,10 @@ var describeMessage="POST /things/:id/actions/sendObservations";
 
 
 
+/*
+ * Fixture helper used by most scenarios.
+ * It verifies expected device count before handing devices to tests.
+ */
 function getDevices(number,callback){
     Devices.findAll({},null,{limit:number},function(err,foundDevices){
         should(err).be.null();
@@ -58,6 +62,7 @@ function getDevices(number,callback){
 
 describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
+    // Global setup: auth test configuration, static token, and clean observation state.
     before(function (done) {
         this.timeout(0);
         commonFunctioTest.setAuthMsMicroservice(function (err) {
@@ -70,6 +75,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
         });
     });
 
+    // Global teardown: cleanup persisted data and restore auth microservice defaults.
     after(function (done) {
         this.timeout(0);
         observationUtility.deleteMany({}, function (err, elm) {
@@ -85,6 +91,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
     });
 
 
+    // Per-test setup: build thing/device graph and valid units used by scenario payloads.
     beforeEach(function (done) {
 
         deviceDocuments.createDocuments(100, function (err, ForeignKeys) {
@@ -117,6 +124,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
     });
 
 
+    // Per-test teardown to guarantee isolation between scenarios.
     afterEach(function (done) {
         deviceDocuments.deleteDocuments(function (err) {
             if (err) consoleLogError.printErrorLog("Device APIActionsTests.js - afterEach - deleteMany ---> " + err);
@@ -137,6 +145,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Request-level validation: body is mandatory.
         var testType="must test API action sendObservations error due to no body";
         it(testType, function (done) {
 
@@ -164,6 +173,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Root payload validation: observations field must be present.
         var testType="must test API action sendObservations error due to observations body field missing";
         it(testType, function (done) {
 
@@ -193,6 +203,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Domain validation: an out-of-range value rejects the complete request.
         var testType="must test API action sendObservations [One observation value is out of range]";
         it(testType, function (done) {
 
@@ -238,6 +249,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                 results.message.indexOf(deviceList[0]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[1]._id).should.be.eql(-1);
                                 results.message.indexOf(deviceList[2]._id).should.be.greaterThanOrEqual(0);
+                                // Post-condition: 5 observations must be committed in MongoDB.
                                 observationUtility.findAll({},null,null,function(err,foundObs){
                                     if (err) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + err.message);
                                     else {
@@ -258,6 +270,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Atomicity check: mixed valid/invalid entries in same device list must fail all.
         var testType="must test API action sendObservations [observation value is out of range two or more observations for device]";
         it(testType, function (done) {
 
@@ -339,6 +352,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Referential validation: provided unitId must be compatible with device type.
         var testType="must test API action sendObservations [observation not valid due to unit is not associated to Device Type]";
         it(testType, function (done) {
 
@@ -403,6 +417,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Business rule: dismissed devices are not allowed to ingest observations.
         var testType="must test API action sendObservations [observation not valid due to Dismissed Device]";
         it(testType, function (done) {
 
@@ -464,6 +479,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Business rule: disabled devices are not allowed to ingest observations.
         var testType="must test API action sendObservations [observation not valid due to Disabled Device]";
         it(testType, function (done) {
 
@@ -526,6 +542,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Payload integrity: unknown device ids must trigger 400 and no writes.
         var testType="must test API action sendObservations [observation not valid due to Device not exist]";
         it(testType, function (done) {
 
@@ -586,6 +603,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Business rule: dismissed things reject sendObservations action.
         var testType="must test API action sendObservations [observation not valid due to Dismissed Thing]";
         it(testType, function (done) {
 
@@ -646,6 +664,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Business rule: disabled things reject sendObservations action.
         var testType="must test API action sendObservations [observation not valid due to Disabled Thing]";
         it(testType, function (done) {
 
@@ -707,6 +726,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // URL validation: invalid thing id must fail before processing observations.
         var testType="must test API action sendObservations [observation not valid due to Thing not exist]";
         it(testType, function (done) {
 
@@ -763,6 +783,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Happy path: create observations for multiple devices in a single request.
         var testType="must test API action sendObservations [create Observation]";
         it(testType, function (done) {
 
@@ -895,6 +916,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Happy path + side effect verification: Redis cache must mirror inserted observations.
         var testType="must test API action sendObservations and redis synchronization [create Observation]";
         it(testType, function (done) {
 
@@ -1010,6 +1032,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                     else {
                                         foundObs.should.have.properties("observations", "_metadata");
                                         foundObs.observations.length.should.be.eql(5);
+                                        // Redis sync is async: wait briefly, then check cache per device.
                                         setTimeout(function () {
                                             redisHandler.getObservationsFromCache(deviceList[0]._id, {returnAsObject: true}, function (err, data) {
                                                 should(err).be.null();
@@ -1042,6 +1065,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Schema validation: each observation entry requires the value field.
         var testType="must test API action sendObservations [error due to missing 'value' field]";
         it(testType, function (done) {
 
@@ -1106,6 +1130,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Schema validation: each observation entry requires the unitId field.
         var testType="must test API action sendObservations [error due to missing 'unitId' field]";
         it(testType, function (done) {
 
@@ -1172,6 +1197,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Empty list for one device is accepted while other devices still persist observations.
         var testType="must test API action sendObservations [void observation list]";
         it(testType, function (done) {
 
@@ -1228,6 +1254,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Root observations array cannot be empty.
         var testType="must test API action sendObservations [void observation array]";
         it(testType, function (done) {
 
@@ -1258,6 +1285,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Strict schema check: unexpected fields must cause request failure.
         var testType="must test API action sendObservations [observation with not valid field]";
         it(testType, function (done) {
             observationUtility.findAll({},null,null,function(err,foundObs){
@@ -1324,6 +1352,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Mobile thing constraint: location is mandatory for each observation.
         var testType="must test API action sendObservations [observation without location for mobile device]";
 
         it(testType, function (done) {
@@ -1394,6 +1423,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Mobile happy path: explicit location coordinates are accepted and persisted.
         var testType="must test API action sendObservations [valid observation for mobile device]";
         it(testType, function (done) {
 
@@ -1467,6 +1497,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Non-mobile thing constraint: location field must be rejected.
         var testType="must test API action sendObservations [error due to location set for not mobile device]";
         it(testType, function (done) {
 
@@ -1535,6 +1566,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
 
 
     describe(describeMessage, function () {
+        // Location inheritance: device obtains coordinates from parent site hierarchy.
         var testType="must test API action sendObservations [device in site hierarchy]";
         it(testType, function (done) {
 
@@ -1545,6 +1577,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                         if (error) consoleLogError.printErrorLog(describeMessage+": '" + testType + "'  -->" + error.message);
                         else {
 
+                            // Normalize mongoose document to plain object for strict assertions.
                             updatedSite=JSON.parse(JSON.stringify(updatedSite));
                             should(updatedSite.location).be.eql(null);
                             Devices.ObjectId(updatedSite.locatedInSiteId).should.be.eql(foreignKey.siteId);
@@ -1557,6 +1590,7 @@ describe('Thing observation actions API Test - [ACTIONS TESTS]', function () {
                                     updatedSite.location.coordinates[1].should.be.eql(2);
 
 
+                                    // Devices are in a child site: expected location comes from parent site coordinates.
                                     getDevices(3,function(deviceList){
                                         var validObservations=[
                                             {

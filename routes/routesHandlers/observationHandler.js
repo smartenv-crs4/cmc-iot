@@ -23,6 +23,13 @@
 var observationUtility = require('./handlerUtility/observationHandlerUtility');
 var async=require("async");
 
+/*
+ * Observation handler.
+ *
+ * Owns Observation CRUD, complex filtered searches and validation of device
+ * and unit references before persistence.
+ */
+
 
 //Begin macro
 /**
@@ -165,6 +172,7 @@ var async=require("async");
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new Observation after validating references. */
 module.exports.postCreateObservation = function(req, res, next) {
     if(!req.body.observation.deviceId){
         return res.httpResponse(null, 400, "Observation 'deviceId' field missing");
@@ -204,6 +212,7 @@ module.exports.postCreateObservation = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List Observations with filters and projection. */
 module.exports.getObservations = function(req, res, next) {
     observationUtility.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -235,6 +244,7 @@ module.exports.getObservations = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one Observation by id. */
 module.exports.getObservationById = function(req, res, next) {
     var id = req.params.id
     observationUtility.findById(id, req.dbQueryFields, function(err, results) {
@@ -265,6 +275,7 @@ module.exports.getObservationById = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete one Observation by id. */
 module.exports.deleteObservation = function(req, res, next) {
     var id = req.params.id
     observationUtility.findByIdAndRemove(id, function(err, deletedObservation) {
@@ -275,6 +286,7 @@ module.exports.deleteObservation = function(req, res, next) {
 
 function composeObservation(currentObservation,observationUpdate,callbackFunction){
     var observationCopy=currentObservation.toObject();
+    /* Merge the partial update into the current document before revalidating it. */
     async.eachOf(observationUpdate, function(observationValue,observationField, callback) {
         observationCopy[observationField]=observationUpdate[observationField];
             callback();
@@ -285,13 +297,15 @@ function composeObservation(currentObservation,observationUpdate,callbackFunctio
 
 
 /**
- * @api {put} /observations Update an Observation
+ * @api {put} /observations/:id Update an Observation
  * @apiVersion 1.0.0
  * @apiName PutObservation
  * @apiGroup Observations
  * @apiPermission Access Token
  *
  * @apiDescription Updates an Observation and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Observation identifier
  *
  * @apiUse ObservationBodyParams
  *
@@ -310,11 +324,13 @@ function composeObservation(currentObservation,observationUpdate,callbackFunctio
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update an Observation by id after revalidating the resulting payload. */
 module.exports.updateObservation = function(req, res, next) {
     observationUtility.findById(req.params.id,null,null,function(err,observatonToUpdate){
         if(err || (!observatonToUpdate)){
             return res.httpResponse(err,null,null);
         } else{
+            /* Rebuild the final object and validate it as a whole before saving. */
             composeObservation(observatonToUpdate,req.body.observation,function(err,newObservation){
                 observationUtility.validateObservationsBeforeUpdate(newObservation, function (err, validityTestResult) {
                     if (err) return res.httpResponse(err, null, null);
@@ -333,7 +349,7 @@ module.exports.updateObservation = function(req, res, next) {
 // devicesId: [ids]
 // unitsId: { ids:}
 /**
- * @api {post} /devices/actions/search Search Observations
+ * @api {post} /observations/actions/search Search Observations
  * @apiVersion 1.0.0
  * @apiName ObservationSearch
  * @apiGroup Observations
@@ -347,18 +363,20 @@ module.exports.updateObservation = function(req, res, next) {
  * @apiUse LocationCentreBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /observations/actions/search
- *  Body: {"searchFilters": [
- *                              {"timestamp": {"from": 1590364800, "to": 1590364801},
- *                               "value": {0, 100},
- *                               "location": {"centre": {"coordinates": [0,0]},
- *                               "distance": 1,
- *                               "distanceOptions": {"mode": "bbox"}
- *                                    },
- *                               "devicesId": ["543fdd60579e1281sdaf6da92", "543fdd60579e1281sdaf6da93"],
- *                               "unitsId": ["543fdd60579e1281sdcf6da34", "543fdd60579e1281sdcf6da35"]
- *                              }
- *                          ]
+ * HTTP/1.1 POST /observations/actions/search
+ *  Body: {
+ *          "searchFilters": {
+ *            "timestamp": {"from": 1590364800, "to": 1590364801},
+ *            "value": {"min": 0, "max": 100},
+ *            "location": {
+ *              "centre": {"coordinates": [0,0]},
+ *              "distance": 1,
+ *              "distanceOptions": {"mode": "bbox", "returnDistance": true}
+ *            },
+ *            "devicesId": ["543fdd60579e1281sdaf6da92", "543fdd60579e1281sdaf6da93"],
+ *            "unitsId": ["543fdd60579e1281sdcf6da34", "543fdd60579e1281sdcf6da35"]
+ *          },
+ *          "pagination": {"skip": 0, "limit": 50}
  *        }
  *
  * @apiUse GetAllObservationResource
@@ -372,8 +390,10 @@ module.exports.updateObservation = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Search observations using the complex filter envelope passed in the body. */
 module.exports.searchFilter= function(req, res, next) {
 
+    /* Delegate the complex filter envelope to the utility layer. */
     observationUtility.searchFilter(req.body.searchFilters,req.dbPagination,true,function(err,foundedObservations){
         if(err) {
             return res.httpResponse(err,null,null);

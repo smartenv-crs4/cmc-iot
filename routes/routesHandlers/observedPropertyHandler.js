@@ -25,6 +25,13 @@ var observedPropertyDriver = require('../../DBEngineHandler/drivers/observedProp
 var deviceTypeDriver = require('../../DBEngineHandler/drivers/deviceTypeDriver')
 var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
 
+/*
+ * ObservedProperty handler.
+ *
+ * Handles CRUD for measurable concepts and protects deletion when Units or
+ * DeviceTypes still reference the target resource.
+ */
+
 
 //Begin macro
 /**
@@ -135,6 +142,7 @@ var unitDriver = require('../../DBEngineHandler/drivers/unitDriver')
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new observed property. */
 module.exports.postCreateObservedProperty = function(req, res, next) {
     observedPropertyDriver.create(req.body.observedProperty, function(err, results) {
         res.httpResponse(err, null, results)
@@ -165,6 +173,7 @@ module.exports.postCreateObservedProperty = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List observed properties with filters and projection. */
 module.exports.getObservedProperties = function(req, res, next) {
     observedPropertyDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -196,6 +205,7 @@ module.exports.getObservedProperties = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one observed property by id. */
 module.exports.getObservedPropertyById = function(req, res, next) {
     var id = req.params.id
     observedPropertyDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -205,13 +215,15 @@ module.exports.getObservedPropertyById = function(req, res, next) {
 
 
 /**
- * @api {put} /observedProperties Update an ObservedProperty
+ * @api {put} /observedProperties/:id Update an ObservedProperty
  * @apiVersion 1.0.0
  * @apiName PutObservedProperty
  * @apiGroup ObservedProperties
  * @apiPermission Access Token
  *
  * @apiDescription Updates an ObservedProperty object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The ObservedProperty identifier
  *
  * @apiUse ObservedPropertyBodyParams
  *
@@ -233,6 +245,7 @@ module.exports.getObservedPropertyById = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update an observed property by id. */
 module.exports.updateObservedProperty = function(req, res, next) {
     observedPropertyDriver.findByIdAndUpdate(req.params.id, req.body.observedProperty, function(err, results) {
         res.httpResponse(err, null, results)
@@ -263,6 +276,7 @@ module.exports.updateObservedProperty = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete an observed property after checking for dependent links. */
 module.exports.deleteObservedProperty = function(req, res, next) {
     var id = req.params.id
     deviceTypeDriver.findAll({observedPropertyId: id}, null, {totalCount: true}, function(err, results) {

@@ -24,6 +24,13 @@
 var vendorDriver = require('../../DBEngineHandler/drivers/vendorDriver')
 var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
 
+/*
+ * Vendor handler.
+ *
+ * Owns vendor CRUD and prevents deletion when Things still depend on the
+ * vendor record.
+ */
+
 
 //Begin macro
 /**
@@ -134,6 +141,7 @@ var thingDriver = require('../../DBEngineHandler/drivers/thingDriver')
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new vendor. */
 module.exports.postCreateVendor = function(req, res, next) {
     vendorDriver.create(req.body.vendor, function(err, results) {
         res.httpResponse(err, null, results)
@@ -164,6 +172,7 @@ module.exports.postCreateVendor = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List vendors with filters and projection. */
 module.exports.getVendors = function(req, res, next) {
     vendorDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -195,6 +204,7 @@ module.exports.getVendors = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one vendor by id. */
 module.exports.getVendorById = function(req, res, next) {
     var id = req.params.id
     vendorDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -204,13 +214,15 @@ module.exports.getVendorById = function(req, res, next) {
 
 
 /**
- * @api {put} /domains Update a Vendor
+ * @api {put} /vendors/:id Update a Vendor
  * @apiVersion 1.0.0
  * @apiName PutVendor
  * @apiGroup Vendors
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Vendor object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Vendor identifier
  *
  * @apiUse VendorBodyParams
  *
@@ -232,6 +244,7 @@ module.exports.getVendorById = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update a vendor by id. */
 module.exports.updateVendor = function(req, res, next) {
     vendorDriver.findByIdAndUpdate(req.params.id, req.body.vendor, function(err, results) {
         res.httpResponse(err, null, results)
@@ -262,6 +275,7 @@ module.exports.updateVendor = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a vendor only when no Thing references remain. */
 module.exports.deleteVendor = function(req, res, next) {
     var id = req.params.id
     thingDriver.findAll({vendorId: id}, null, {totalCount: true}, function (err, results) {

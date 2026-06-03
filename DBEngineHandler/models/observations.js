@@ -27,6 +27,10 @@ var findAllFn = require('./metadata').findAll;
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
+/*
+ * Observation schema definition.
+ * Can be overridden by customSchema.observationSchema from configuration.
+ */
 var observation = conf.customSchema.observationSchema || {
     timestamp: {type: Number, index: true, required: true},
     value: {type: Number, index: true, required: true},
@@ -41,6 +45,7 @@ var observation = conf.customSchema.observationSchema || {
 
 var observationSchema = new Schema(observation, {strict: "throw"});
 
+/* Auto-fill timestamp when omitted by clients. */
 observationSchema.pre('validate', function(next) {
 
    // if (!this.timestamp) {
@@ -51,7 +56,7 @@ observationSchema.pre('validate', function(next) {
 });
 
 
-// Static method to retrieve resource WITH metadata
+/* Retrieve Observation collections with metadata envelope support. */
 observationSchema.statics.findAll = function(conditions, fields, options, callback) {
     return findAllFn(this, 'observations', conditions, fields, options, callback)
 };

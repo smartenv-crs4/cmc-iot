@@ -28,38 +28,45 @@ var authorisationManager = require('./middlewares/authorisationMiddleware')
 var vendorsHandler = require('./routesHandlers/vendorHandler')
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity')
 
+/*
+ * Vendor router.
+ *
+ * Standard CRUD operations with common query parsing and sanitization
+ * middleware for collection reads.
+ */
 
-/* Create vendor */
+
+/* Create a new vendor from req.body.vendor. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
     vendorsHandler.postCreateVendor(req, res, next)
 })
 
 
-/* Read vendor */
+/* Read one vendor by id. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     vendorsHandler.getVendorById(req, res, next)
 })
 
 
-/* Update vendor */
+/* Update one vendor by id. */
 router.put('/:id', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["vendor"]), function(req, res, next) {
     vendorsHandler.updateVendor(req, res, next)
 })
 
 
-/* Delete vendor */
+/* Delete one vendor by id. */
 router.delete('/:id', [authorisationManager.checkToken], function(req, res, next) {
     vendorsHandler.deleteVendor(req, res, next)
 })
 
 
-/* Query parsing modules */
+/* Shared query parsing/sanitization for list endpoint below. */
 router.use(parseRequestMiddleware.parseFields)
 router.use(parseRequestMiddleware.parseOptions)
 router.use(mongosecurity.parseForOperators)
 
 
-/* GET vendors list */
+/* List vendors with id-array query support. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("vendors"), function(req, res, next) {
     vendorsHandler.getVendors(req, res, next)
 })

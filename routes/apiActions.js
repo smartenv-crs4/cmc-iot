@@ -27,41 +27,54 @@ var authorisationManager=require('./middlewares/authorisationMiddleware');
 var apiActionsHandler=require('./routesHandlers/apiActionHandler');
 var mongoSecurity=require('./middlewares/mongoDbinjectionSecurity');
 
-/* Create apiActions */
+/*
+ * ApiAction router.
+ *
+ * Responsibilities:
+ * - CRUD for action templates bound to a device type
+ * - Optional projection and query option parsing for list/read endpoints
+ * - Injection hardening on searchable endpoints
+ */
+
+/* Create a new ApiAction resource from req.body.apiAction. */
 router.post('/',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["apiAction"]), function(req, res, next) {
   apiActionsHandler.postCreateApiAction(req,res,next);
 });
 
 
-/* Delete apiActions. */
+/* Delete one ApiAction by identifier. */
 router.delete('/:id',[authorisationManager.checkToken], function(req, res, next) {
   apiActionsHandler.deleteApiAction(req,res,next);
 });
 
 
-/* Update apiActions. */
+/* Update one ApiAction by identifier using req.body.apiAction. */
 router.put('/:id',[authorisationManager.checkToken],parseRequestMiddleware.validateBody(["apiAction"]), function(req, res, next) {
   apiActionsHandler.updateApiAction(req,res,next);
 });
 
 
-/* Read apiActions. */
+/* Read one ApiAction; allow field projection parsing on single resource read. */
 router.get('/:id',[authorisationManager.checkToken],parseRequestMiddleware.parseFields, function(req, res, next) {
   apiActionsHandler.getApiActionById(req,res,next);
 });
 
+/* Query option parsing is enabled for routes declared below this point. */
 router.use(parseRequestMiddleware.parseOptions);
+/* Sanitize user-provided query operators before executing datastore queries. */
 router.use(mongoSecurity.parseForOperators);
 
-/* GET apiActions listing. */
+/* List ApiActions with projection, id-array filters and default dismissed=false. */
 router.get('/',[authorisationManager.checkToken],parseRequestMiddleware.parseFields,parseRequestMiddleware.parseIds("apiActions"), function(req, res, next) {
   req.query.dismissed=false; // dismissed apiActions must be removed from query results
   apiActionsHandler.getApiActions(req,res,next);
 });
 
 
-/* Read apiActions. */
-//todo remove and extend with APIExtender
+/*
+ * Temporary diagnostic endpoint.
+ * It mirrors route params and query payload used by dynamic action invocation.
+ */
 router.get('/test/:id/:actionName',[authorisationManager.checkToken], function(req, res, next) {
   res.httpResponse(null, null, {
     device:req.params.id,

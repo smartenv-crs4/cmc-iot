@@ -28,26 +28,27 @@ var authorisationManager = require('./middlewares/authorisationMiddleware');
 var observationsHandler = require('./routesHandlers/observationHandler');
 var mongosecurity = require('./middlewares/mongoDbinjectionSecurity');
 
+/*
+ * Observation router.
+ *
+ * Provides CRUD and advanced multi-filter search.
+ * Update/delete can be feature-flagged through authorization middleware.
+ */
 
 
 
 
-/* Search observation Action */
-
-
-/* Observation Search Filters*/
-// timestamp: {From:, To;}
-// value: {min:, max:}
-// location: {centre:{coordinates:[]}, distance: ,  distanceOptions: }
-// devicesId: [ids]
-// unitsId: { ids:}
+/*
+ * Search observations via complex filters.
+ * Expected payload is req.body.searchFilters plus optional req.body.pagination.
+ */
 router.post('/actions/search', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["searchFilters"]),mongosecurity.parseForOperators, function(req, res, next) {
     req.statusCode=200;
     req.dbPagination=req.body.pagination ? {skip:(req.body.pagination.skip || 0 ) , limit: (req.body.pagination.limit || undefined)} : null;
     observationsHandler.searchFilter(req, res, next)
 });
 
-/* Create observation */
+/* Create one observation from req.body.observation. */
 router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.postCreateObservation(req, res, next)
 });
@@ -55,32 +56,33 @@ router.post('/', [authorisationManager.checkToken], parseRequestMiddleware.valid
 
 
 
-/* Update observation */
+/* Update one observation when the feature flag observationsCanBeUpdated is active. */
 router.put('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeUpdated"),authorisationManager.checkToken], parseRequestMiddleware.validateBody(["observation"]), function(req, res, next) {
     observationsHandler.updateObservation(req, res, next)
 });
 
 
-/* Delete observation */
+/* Delete one observation when the feature flag observationsCanBeDeleted is active. */
 router.delete('/:id', [authorisationManager.validateIfOptionIsActive("observationsCanBeDeleted"),authorisationManager.checkToken], function(req, res, next) {
     observationsHandler.deleteObservation(req, res, next)
 });
 
 
-/* Query parsing modules */
+/* Parse field projection for single-read and list operations declared below. */
 router.use(parseRequestMiddleware.parseFields);
 
-/* Read observation */
+/* Read one observation by id. */
 router.get('/:id', [authorisationManager.checkToken], function(req, res, next) {
     observationsHandler.getObservationById(req, res, next)
 });
 
 
+/* Parse generic options and sanitize operators for listing query paths. */
 router.use(parseRequestMiddleware.parseOptions);
 router.use(mongosecurity.parseForOperators);
 
 
-/* GET observations list */
+/* List observations with id-array filter support. */
 router.get('/', [authorisationManager.checkToken], parseRequestMiddleware.parseIds("observations"), function(req, res, next) {
     observationsHandler.getObservations(req, res, next);
 });

@@ -24,6 +24,13 @@
 var domainDriver = require('../../DBEngineHandler/drivers/domainDriver');
 var deviceType_domainDriver = require('../../DBEngineHandler/drivers/deviceType_domainDriver');
 
+/*
+ * Domain handler.
+ *
+ * Owns CRUD for logical domains and resolves the DeviceTypes linked to a
+ * domain id.
+ */
+
 
 //Begin macro
 /**
@@ -129,6 +136,7 @@ var deviceType_domainDriver = require('../../DBEngineHandler/drivers/deviceType_
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new Domain resource. */
 module.exports.postCreateDomain = function (req, res, next) {
     domainDriver.create(req.body.domain, function (err, results) {
         res.httpResponse(err,null,results);
@@ -137,13 +145,15 @@ module.exports.postCreateDomain = function (req, res, next) {
 
 
 /**
- * @api {put} /domains Update a Domain
+ * @api {put} /domains/:id Update a Domain
  * @apiVersion 1.0.0
  * @apiName PutDomain
  * @apiGroup Domains
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Domain object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Domain identifier
  *
  * @apiUse DomainBodyParams
  *
@@ -160,6 +170,7 @@ module.exports.postCreateDomain = function (req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update a Domain by id. */
 module.exports.updateDomain = function (req, res, next) {
     domainDriver.findByIdAndUpdate(req.params.id, req.body.domain,function (err, results) {
         res.httpResponse(err,null,results);
@@ -191,6 +202,7 @@ module.exports.updateDomain = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one Domain by id. */
 module.exports.getDomainById = function (req, res, next) {
     var id = req.params.id;
     domainDriver.findById(id, req.dbQueryFields, function (err, results) {
@@ -222,6 +234,7 @@ module.exports.getDomainById = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List Domains with query filters and projection. */
 module.exports.getDomains = function (req, res, next) {
     domainDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
         res.httpResponse(err,req.statusCode,results);
@@ -253,6 +266,7 @@ module.exports.getDomains = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a Domain after dependency checks. */
 module.exports.deleteDomain = function (req, res, next) {
     var id = req.params.id;
     deviceType_domainDriver.findOne({domainId:id},function(err,deviceTypeDomain){
@@ -274,7 +288,7 @@ module.exports.deleteDomain = function (req, res, next) {
 
 
 /**
- * @api {post} /domains/actions/getDeviceTypes Get DeviceTypes
+ * @api {post} /domains/:id/actions/getDeviceTypes Get DeviceTypes
  * @apiVersion 1.0.0
  * @apiName DomainGetDeviceTypes
  * @apiGroup Domains
@@ -282,11 +296,10 @@ module.exports.deleteDomain = function (req, res, next) {
  *
  * @apiDescription Returns all the DeviceTypes belonging to one or more Domains
  *
- * @apiParam (Body Parameter)   {String[]}     domains          Array list of Domain ids
+ * @apiParam (URL Parameter)    {String}       id               Domain identifier
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /domains/actions/getDeviceTypes
- *  Body: {"domains": ["543fdd60579e1281b8f6ca41", "543fdd60579e1281b8f6ca42"]}
+ * HTTP/1.1 POST /domains/543fdd60579e1281b8f6ca41/actions/getDeviceTypes
  *
  * @apiSuccess {String[]}       deviceType_domains                  Array list of all associations between the Domains passed as body parameter and their DeviceTypes
  * @apiSuccess {String}         deviceType_domains.domainId         Domain identifier
@@ -311,6 +324,7 @@ module.exports.deleteDomain = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Resolve DeviceTypes linked to a Domain id. */
 module.exports.getDeviceTypes = function (req, res, next) {
     var id = req.params.id;
 

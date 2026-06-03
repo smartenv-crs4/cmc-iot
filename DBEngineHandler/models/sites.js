@@ -28,6 +28,10 @@ var conf = require('propertiesmanager').conf;
 var _=require('underscore');
 
 
+/*
+ * Site schema definition.
+ * Can be overridden by customSchema.siteSchema from configuration.
+ */
 var site = conf.customSchema.siteSchema || {
     name: {type: String, required: true},
     description: {type: String, required: true},
@@ -41,6 +45,11 @@ var site = conf.customSchema.siteSchema || {
 
 var siteSchema = new Schema(site, {strict: "throw"})
 
+/*
+ * Site pre-validation rules:
+ * - enforce either location or parent site reference
+ * - validate coordinates when location is provided
+ */
 siteSchema.pre('validate', function(next) {
 
     var retErr=null;
@@ -85,18 +94,19 @@ siteSchema.pre('validate', function(next) {
     next(retErr);
 });
 
-// Static method to retrieve resource WITH metadata
+/* Retrieve Site collections with metadata envelope support. */
 siteSchema.statics.findAll = function(conditions, fields, options, callback) {
     return findAllFn(this, 'sites', conditions, fields, options, callback)
 }
 
 
-// Static method to retrieve resource WITH metadata
+/* Expose shared location validator for external call sites. */
 siteSchema.statics.locationValidator = function(location, callback) {
     return validateLocation(location,callback);
 }
 
 
+/* Validate GeoJSON-like location shape and coordinate ranges. */
 var validateLocation = function(location,callback) {
 
     if(location && location.coordinates && _.isArray(location.coordinates) && (location.coordinates.length==2)) {

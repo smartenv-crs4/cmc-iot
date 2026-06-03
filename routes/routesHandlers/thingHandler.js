@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -33,6 +33,13 @@ var observationUtility=require('./handlerUtility/observationHandlerUtility');
 var conf = require('propertiesmanager').conf;
 var redisPushNotification=require('../../DBEngineHandler/drivers/redisPushNotificationDriver');
 var thingChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.thing;
+
+/*
+ * Thing handler.
+ *
+ * Coordinates Thing CRUD plus higher-order workflows such as enable/disable,
+ * device association, observation creation and notification helpers.
+ */
 var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.device;
 
 //Begin macro
@@ -105,8 +112,8 @@ var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.de
  * @apiSuccess {Object} api                     Updated thing middleware object
  * @apiSuccess {String} api.url                 Updated thing API URL of its connector middleware
  * @apiSuccess {String} api.access_token        Updated thing API access token of its connector middleware
- * @apiSuccess {Object} direct]                 Updated thing direct access
- * @apiSuccess {String} direct.url]             Updated thing direct access URL
+ * @apiSuccess {Object} direct                  Updated thing direct access
+ * @apiSuccess {String} direct.url              Updated thing direct access URL
  * @apiSuccess {String} direct.access_token     Updated thing direct access token
  * @apiSuccess {String} direct.username         Updated thing direct access username
  * @apiSuccess {String} direct.password         Updated thing direct access password
@@ -159,12 +166,12 @@ var deviceChannelPrefix=conf.redisPushNotification.notificationChannelsPrefix.de
  *      {
  *        "name": "customThing",
  *        "description": "weather station developed by crs4",
- *        "disabled": "false",
- *        "mobile": "false",
- *        "ownerId" "5d4044fc346a8f0277643ac42",
+ *        "disabled": false,
+ *        "mobile": false,
+ *        "ownerId": "5d4044fc346a8f0277643ac42",
  *        "api": {"url": "http://iotgw.crs4.it", "access_token": "yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM"},
  *        "vendorId": "5d4044fc346a8f0277643bf2",
- *        "siteId": "5d4044fc346a8f0277643bf4",
+ *        "siteId": "5d4044fc346a8f0277643bf4"
  *      }
  */
 /**
@@ -353,6 +360,7 @@ function enableDisableDeviceId(deviceId,thingId,action,callback){
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new Thing resource. */
 module.exports.postCreateThing = function (req, res, next) {
     thingDriver.create(req.body.thing, function (err, results) {
         if (results) results["dismissed"]=undefined;
@@ -362,13 +370,15 @@ module.exports.postCreateThing = function (req, res, next) {
 
 
 /**
- * @api {put} /things Update a Thing
+ * @api {put} /things/:id Update a Thing
  * @apiVersion 1.0.0
  * @apiName PutThing
  * @apiGroup Things
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Thing object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Thing identifier
  *
  * @apiUse ThingBodyParams
  *
@@ -387,6 +397,7 @@ module.exports.postCreateThing = function (req, res, next) {
  * @apiSampleRequest off
  */
 // TODO notificare  tramite REDIS??
+/* Update a Thing by id while preserving protected fields. */
 module.exports.updateThing = function (req, res, next) {
         thingDriver.findById(req.params.id, "dismissed", function (err, thingItem) {
             try{
@@ -437,6 +448,7 @@ module.exports.updateThing = function (req, res, next) {
  * @apiUse NoContent
  */
 //todo direct url visibile solamente al proprietario usare la proprieta --di mongoose per toglierlo
+/* Read one Thing by id. */
 module.exports.getThingById = function (req, res, next) {
 
     var id = req.params.id;
@@ -471,6 +483,7 @@ module.exports.getThingById = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List Things with filters, projections and pagination. */
 module.exports.getThings = function (req, res, next) {
     thingDriver.findAll(req.query, req.dbQueryFields, req.options, function (err, results) {
         res.httpResponse(err,req.statusCode,results);
@@ -490,7 +503,8 @@ module.exports.getThings = function (req, res, next) {
  * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /things/actions/searchDismissed?name=thing1_Crs4 thing2_Crs4&field=name,description&access_token=yJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoidXNlciIsImlzcyI6IjU4YTMwNTcxM
+ * HTTP/1.1 POST /things/actions/searchDismissed
+ * Body: {"searchFilters": {"name": ["thing1_Crs4", "thing2_Crs4"]}, "pagination": {"skip": 0, "limit": 50}}
  *
  * @apiUse GetAllThingResource
  * @apiUse GetAllThingResourceExample
@@ -550,6 +564,7 @@ module.exports.getThings = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Toggle a Thing between enabled and disabled state. */
 module.exports.disableEnableThing = function (req, res, next) {
 
     if(req.disableThing==undefined){
@@ -663,7 +678,7 @@ module.exports.disableEnableThing = function (req, res, next) {
 
 
 /**
- * @api {delete} /devices/:id Delete Thing
+ * @api {delete} /things/:id Delete Thing
  * @apiVersion 1.0.0
  * @apiName DeleteThingById
  * @apiGroup Things
@@ -687,6 +702,7 @@ module.exports.disableEnableThing = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a Thing and cascade the required cleanup steps. */
 module.exports.deleteThing = function (req, res, next) {
 
     var id = req.params.id;
@@ -742,7 +758,7 @@ module.exports.deleteThing = function (req, res, next) {
 
 
 /**
- * @api {post} /things/actions/sendObservations Add Observations
+ * @api {post} /things/:id/actions/sendObservations Add Observations
  * @apiVersion 1.0.0
  * @apiName ThingSendObservations
  * @apiGroup Things
@@ -750,17 +766,25 @@ module.exports.deleteThing = function (req, res, next) {
  *
  * @apiDescription Add one or more Observations associated with a Thing. An Observation must be valid in compliance with its Unit-Value constraints
  *
- * @apiParam (Body Parameter)   {Object[]}  observations                Array list of Observation objects
- * @apiParam (Body Parameter)   {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
- * @apiParam (Body Parameter)   {Number}    observations.value          Observation value
+ * @apiParam (URL Parameter)    {String}    id                          Thing identifier
+ *
+ * @apiBody  {Object}    observations                                Observations map keyed by Device id
+ * @apiBody  {Object[]}  observations.<deviceId>                     Array list of Observation objects for a specific Device
+ * @apiBody  {String}    observations.<deviceId>.unitId              Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiBody  {Number}    observations.<deviceId>.value               Observation value
+ * @apiBody  {Object}    [observations.<deviceId>.location]          Location object. Mandatory for mobile Things, forbidden for non-mobile Things
+ * @apiBody  {Point}     [observations.<deviceId>.location.coordinates] Location coordinates in the format [lon, lat]
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /things/actions/sendObservations
- *  Body: {"observations": [
- *                          {"unitId": "543fdd60579e1281b8f6da92",
- *                           "value": 33,
- *                          }
- *                         ]
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/sendObservations
+ *  Body: {"observations": {
+ *           "543fdd60579e1281b8f6ba94": [
+ *             {
+ *               "unitId": "543fdd60579e1281b8f6da92",
+ *               "value": 33
+ *             }
+ *           ]
+ *         }
  *        }
  *
  * @apiSuccess {Object[]}   ObjectId                        Array data structure of Observation objects. The key is the Device id, the value is the Observation object
@@ -797,6 +821,7 @@ module.exports.deleteThing = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Create one or more observations for a Thing. */
 module.exports.createObservations = function (req, res, next) {
     var id = req.params.id;
     observationUtility.validateAndCreateThingObservations(id,req.body.observations,function(err, observations){
@@ -806,7 +831,7 @@ module.exports.createObservations = function (req, res, next) {
 
 
 /**
- * @api {post} /things/actions/addDevices Add Devices
+ * @api {post} /things/:id/actions/addDevices Add Devices
  * @apiVersion 1.0.0
  * @apiName ThingAddDevices
  * @apiGroup Things
@@ -814,18 +839,20 @@ module.exports.createObservations = function (req, res, next) {
  *
  * @apiDescription Add one or more Devices to a Thing
  *
- * @apiParam (Body Parameter) {Object[]}   devices         Array list of Device objects
- * @apiParam (Body Parameter) {String}     name            Added Device name
- * @apiParam (Body Parameter) {String}     description     Added Device description
- * @apiParam (Body Parameter) {String}     deviceTypeId    Added Device Foreign key to deviceType (See `/deviceTypes` API reference)
+ * @apiParam (URL Parameter)   {String}    id                     Thing identifier
+ *
+ * @apiBody {Object[]}  devices               Array list of Device objects
+ * @apiBody {String}    devices.name          Added Device name
+ * @apiBody {String}    devices.description   Added Device description
+ * @apiBody {String}    devices.typeId        Added Device Foreign key to deviceType (See `/deviceTypes` API reference)
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/enable
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/addDevices
  *  Body: {
- *         [
- *          {name:"MyDev", description: "Home temp sensor", typeId:"543fdd60579e1281b8f6da92"},
- *          {name:"MyOtherDev", description: "Home pressure sensor", typeId:"543fdd60579e1281b8f6ba94"}
- *         ]
+ *          "devices": [
+ *            {"name":"MyDev", "description":"Home temp sensor", "typeId":"543fdd60579e1281b8f6da92"},
+ *            {"name":"MyOtherDev", "description":"Home pressure sensor", "typeId":"543fdd60579e1281b8f6ba94"}
+ *          ]
  *        }
  *
  * @apiSuccess {Object[]}   results                                     Array data structure of add operation results
@@ -834,13 +861,13 @@ module.exports.createObservations = function (req, res, next) {
  * @apiSuccess {Number}     results.unsuccessful                        Number of unsuccessfully added Devices
  * @apiSuccess {Object[]}   successfulAssociatedDevices                 Array list of successfully added Device objects
  * @apiSuccess {String}     successfulAssociatedDevices._id             Added Device id
- * @apiSuccess {String}     successfulAssociatedDevices._name           Added Device name
+ * @apiSuccess {String}     successfulAssociatedDevices.name            Added Device name
  * @apiSuccess {String}     successfulAssociatedDevices.description     Added Device description
  * @apiSuccess {Object[]}   unsuccessfulAssociatedDevices               Array data structure of unsuccessfully added Device objects
  * @apiSuccess {String}     unsuccessfulAssociatedDevices.error         Error message explaining why the Device couldn't be added
  * @apiSuccess {Object[]}   unsuccessfulAssociatedDevices.device        Unsuccessfully added Device parent object
  * @apiSuccess {String}     unsuccessfulAssociatedDevices._id           Unsuccessfully added Device id
- * @apiSuccess {String}     unsuccessfulAssociatedDevices._name         Unsuccessfully added Device name
+ * @apiSuccess {String}     unsuccessfulAssociatedDevices.name          Unsuccessfully added Device name
  * @apiSuccess {String}     unsuccessfulAssociatedDevices.description   Unsuccessfully added Device description
  *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
@@ -870,6 +897,7 @@ module.exports.createObservations = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Create and attach one or more Devices to a Thing. */
 module.exports.addDevices = function (req, res, next) {
     var thingId = req.params.id;
     var associatedDevices=[];
@@ -926,7 +954,7 @@ module.exports.addDevices = function (req, res, next) {
 
 
 /**
- * @api {post} /things/actions/getObservations Get Observations
+ * @api {post} /things/:id/actions/getObservations Get Observations
  * @apiVersion 1.0.0
  * @apiName ThingGetObservations
  * @apiGroup Things
@@ -934,23 +962,26 @@ module.exports.addDevices = function (req, res, next) {
  *
  * @apiDescription Returns a paginated list of filtered Observations from a Thing
  *
+ * @apiParam (URL Parameter)    {String}     id                               Thing identifier
  * @apiUse SearchObservationParams
- * @apiParam (Body Parameter)   {Number}     [searchFilters.unitId]          Observation Unit identifier
+ * @apiParam (Body Parameter)   {String[]}   [searchFilters.unitsId]          Observation Unit identifiers
  * @apiUse LocationCentreBodyParams
  * @apiUse PaginationBodyParams
  *
  * @apiParamExample {json} Request-Example:
- * HTTP/1.1 GET /things/actions/getObservations
- *  Body: {"searchFilters": [
- *                              {"timestamp": {"from": 1590364800, "to": 1590364801},
- *                               "value": {0, 100},
- *                               "location": {"centre": {"coordinates": [0,0]},
- *                               "distance": 1,
- *                               "distanceOptions": {"mode": "bbox"}
- *                              },
- *                               "unitId": "543fdd60579e1281sdcf6da34"
- *                              }
- *                          ]
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/getObservations
+ *  Body: {
+ *          "searchFilters": {
+ *            "timestamp": {"from": 1590364800, "to": 1590364801},
+ *            "value": {"min": 0, "max": 100},
+ *            "location": {
+ *              "centre": {"coordinates": [0,0]},
+ *              "distance": 1,
+ *              "distanceOptions": {"mode": "bbox", "returnDistance": true}
+ *            },
+ *            "unitsId": ["543fdd60579e1281sdcf6da34"]
+ *          },
+ *          "pagination": {"skip": 0, "limit": 50}
  *        }
  *
  * @apiUse GetAllObservationResource
@@ -965,6 +996,7 @@ module.exports.addDevices = function (req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Search observations scoped to one Thing. */
 module.exports.getObservations = function (req, res, next) {
     var thingId=req.params.id;
     deviceDriver.findAll({thingId:thingId},"_id",{},function(err,devices){
@@ -973,6 +1005,7 @@ module.exports.getObservations = function (req, res, next) {
         }else{
             if(devices && devices.devices && !_.isEmpty(devices.devices)) {
                 var searchFilters=req.body.searchFilters || {};
+                /* Scope the search to all Device ids linked to this Thing. */
                 searchFilters["devicesId"] = _.map(devices.devices, function (item) {
                     return (item._id);
                 });
@@ -994,6 +1027,7 @@ module.exports.getObservations = function (req, res, next) {
 
 
 //TODO: @guido Documentare
+/* Return the Redis notification payload for thing observation channels. */
 module.exports.getThingObservationsRedisNotification = function(req, res, next) {
     thingAndDeviceHandlerUtility.getThingObservationsRedisNotification(req.params.id,function(err,response){
         res.httpResponse(err,req.statusCode,response);
@@ -1002,6 +1036,7 @@ module.exports.getThingObservationsRedisNotification = function(req, res, next) 
 
 
 //TODO: @guido Documentare
+/* Return the Redis notification payload for thing channels. */
 module.exports.getThingRedisNotification = function(req, res, next) {
     thingAndDeviceHandlerUtility.getThingRedisNotification(req.params.id,function(err,response){
         res.httpResponse(err,req.statusCode,response);

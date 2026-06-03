@@ -27,6 +27,12 @@ var siteUtility= require('./handlerUtility/siteHandlerUtility');
 var _=require("underscore");
 var async=require("async");
 
+/*
+ * Site handler.
+ *
+ * Manages Site CRUD plus linked-site resolution and geospatial search.
+ */
+
 
 
 //Begin macro
@@ -157,6 +163,7 @@ var async=require("async");
  * @apiUse NotFound
  * @apiSampleRequest off
  */
+/* Create a new Site resource. */
 module.exports.postCreateSite = function(req, res, next) {
     async.series([
             function(callback) {
@@ -182,7 +189,7 @@ module.exports.postCreateSite = function(req, res, next) {
         })
 }
 /**
- * @api {post} /actions/getLinkedSites Get all linked Sites
+ * @api {post} /sites/actions/getLinkedSites Get all linked Sites
  * @apiVersion 1.0.0
  * @apiName GetLinkedSites
  * @apiGroup Sites
@@ -190,7 +197,7 @@ module.exports.postCreateSite = function(req, res, next) {
  *
  * @apiDescription Returns a paginated list of all linked Sites
  *
- * @apiParam (Body Parameter)   {Object}        sites           Array of all Site ids which we want to get the linked sites from
+ * @apiBody   {Object}        sites           Array of all Site ids which we want to get the linked sites from
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /sites/actions/getLinkedSites
@@ -212,6 +219,7 @@ module.exports.postCreateSite = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Resolve transitive linked sites from an input list of site ids. */
 module.exports.getLinkedSites = function(req, res, next) {
     var sites = req.body.sites
 
@@ -225,7 +233,7 @@ module.exports.getLinkedSites = function(req, res, next) {
 }
 
 /**
- * @api {post} /actions/searchSitesByLocation Search Sites by location
+ * @api {post} /sites/actions/searchSitesByLocation Search Sites by location
  * @apiVersion 1.0.0
  * @apiName SearchSitesByLocation
  * @apiGroup Sites
@@ -268,7 +276,9 @@ module.exports.getLinkedSites = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
 */
+/* Search sites around a center point using geospatial options. */
 module.exports.searchSitesByLocation = function(req, res, next) {
+    /* Delegate geospatial search to the utility layer. */
     siteUtility.searchSitesByLocation(req.body.location, req.body.distance, req.body.distanceOptions, function (err, results) {
         res.httpResponse(err, req.statusCode, results);
     });
@@ -311,6 +321,7 @@ module.exports.searchSitesByLocation = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* List Sites with filters and projection. */
 module.exports.getSites = function(req, res, next) {
     siteDriver.findAll(req.query, req.dbQueryFields, req.options, function(err, results) {
         res.httpResponse(err, null, results)
@@ -342,6 +353,7 @@ module.exports.getSites = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Read one Site by id. */
 module.exports.getSiteById = function(req, res, next) {
     var id = req.params.id
     siteDriver.findById(id, req.dbQueryFields, function(err, results) {
@@ -351,13 +363,15 @@ module.exports.getSiteById = function(req, res, next) {
 
 
 /**
- * @api {put} /sites Update a Site
+ * @api {put} /sites/:id Update a Site
  * @apiVersion 1.0.0
  * @apiName PutSite
  * @apiGroup Sites
  * @apiPermission Access Token
  *
  * @apiDescription Updates a Site object and returns the newly updated resource, or an error Object
+ *
+ * @apiParam (URL Parameter) {String}  id  The Site identifier
  *
  * @apiUse SiteBodyParams
  *
@@ -374,15 +388,18 @@ module.exports.getSiteById = function(req, res, next) {
  * @apiUse NoContent
  * @apiSampleRequest off
  */
+/* Update a Site by id with location integrity checks. */
 module.exports.updateSite = function(req, res, next) {
 
     async.series([
             function(callback) {
+                /* Validate both the target site id and the optional parent assignment before persisting. */
                 if(siteDriver.ObjectIdIsValid(req.params.id)){
                     if(req.body.site.locatedInSiteId){
                         if(siteDriver.ObjectIdIsValid(req.params.id)){
                             if(siteDriver.ObjectIdIsValid(req.body.site.locatedInSiteId)){
 
+                                /* Prevent cycles by checking whether the proposed parent is already a descendant. */
                                 siteUtility.getLinkedSites([req.params.id],[],function(err,linkedSited){
                                     if(err){
                                         callback(err);
@@ -420,10 +437,12 @@ module.exports.updateSite = function(req, res, next) {
                 res.httpResponse(err);
             }else {
                 if (isValid[0]) {
+                        /* Apply the update only after the hierarchy check has passed. */
                     siteDriver.findByIdAndUpdate(req.params.id, req.body.site, function(err, results) {
                         res.httpResponse(err, null, results)
                     });
                 } else {
+                        /* Reject assignments that would create an invalid site hierarchy. */
                     return res.httpResponse(null, 422, "A site cannot be located inside a children site. Set a valid locatedInSiteId");
                 }
             }
@@ -459,6 +478,7 @@ module.exports.updateSite = function(req, res, next) {
  * @apiUse InternalServerError
  * @apiUse NoContent
  */
+/* Delete a Site by id. */
 module.exports.deleteSite = function(req, res, next) {
     var id = req.params.id
     thingDriver.findAll({siteId: id}, null, {totalCount: true}, function(err, results) {
@@ -468,6 +488,7 @@ module.exports.deleteSite = function(req, res, next) {
             if ((results._metadata.totalCount) > 0) { // there are Things associated with that Site, so you cannot delete the Site
                 res.httpResponse(err, 409, "Cannot delete the Site due to associated Thing(s)")
             } else { //Deleting that Site could be safe since there aren't associated Things. What about associated Sites?
+                /* Check for child sites as a second guard before deleting the node. */
                 siteDriver.findAll({locatedInSiteId: id}, null, {totalCount: true}, function(err, results) {
                     if (err)
                         return res.httpResponse(err,null,null);
@@ -475,6 +496,7 @@ module.exports.deleteSite = function(req, res, next) {
                         if ((results._metadata.totalCount) > 0) { // there are Sites associated with that Site, so you cannot delete the Site
                             res.httpResponse(err, 409, "Cannot delete the Site due to associated Site(s)")
                         } else { //Deleting that Site is safe since there aren't associated Sites
+                            /* No dependent Things or child Sites remain, so the delete is safe. */
                             siteDriver.findByIdAndRemove(id, function(err, deletedSite) {
                                 res.httpResponse(err, null, deletedSite)
                             })

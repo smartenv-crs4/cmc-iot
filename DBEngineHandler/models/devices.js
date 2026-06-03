@@ -25,6 +25,10 @@ var extendedFunction = require('./metadata');
 var Schema = mongoose.Schema;
 var conf = require('propertiesmanager').conf;
 
+/*
+ * Device schema definition.
+ * Can be overridden by customSchema.deviceSchema from configuration.
+ */
 var device= conf.customSchema.deviceSchema || {
     name:{type:String,required:true},
     description:{type:String,required:true},
@@ -37,13 +41,13 @@ var device= conf.customSchema.deviceSchema || {
 
 var deviceSchema = new Schema(device, {strict: "throw"});
 
-// Static method to retrieve resource WITH metadata
+/* Retrieve Device collections with metadata envelope support. */
 deviceSchema.statics.findAll = function (conditions, fields, options, callback) {
     return extendedFunction.findAll(this, 'devices', conditions, fields, options, callback);
 };
 
 
-// Static method to retrieve resource WITH metadata
+/* Strict update helper that blocks writes on protected fields. */
 deviceSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUpdatable, options, callback) {
     return extendedFunction.findByIdAndUpdateStrictMode(this, id, newfields, fieldsNoUpdatable, options, callback);
 

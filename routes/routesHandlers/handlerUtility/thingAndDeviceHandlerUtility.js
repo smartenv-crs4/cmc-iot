@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -61,7 +61,7 @@ var _ = require('underscore');
  */
 /**
  * @apiDefine NotFound
- * @apiError {Object} ResourceNotFound[404] The resource was not found <BR>
+ * @apiError (404) {Object} ResourceNotFound The resource was not found <BR>
  *
  * @apiErrorExample {Object} NotFound Error:
  *  HTTP/1.1 404 Resource Not Found
@@ -73,7 +73,7 @@ var _ = require('underscore');
  */
 /**
  * @apiDefine  InternalServerError
- * @apiError  (5xx) {Object} InternalServerError[500] An internal server error occurred <BR>
+ * @apiError (500) {Object} InternalServerError An internal server error occurred <BR>
  *
  * @apiErrorExample {Object} InternalServerError Error:
  *  HTTP/1.1 500 Internal Server Error
@@ -85,7 +85,7 @@ var _ = require('underscore');
  */
 /**
  * @apiDefine  BadRequest
- * @apiError {Object} BadRequest[400] The server cannot or will not process the request due to malformed client request <BR>
+ * @apiError (400) {Object} BadRequest The server cannot or will not process the request due to malformed client request <BR>
  *
  * @apiErrorExample {Object} BadRequest Error:
  *  HTTP/1.1 400 Bad Request
@@ -97,7 +97,7 @@ var _ = require('underscore');
  */
 /**
  * @apiDefine  Unauthorized
- * @apiError {Object} Unauthorized[401] The client is not authorized to access this resource <BR>
+ * @apiError (401) {Object} Unauthorized The client is not authorized to access this resource <BR>
  *
  * @apiErrorExample {Object} Unauthorized Error:
  *  HTTP/1.1 401 Unauthorized
@@ -109,7 +109,7 @@ var _ = require('underscore');
  */
 /**
  * @apiDefine  NoContent
- * @apiError (2xx) {Object} NoContent[204] The server successfully processed the request but no content is found <BR>
+ * @apiError (204) {Object} NoContent The server successfully processed the request but no content is found <BR>
  *
  * @apiErrorExample NoContent Error:
  *  HTTP/1.1 204 NoContent
