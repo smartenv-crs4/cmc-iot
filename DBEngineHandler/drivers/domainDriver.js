@@ -24,6 +24,7 @@
 var domains=require('../models/domains').Domain;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
+var mongooseCompat = require('./mongooseCompat');
 
 
 /* GET domains listing. */
@@ -36,29 +37,31 @@ module.exports.findAll = function(conditions, fields, options, callback){
 
 /* Create Domain. */
 module.exports.create = function(domain, callback){
-    domains.create(domain,callback);
+    mongooseCompat.asCallback(domains.create(domain), callback);
 };
 
 
 /* delete Domains. */
 module.exports.deleteMany = function(conditions,options,callback){
-    domains.deleteMany(conditions,options,function(err){
-        callback(err);
-    });
+    if(!callback){
+        callback=options;
+        options={};
+    }
+    mongooseCompat.asCallback(domains.deleteMany(conditions,options), callback);
 };
 
 
 /* findOne Domain. */
 module.exports.findOne = function(conditions,projection,options,callback){
-    domains.findOne(conditions,projection,options,function(err,results){
-        callback(err,results);
-    });
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(domains.findOne(conditions, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne Domain. */
 module.exports.findById = function(id,projection,options,callback){
-    domains.findById(id,projection,options,callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(domains.findById(id, normalized.projection, normalized.options), normalized.callback);
 };
 
 
@@ -66,14 +69,14 @@ module.exports.findById = function(id,projection,options,callback){
 
 /* findOne Domain. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,callback){
-    domains.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{new:true,runValidators: true},callback);
+    domains.findByIdAndUpdateStrict(id,newFields,fieldsNoUpdatable,{returnDocument: 'after',runValidators: true},callback);
 };
 
 
 
 /* findOne Domain. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    domains.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
+    mongooseCompat.execAsCallback(domains.findByIdAndUpdate(id,newFields,{returnDocument: 'after',runValidators: true}), callback);
 };
 
 
@@ -81,7 +84,7 @@ module.exports.findByIdAndUpdate = function(id,newFields,callback){
 
 /* findOne Domain. */
 module.exports.findByIdAndRemove = function(id,callback){
-    domains.findByIdAndRemove(id,callback);
+    mongooseCompat.execAsCallback(domains.findByIdAndDelete(id), callback);
 };
 
 
@@ -90,7 +93,7 @@ module.exports.findByIdAndRemove = function(id,callback){
 
 /* GET/SET Domain ObjectId. */
 module.exports.ObjectId = function(ObjectId){
-    return(mongoose.Types.ObjectId(ObjectId));
+    return(new mongoose.Types.ObjectId(ObjectId));
 };
 
 

@@ -21,10 +21,36 @@
  */
 
 var conf = require('propertiesmanager').conf;
-var request = require('request');
+var axios = require('axios');
 var _=require("underscore");
 var errorLog=require('../utility/error');
 let errorHeader="Error in authorisationMiddleware in function";
+
+function requestPost(params, callback) {
+    var payload = params.body;
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (e) {
+            payload = params.body;
+        }
+    }
+
+    axios({
+        method: 'post',
+        url: params.url,
+        headers: params.headers,
+        data: payload,
+        validateStatus: function () {
+            return true;
+        }
+    }).then(function (response) {
+        var body = (typeof response.data === 'string') ? response.data : JSON.stringify(response.data);
+        callback(null, {statusCode: response.status}, body);
+    }).catch(function (error) {
+        callback(error);
+    });
+}
 
 
 
@@ -75,7 +101,7 @@ exports.checkToken = function(req, res, next) {
 
                 var decoded = null;
 
-                request.post(rqparams, function (error, response, body) {
+                requestPost(rqparams, function (error, response, body) {
                     try {
                         if (error) {
                             errorLog.printErrorLog(errorHeader + " checkToken(response from cmc-auth) due to " + error);

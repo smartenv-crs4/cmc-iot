@@ -24,6 +24,7 @@
 var things=require('../models/things').Thing;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
+var mongooseCompat = require('./mongooseCompat');
 
 
 /* Thing listing. */
@@ -36,31 +37,37 @@ module.exports.findAll = function(conditions, fields, options, callback){
 
 /* Create Thing. */
 module.exports.create = function(device, callback){
-    things.create(device,callback);
+    mongooseCompat.asCallback(things.create(device), callback);
 };
 
 
 /* delete Thing by query. */
 module.exports.deleteMany = function(conditions,options,callback){
-    things.deleteMany(conditions,options,callback);
+    if(!callback){
+        callback=options;
+        options={};
+    }
+    mongooseCompat.asCallback(things.deleteMany(conditions,options), callback);
 };
 
 
 /* findOne One Thing. */
 module.exports.findOne = function(conditions,projection,options,callback){
-    things.findOne(conditions,projection,options,callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(things.findOne(conditions, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne one Thing by Id. */
 module.exports.findById = function(id,projection,options,callback){
-    things.findById(id,projection,options,callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(things.findById(id, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne Device. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,fieldsToReturn,callback){
-    var qOptions={new:true,runValidators: true};
+    var qOptions={returnDocument: 'after',runValidators: true};
     if(callback){
         if(fieldsToReturn) qOptions["select"]=fieldsToReturn;
     }else{
@@ -72,20 +79,20 @@ module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable
 
 /* Update Thing by Id. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    things.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
+    mongooseCompat.execAsCallback(things.findByIdAndUpdate(id,newFields,{returnDocument: 'after',runValidators: true}), callback);
 };
 
 
 
 /* Remove Thing by Id */
 module.exports.findByIdAndRemove = function(id,callback){
-    things.findByIdAndRemove(id,callback);
+    mongooseCompat.execAsCallback(things.findByIdAndDelete(id), callback);
 };
 
 
 /* GET/SET Thing ObjectId. */
 module.exports.ObjectId = function(ObjectId){
-    return(mongoose.Types.ObjectId(ObjectId));
+    return(new mongoose.Types.ObjectId(ObjectId));
 };
 
 

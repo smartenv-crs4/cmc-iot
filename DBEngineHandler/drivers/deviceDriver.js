@@ -25,11 +25,12 @@ var devices=require('../models/devices').Device;
 var observations=require('../models/observations').Observation;
 var mongooseError=require('../../routes/utility/mongooseError');
 var mongoose=require('mongoose');
+var mongooseCompat = require('./mongooseCompat');
 
 
 /* delete DeviceType_Domains. */
 module.exports.aggregate = function(pipeline,callback){
-    devices.aggregate(pipeline,callback);
+    mongooseCompat.execAsCallback(devices.aggregate(pipeline), callback);
 };
 
 /* GET devices listing. */
@@ -42,29 +43,31 @@ module.exports.findAll = function(conditions, fields, options, callback){
 
 /* Create Device. */
 module.exports.create = function(device, callback){
-    devices.create(device,callback);
+    mongooseCompat.asCallback(devices.create(device), callback);
 };
 
 
 /* delete Devices. */
 module.exports.deleteMany = function(conditions,options,callback){
-    devices.deleteMany(conditions,options,function(err){
-        callback(err);
-    });
+    if(!callback){
+        callback=options;
+        options={};
+    }
+    mongooseCompat.asCallback(devices.deleteMany(conditions,options), callback);
 };
 
 
 /* findOne Device. */
 module.exports.findOne = function(conditions,projection,options,callback){
-    devices.findOne(conditions,projection,options,function(err,results){
-        callback(err,results);
-    });
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(devices.findOne(conditions, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne Device. */
 module.exports.findById = function(id,projection,options,callback){
-    devices.findById(id,projection,options,callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(devices.findById(id, normalized.projection, normalized.options), normalized.callback);
 };
 
 
@@ -72,7 +75,7 @@ module.exports.findById = function(id,projection,options,callback){
 
 /* findOne Device. */
 module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable,fieldsToReturn,callback){
-    var qOptions={new:true,runValidators: true};
+    var qOptions={returnDocument: 'after',runValidators: true};
     if(callback){
         if(fieldsToReturn) qOptions["select"]=fieldsToReturn;
     }else{
@@ -85,7 +88,7 @@ module.exports.findByIdAndUpdateStrict = function(id,newFields,fieldsNoUpdatable
 
 /* findOne Device. */
 module.exports.findByIdAndUpdate = function(id,newFields,callback){
-    devices.findByIdAndUpdate(id,newFields,{new:true,runValidators: true},callback);
+    mongooseCompat.execAsCallback(devices.findByIdAndUpdate(id,newFields,{returnDocument: 'after',runValidators: true}), callback);
 };
 
 
@@ -93,7 +96,7 @@ module.exports.findByIdAndUpdate = function(id,newFields,callback){
 
 /* findOne Device. */
 module.exports.findByIdAndRemove = function(id,callback){
-    devices.findByIdAndRemove(id,callback);
+    mongooseCompat.execAsCallback(devices.findByIdAndDelete(id), callback);
 };
 
 
@@ -102,7 +105,7 @@ module.exports.findByIdAndRemove = function(id,callback){
 
 /* GET/SET Device ObjectId. */
 module.exports.ObjectId = function(ObjectId){
-    return(mongoose.Types.ObjectId(ObjectId));
+    return(new mongoose.Types.ObjectId(ObjectId));
 };
 
 

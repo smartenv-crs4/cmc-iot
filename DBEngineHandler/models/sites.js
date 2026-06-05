@@ -50,48 +50,30 @@ var siteSchema = new Schema(site, {strict: "throw"})
  * - enforce either location or parent site reference
  * - validate coordinates when location is provided
  */
-siteSchema.pre('validate', function(next) {
+siteSchema.pre('validate', function() {
 
-    var retErr=null;
     if(!this.location.coordinates.length>0 &&  !this.location.type) {  // this because coordinates are array and is set by default to []
         if ((!this.locatedInSiteId)) {
-            var retErr = new Error('One between location or locatedInSiteId field must be set');
-            retErr.name = "ValidatorError";
-            return next(retErr);
+            var missingLocationErr = new Error('One between location or locatedInSiteId field must be set');
+            missingLocationErr.name = "ValidatorError";
+            throw missingLocationErr;
         }else{
             this.location=undefined;
         }
     }
 
-
-
-    if(this.location) {
-        if (this.location.coordinates) {
-
-            if (this.location.coordinates.length>0 && this.location.type ) {
-                // if (this.location.coordinates[0] > 180 || this.location.coordinates[0] < -180) {
-                //     var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
-                //     err.name = "ValidatorError";
-                //     return next(err);
-                // }
-                //
-                // if (this.location.coordinates[1] > 90 || this.location.coordinates[1] < -90) {
-                //     var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
-                //     err.name = "ValidatorError";
-                //     return next(err);
-                // }
-                validateLocation(this.location,function(err){
-                    retErr=err;
-                });
-
-            }else{
-                var retErr = new Error('Invalid location field values: coordinates:[longitude,latitude] and type:"Point" must be set');
-                retErr.name = "ValidatorError";
-                return next(retErr);
+    if(this.location && this.location.coordinates) {
+        if (this.location.coordinates.length>0 && this.location.type ) {
+            var locationErr = validateLocation(this.location);
+            if (locationErr) {
+                throw locationErr;
             }
+        }else{
+            var invalidLocationErr = new Error('Invalid location field values: coordinates:[longitude,latitude] and type:"Point" must be set');
+            invalidLocationErr.name = "ValidatorError";
+            throw invalidLocationErr;
         }
     }
-    next(retErr);
 });
 
 /* Retrieve Site collections with metadata envelope support. */
@@ -109,26 +91,32 @@ siteSchema.statics.locationValidator = function(location, callback) {
 /* Validate GeoJSON-like location shape and coordinate ranges. */
 var validateLocation = function(location,callback) {
 
+    var validationError = null;
+
     if(location && location.coordinates && _.isArray(location.coordinates) && (location.coordinates.length==2)) {
         if (location.coordinates[0] > 180 || location.coordinates[0] < -180) {
             var err = new Error('Invalid location coordinates: longitude must be in range [-180,180]');
             err.name = "ValidatorError";
-            callback(err);
+            validationError = err;
         } else {
             if (location.coordinates[1] > 90 || location.coordinates[1] < -90) {
                 var err = new Error('Invalid location coordinates: latitude must be in range [-90,90]');
                 err.name = "ValidatorError";
-                return callback(err);
-            } else {
-                callback(null);
+                validationError = err;
             }
         }
     }else{
         var err = new Error('Invalid location format');
         err.name = "ValidatorError";
-        return callback(err);
+        validationError = err;
 
     }
+
+    if (typeof callback === 'function') {
+        return callback(validationError);
+    }
+
+    return validationError;
 
 };
 

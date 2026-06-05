@@ -68,7 +68,7 @@ thingSchema.statics.findByIdAndUpdateStrict = function (id, newfields,fieldsNoUp
 
 
 /* Validate optional URL fields before persistence. */
-thingSchema.pre('validate', function(next) {
+thingSchema.pre('validate', function() {
 
     var espressione = new RegExp('^https?:\\/\\/(((www\\.)?(\\w+|-+)+(\\.\\w+)*\\.\\D{2})|(localhost)|(\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}))((:\\d+)?((\\/\\w*)+)?)?(\\?{0,1}\\w+)?$','i');
 
@@ -77,7 +77,7 @@ thingSchema.pre('validate', function(next) {
         if (!espressione.test(this.api.url)) {
          const err = new Error("thing validation failed 'api.url'. " +this.api.url + " is not a valid url (eg: http://......)");
          err.name="ValidatorError";
-         return next(err);
+         throw err;
         }
     }
 
@@ -85,11 +85,9 @@ thingSchema.pre('validate', function(next) {
         if (!espressione.test(this.direct.url)) {
             const err = new Error("thing validation failed 'direct.url'. " +this.direct.url + " is not a valid url (eg: http://......)");
             err.name="ValidatorError";
-            return next(err);
+            throw err;
         }
     }
-
-    return next();
 });
 
 

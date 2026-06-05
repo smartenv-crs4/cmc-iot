@@ -31,27 +31,17 @@ var dbUrl =  "mongodb://" + dbAuth + conf.dbHost + ':' + conf.dbPort + '/' + con
 
 //var dbUrl =  'mongodb://'+conf.dbHost + ':' + conf.dbPort + '/' + conf.dbName;
 
-var options = {
-    server: {socketOptions: {keepAlive: 1, connectTimeoutMS: 30000}},
-    useNewUrlParser: true
-};
-
-
-
-
 exports.connect = function connect(callback) {
 
-    mongoose.connect(dbUrl, {useNewUrlParser: true , useFindAndModify: false }, function (err, res) {
-
-        if (err) {
-            console.log('Unable to connect to database ' + dbUrl);
-            callback(err);
-        }
-        else {
+    mongoose.connect(dbUrl)
+        .then(function () {
             console.log('Connected to database ' + dbUrl);
             callback();
-        }
-    });
+        })
+        .catch(function (err) {
+            console.log('Unable to connect to database ' + dbUrl);
+            callback(err);
+        });
 };
 
 
@@ -59,5 +49,11 @@ exports.connect = function connect(callback) {
 
 exports.disconnect = function disconnect(callback) {
 
-    mongoose.disconnect(callback);
+    mongoose.disconnect()
+        .then(function () {
+            callback();
+        })
+        .catch(function (err) {
+            callback(err);
+        });
 };

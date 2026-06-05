@@ -22,8 +22,50 @@
 
 
 var async = require('async');
-var request = require('request');
+var axios = require('axios');
 var config = require('propertiesmanager').conf;
+
+function requestGet(params, callback) {
+    axios({
+        method: 'get',
+        url: params.url,
+        headers: params.headers,
+        validateStatus: function () {
+            return true;
+        }
+    }).then(function (response) {
+        var body = (typeof response.data === 'string') ? response.data : JSON.stringify(response.data);
+        callback(null, {statusCode: response.status}, body);
+    }).catch(function (error) {
+        callback(error);
+    });
+}
+
+function requestPost(params, callback) {
+    var payload = params.body;
+    if (typeof payload === 'string') {
+        try {
+            payload = JSON.parse(payload);
+        } catch (e) {
+            payload = params.body;
+        }
+    }
+
+    axios({
+        method: 'post',
+        url: params.url,
+        headers: params.headers,
+        data: payload,
+        validateStatus: function () {
+            return true;
+        }
+    }).then(function (response) {
+        var body = (typeof response.data === 'string') ? response.data : JSON.stringify(response.data);
+        callback(null, {statusCode: response.status}, body);
+    }).catch(function (error) {
+        callback(error);
+    });
+}
 
 
 module.exports.setupDefaults = function (callbackResponse) {
@@ -36,7 +78,7 @@ module.exports.setupDefaults = function (callbackResponse) {
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + config.auth_token}
                 };
 
-                request.get(rqparams, function (err, response, body) { //check if type token exist
+                requestGet(rqparams, function (err, response, body) { //check if type token exist
                     if (err) callback("Default cmc-IoT External APP type creation(check if dismissed thing APP token type exist) :" + err, null);
 
                     var responseBody;
@@ -54,7 +96,7 @@ module.exports.setupDefaults = function (callbackResponse) {
                         //create tokentype
                         rqparams.body = JSON.stringify({apptype: {name: config.cmcIoTThingsOwner.tokenType}});
 
-                        request.post(rqparams, function (err, response, body) {
+                        requestPost(rqparams, function (err, response, body) {
                             if (err) callback("Default cmc-IoT External APP type creation(dismissed thing App token type creation[REQ Error]) :" + err, null);
                             if (response.statusCode == 201) {
                                 callback(null, "done")
@@ -79,7 +121,7 @@ module.exports.setupDefaults = function (callbackResponse) {
                 };
 
 
-                request.post(rqparams, function (err, response, body) { //check if default app exist
+                requestPost(rqparams, function (err, response, body) { //check if default app exist
                     if (err) callback("Default cmc-IoT External APP type creation(check if app already exist[REQ]) :" + err, null);
 
                     var responseBody = JSON.parse(body);
@@ -97,7 +139,7 @@ module.exports.setupDefaults = function (callbackResponse) {
                                 }
                             });
                             rqparams.url = config.cmcAppUrl + "/apps/signup";
-                            request.post(rqparams, function (err, response, body) {
+                            requestPost(rqparams, function (err, response, body) {
                                 if (err) callback("Default cmc-IoT External APP type creation(dismissed thing App creation[REQ]) :" + err, null);
                                 if (response.statusCode == 201) {
                                     callback(null, JSON.parse(body).created_resource._id);
@@ -115,7 +157,7 @@ module.exports.setupDefaults = function (callbackResponse) {
                                     "password": config.cmcIoTThingsOwner.password
                                 });
                                 rqparams.url = config.cmcAppUrl + "/apps/signin/";
-                                request.post(rqparams, function (err, response, body) {
+                                requestPost(rqparams, function (err, response, body) {
                                     if (err) callback("Default cmc-IoT External APP type creation (dismissed thing App login[REQ]) :" + err, null);
 
                                     if (response.statusCode == 200) {

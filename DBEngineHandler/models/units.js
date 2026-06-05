@@ -38,14 +38,13 @@ var unit = conf.customSchema.unitSchema || {
 var unitSchema = new Schema(unit, {strict: "throw"})
 
 
-unitSchema.pre('validate', function(next) {
+unitSchema.pre('validate', function() {
 
     if (this.minValue > this.maxValue) {
         var err = new Error('unit validation failed: range (minValue-maxValue) not allowed');
         err.name = "ValidatorError";
-        next(err)
+        throw err;
     }
-    else next()
 })
 
 

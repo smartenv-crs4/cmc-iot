@@ -24,6 +24,7 @@
 var vendors = require('../models/vendors').Vendor
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
+var mongooseCompat = require('./mongooseCompat')
 
 
 /* GET vendors list */
@@ -36,49 +37,49 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* Create Vendor */
 module.exports.create = function(vendor, callback) {
-    vendors.create(vendor, function(err, createdVendor) {
-        callback(err, createdVendor)
-    })
+    mongooseCompat.asCallback(vendors.create(vendor), callback)
 }
 
 
 /* Delete Vendors */
 module.exports.deleteMany = function(conditions, options, callback) {
-    vendors.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
+    if(!callback) {
+        callback = options
+        options = {}
+    }
+    mongooseCompat.asCallback(vendors.deleteMany(conditions, options), callback)
 }
 
 
 /* findOne Vendor */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    vendors.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(vendors.findOne(conditions, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Vendor by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    vendors.findById(id, projection, options, callback)
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(vendors.findById(id, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Vendor and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    vendors.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
+    mongooseCompat.execAsCallback(vendors.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback)
 }
 
 
 /* findOne Vendor by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    vendors.findByIdAndRemove(id, callback)
+    mongooseCompat.execAsCallback(vendors.findByIdAndDelete(id), callback)
 }
 
 
 /* GET/SET Vendor ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
+    return (new mongoose.Types.ObjectId(ObjectId))
 }
 
 

@@ -22,6 +22,7 @@
 
 
 var disabledDevices =require('../models/disabledDevices').DisabledDevices;
+var mongooseCompat = require('./mongooseCompat');
 
 /* GET disabled device listing. */
 module.exports.findAll = function(conditions, fields, options, callback){
@@ -33,13 +34,13 @@ module.exports.findAll = function(conditions, fields, options, callback){
 
 /* Create disabled device. */
 module.exports.create = function(observation, callback){
-    disabledDevices .create(observation,callback);
+    mongooseCompat.asCallback(disabledDevices.create(observation), callback);
 };
 
 
 /* findById and remove disabled device. */
 module.exports.findOneAndRemove = function(id,options,callback){
-    disabledDevices .findOneAndRemove(id,options,callback);
+    mongooseCompat.execAsCallback(disabledDevices.findOneAndDelete(id,options), callback);
 };
 
 
@@ -47,9 +48,11 @@ module.exports.findOneAndRemove = function(id,options,callback){
 
 /* delete DisabledDevices . */
 module.exports.deleteMany = function(conditions,options,callback){
-    disabledDevices .deleteMany(conditions,options,function(err){
-        callback(err);
-    });
+    if(!callback){
+        callback=options;
+        options={};
+    }
+    mongooseCompat.asCallback(disabledDevices.deleteMany(conditions,options), callback);
 };
 
 

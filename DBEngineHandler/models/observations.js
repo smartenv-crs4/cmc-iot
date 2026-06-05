@@ -46,13 +46,12 @@ var observation = conf.customSchema.observationSchema || {
 var observationSchema = new Schema(observation, {strict: "throw"});
 
 /* Auto-fill timestamp when omitted by clients. */
-observationSchema.pre('validate', function(next) {
+observationSchema.pre('validate', function() {
 
    // if (!this.timestamp) {
     if ((this.timestamp== undefined) || (this.timestamp==null)) {
         this.timestamp=new Date().getTime();
     }
-    next();
 });
 
 

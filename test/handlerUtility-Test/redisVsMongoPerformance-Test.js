@@ -142,8 +142,10 @@ describe('Redis Handler Test', function () {
                     }
                 ],
                 function(err, results) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    else{
+                    if (err) {
+                        consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        return done(err);
+                    } else {
                         results[0].should.be.lessThanOrEqual(results[2]);
                         console.log("Creation without Redis: "+results[0].format('x'));
                         console.log("Creatiion With Redis: "+results[2].format('x'));
@@ -243,8 +245,10 @@ describe('Redis Handler Test', function () {
                     }
                 ],
                 function(err, results) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    else{
+                    if (err) {
+                        consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        return done(err);
+                    } else {
                         results[1].should.be.greaterThanOrEqual(results[4]);
                         console.log("Read without Redis Cache: "+ results[1].format('x'));
                         console.log("Read With Redis Cache: "+results[4].format('x'));
@@ -348,8 +352,10 @@ describe('Redis Handler Test', function () {
                     }
                 ],
                 function(err, results) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    else{
+                    if (err) {
+                        consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        return done(err);
+                    } else {
                         results[1].should.be.greaterThanOrEqual(results[4]);
                         console.log("Read without Redis Cache: "+ results[1].format('x'));
                         console.log("Read With Redis Cache: "+results[4].format('x'));
@@ -448,8 +454,10 @@ describe('Redis Handler Test', function () {
                     }
                 ],
                 function(err, results) {
-                    if (err) consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
-                    else{
+                    if (err) {
+                        consoleLogError.printErrorLog(testMessage + " [ERROR] --> " + err);
+                        return done(err);
+                    } else {
                         results[1].should.be.greaterThanOrEqual(results[4]);
                         console.log("Read without Redis Cache: "+ results[1].format('x'));
                         console.log("Read With Redis Cache: "+results[4].format('x'));

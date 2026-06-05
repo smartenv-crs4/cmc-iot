@@ -26,6 +26,7 @@ var mongooseError = require('../../routes/utility/mongooseError');
 var mongoose = require('mongoose');
 var async=require('async');
 var conf=require('propertiesmanager').conf;
+var mongooseCompat = require('./mongooseCompat');
 
 
 /* GET Observations list */
@@ -37,21 +38,22 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 /* Create Observations. */
 module.exports.create = function(observation, callback) {
     if(conf.cmcIoTOptions.uniqueObservationForDeviceIdAtSameTimestamp){
-        observationModel.find({deviceId:observation.deviceId, timestamp:observation.timestamp},"_id",function(err,obs){
-            if(err){
-                callback(err,null);
-            }else{
+        observationModel.find({deviceId:observation.deviceId, timestamp:observation.timestamp},"_id").exec()
+            .then(function (obs) {
                 if(obs.length>0) {
                     var Err = new Error("An observation for device " + observation.deviceId + " already exists at timestamp " + observation.timestamp);
                     Err.name = "DuplicatedObservation";
                     Err.duplicated=true;
                     callback(Err);
-                } else
-                    observationModel.create(observation, callback);
-            }
-        });
+                } else {
+                    mongooseCompat.asCallback(observationModel.create(observation), callback);
+                }
+            })
+            .catch(function (err) {
+                callback(err,null);
+            });
     } else {
-        observationModel.create(observation, callback);
+        mongooseCompat.asCallback(observationModel.create(observation), callback);
     }
     //observationModel.create(observation, callback);
 };
@@ -76,58 +78,69 @@ module.exports.deleteMany = function(conditions, options, callback) {
             options = null;
         }
     }
-    observationModel.find(conditions,"_id",function(err,obs){
-        if(err){
-            callback(err,null);
-        }else{
+    observationModel.find(conditions,"_id").exec()
+        .then(function (obs) {
             var deleted={};
             async.each(obs, function(observation, clb) {
-                observationModel.findByIdAndRemove(observation._id,options,function(err,deletedObs){
-                    if(deletedObs){
-                        deleted[deletedObs.deviceId]=deleted[deletedObs.deviceId] || [];
-                        deleted[deletedObs.deviceId].push(deletedObs);
-                    }
-                    clb(err);
-                })
+                observationModel.findByIdAndDelete(observation._id,options).exec()
+                    .then(function (deletedObs) {
+                        if(deletedObs){
+                            deleted[deletedObs.deviceId]=deleted[deletedObs.deviceId] || [];
+                            deleted[deletedObs.deviceId].push(deletedObs);
+                        }
+                        clb();
+                    })
+                    .catch(function (err) {
+                        clb(err);
+                    });
             }, function(err) {
                 callback(err,deleted);
             });
-        }
-    });
+        })
+        .catch(function (err) {
+            callback(err,null);
+        });
 };
 
 
 /* findOne Observation */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    observationModel.findOne(conditions, projection, options, callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(observationModel.findOne(conditions, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne Observation by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    observationModel.findById(id, projection, options, callback);
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback);
+    mongooseCompat.execAsCallback(observationModel.findById(id, normalized.projection, normalized.options), normalized.callback);
 };
 
 
 /* findOne Observation and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    observationModel.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback);
+    mongooseCompat.execAsCallback(observationModel.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback);
 };
 
 
 /* findOne Observation by ID and remove it */
 module.exports.findByIdAndRemove = function(id, options, callback) {
-    observationModel.findByIdAndRemove(id, options, callback);
+    if (!callback && typeof options === 'function') {
+        callback = options;
+        options = null;
+    }
+    mongooseCompat.execAsCallback(observationModel.findByIdAndDelete(id, options), callback);
 };
 
 /* GET Observations list */
 module.exports.find = function(conditions, fields, options, callback) {
-    observationModel.find(conditions, fields, options, callback);
+    var normalized = mongooseCompat.normalizeFieldsOptionsCallback(fields, options, callback);
+    mongooseCompat.execAsCallback(observationModel.find(conditions, normalized.fields, normalized.options), normalized.callback);
 };
 
 /* GET/SET Observations ObjectId. */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId));
+    return (new mongoose.Types.ObjectId(ObjectId));
 };
 
 

@@ -25,7 +25,7 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var boom=require('express-boom');
+var boom=require('./routes/middlewares/boomAdapter');
 var errorLog=require('./routes/utility/error');
 var httpResponse=require('./routes/middlewares/httpResponse').httpResponse;
 
