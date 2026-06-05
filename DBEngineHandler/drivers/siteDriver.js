@@ -24,6 +24,7 @@
 var sites = require('../models/sites').Site;
 var mongooseError = require('../../routes/utility/mongooseError');
 var mongoose = require('mongoose');
+var mongooseCompat = require('./mongooseCompat');
 
 
 /* GET site listing */
@@ -35,56 +36,55 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* GET site listing */
 module.exports.find = function(conditions, fields, options, callback) {
-    sites.find(conditions, fields, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeFieldsOptionsCallback(fields, options, callback)
+    mongooseCompat.execAsCallback(sites.find(conditions, normalized.fields, normalized.options), normalized.callback)
 }
 
 /* Create Site */
 module.exports.create = function(site, callback) {
-    sites.create(site, function(err, createdSite) {
-        callback(err, createdSite)
-    })
+    mongooseCompat.asCallback(sites.create(site), callback)
 }
 
 
 /* delete Sites */
 module.exports.deleteMany = function(conditions, options, callback) {
-    sites.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
+    if(!callback) {
+        callback = options
+        options = {}
+    }
+    mongooseCompat.asCallback(sites.deleteMany(conditions, options), callback)
 }
 
 
 /* findOne Site */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    sites.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(sites.findOne(conditions, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Site by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    sites.findById(id, projection, options, callback)
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(sites.findById(id, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Site and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    sites.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
+    mongooseCompat.execAsCallback(sites.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback)
 }
 
 
 /* findOne Site by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    sites.findByIdAndRemove(id, callback)
+    mongooseCompat.execAsCallback(sites.findByIdAndDelete(id), callback)
 }
 
 
 /* GET/SET Site ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
+    return (new mongoose.Types.ObjectId(ObjectId))
 }
 
 module.exports.ObjectIdIsValid = function(ObjectId) {

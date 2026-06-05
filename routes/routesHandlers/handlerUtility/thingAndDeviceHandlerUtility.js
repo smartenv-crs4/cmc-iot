@@ -161,28 +161,45 @@ function getDevLocation(deviceInfo,callback){
         if(deviceInfo.thing.mobile){ // it is a mobile device
             callback(null,deviceInfo);
         }else{ // it is a not mobile device
-            var siteLocation=null;
-            var siteId=deviceInfo.thing.siteId;
-            async.whilst(
-                function test() {
-                    return (siteLocation==null);
-                },
-                function iter(next) {
-                    siteDriver.findById(siteId,null,null,function(err,siteInfo){
-                        if(!err) {
-                            siteLocation = (siteInfo && siteInfo.location && siteInfo.location.coordinates && (siteInfo.location.coordinates.length > 0)) ? siteInfo.location : null;
-                            siteId = siteInfo.locatedInSiteId;
-                        }
-                        next(err,siteLocation);
-                    })
-                },
-                function (err, locationSite) {
-                    if(!err){
-                        deviceInfo.location=locationSite;
-                    }
-                    callback(err,deviceInfo);
+            var visitedSiteId={};
+
+            function resolveSiteLocation(siteId){
+                if(!siteId){
+                    var notFoundErr = new Error("No location found in site hierarchy for this device/thing.");
+                    notFoundErr.name = "NotExistError";
+                    return callback(notFoundErr,deviceInfo);
                 }
-            );
+
+                var siteKey = siteId.toString();
+                if(visitedSiteId[siteKey]){
+                    var cycleErr = new Error("Cyclic site hierarchy detected while resolving device location.");
+                    cycleErr.name = "ConflictError";
+                    return callback(cycleErr,deviceInfo);
+                }
+                visitedSiteId[siteKey]=true;
+
+                siteDriver.findById(siteId,null,null,function(err,siteInfo){
+                    if(err){
+                        return callback(err,deviceInfo);
+                    }
+
+                    if(!siteInfo){
+                        var missingSiteErr = new Error("The site in the hierarchy was not found.");
+                        missingSiteErr.name = "NotExistError";
+                        return callback(missingSiteErr,deviceInfo);
+                    }
+
+                    var hasLocation = siteInfo.location && siteInfo.location.coordinates && (siteInfo.location.coordinates.length > 0);
+                    if(hasLocation){
+                        deviceInfo.location=siteInfo.location;
+                        return callback(null,deviceInfo);
+                    }
+
+                    return resolveSiteLocation(siteInfo.locatedInSiteId);
+                });
+            }
+
+            resolveSiteLocation(deviceInfo.thing.siteId);
         }
     }else{
         Err = new Error("The device/thing not exist.");
@@ -200,14 +217,21 @@ module.exports.getDeviceStatus=function getDeviceStatus(deviceId,extractLocation
     // check if Resdis store device Stutus Information. If yes return It otherwise check info into Database
 
     var redis = false; //TODO: change with redis check
+    var validDeviceId;
 
     try {
-        var validDeviceId = deviceDriver.ObjectId(deviceId);
-        if (redis) {
-            callback(redis);  // todo change with deviceInfo from Redis
-        } else {
-            // check device info and valid units into database
-            deviceDriver.aggregate([
+        validDeviceId = deviceDriver.ObjectId(deviceId);
+    } catch (exception) {
+        var Err = new Error(deviceId + " is a not valid ObjectId");
+        Err.name = "BadRequestError";
+        return callback(Err);
+    }
+
+    if (redis) {
+        callback(redis);  // todo change with deviceInfo from Redis
+    } else {
+        // check device info and valid units into database
+        deviceDriver.aggregate([
                 {
                     $match: {_id: validDeviceId}
                 },
@@ -269,21 +293,16 @@ module.exports.getDeviceStatus=function getDeviceStatus(deviceId,extractLocation
                     }
                 }
             ], function (err, results) {
-                if(!err){
-                    if(extractLocation)
-                        getDevLocation(results[0] || null ,callback);
-                    else
-                        callback(null,results[0]|| null)
-                }else{
-                    callback(err);
-                }
+            if(!err){
+                if(extractLocation)
+                    getDevLocation(results[0] || null ,callback);
+                else
+                    callback(null,results[0]|| null)
+            }else{
+                callback(err);
+            }
 
-            });
-        }
-    }catch (exception) {
-        var Err = new Error(deviceId + " is a not valid ObjectId");
-        Err.name = "BadRequestError";
-        callback(Err);
+        });
     }
 }
 

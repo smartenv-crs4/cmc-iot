@@ -9,7 +9,7 @@
     },
     "authUrl":"http://localhost:3005",
     "cmcAppUrl":"http://localhost:3020",
-    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLWlvdC1pcmVtIiwiZW5hYmxlZCI6dHJ1ZSwiZXhwIjoyMDEwNjU5NjA1NTU0fQ.hNoEy_2OOO4GZobNF-lAChCPr1be6TJPz2GjfB5LCRE",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLWlvdCIsImVuYWJsZWQiOnRydWUsImV4cCI6MjA5NjE3ODU3MzcxOH0.Qc7KDZk9EenQnA5hYjXbuJEBRuZrNVLZRLwyztW2-U4",
     "microserviceConf": {
       "port": 3030,
       "description": "CMC IoT is the internet of Things microservice of the CMC (Crs4 Microservice Core) framework. It takes care of managing ......"
@@ -171,7 +171,7 @@
       "psw": null
     },
     "authUrl":"http://localhost:3005",
-    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLUlvVCIsImVuYWJsZWQiOnRydWUsImV4cCI6MjAwNjY3NjUyNTY3Nn0.UM3H9pRvUsm4zvlf6xkCDJ8vVUdFQLfK-Np8ybBCTKg",
+    "auth_token":"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJtb2RlIjoibXMiLCJpc3MiOiJub3QgdXNlZCBmbyBtcyIsImVtYWlsIjoibm90IHVzZWQgZm8gbXMiLCJ0eXBlIjoiY21jLWlvdCIsImVuYWJsZWQiOnRydWUsImV4cCI6MjA5NjE3ODU3MzcxOH0.Qc7KDZk9EenQnA5hYjXbuJEBRuZrNVLZRLwyztW2-U4",
     "cmcAppUrl":"http://localhost:3020",
     "microserviceConf": {
       "port": 3030,
@@ -215,7 +215,7 @@
         "email": "webui@webui.it",
         "password": "miciomicio"
       },
-      "msName":"cmc-IoT",
+      "msName":"cmc-iot",
       "testUrl": "http://localhost"
     },
     "cmcIoTThingsOwner": {
@@ -239,8 +239,8 @@
       "logError": true,
       "logCommandsFailWhenRedisIsDown": true,
       "connection": {
-        "host": "127.0.0.1",
-        "port":  6379,
+        "host": "smart-dell4.crs4.it",
+        "port":  30637,
         "db": 0,
         "password": "null"
       }
@@ -257,8 +257,8 @@
         "thing": "thing:"
       },
       "connection": {
-        "host": "127.0.0.1",
-        "port":  6379,
+        "host": "smart-dell4.crs4.it",
+        "port":  30637,
         "db": 1,
         "password": "null"
       }

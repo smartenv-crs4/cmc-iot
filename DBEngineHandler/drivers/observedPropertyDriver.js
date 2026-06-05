@@ -24,6 +24,7 @@
 var observedProperties = require('../models/observedProperties').ObservedProperty
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
+var mongooseCompat = require('./mongooseCompat')
 
 
 /* GET observedProperties list */
@@ -36,49 +37,49 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* Create ObservedProperty */
 module.exports.create = function(observedProperty, callback) {
-    observedProperties.create(observedProperty, function(err, createdObservedProperty) {
-        callback(err, createdObservedProperty)
-    })
+    mongooseCompat.asCallback(observedProperties.create(observedProperty), callback)
 }
 
 
 /* Delete ObservedProperties */
 module.exports.deleteMany = function(conditions, options, callback) {
-    observedProperties.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
+    if(!callback) {
+        callback = options
+        options = {}
+    }
+    mongooseCompat.asCallback(observedProperties.deleteMany(conditions, options), callback)
 }
 
 
 /* findOne ObservedProperty */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    observedProperties.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(observedProperties.findOne(conditions, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne ObservedProperty by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    observedProperties.findById(id, projection, options, callback)
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(observedProperties.findById(id, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne ObservedProperty and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    observedProperties.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
+    mongooseCompat.execAsCallback(observedProperties.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback)
 }
 
 
 /* findOne ObservedProperty by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    observedProperties.findByIdAndRemove(id, callback)
+    mongooseCompat.execAsCallback(observedProperties.findByIdAndDelete(id), callback)
 }
 
 
 /* GET/SET ObservedProperty ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
+    return (new mongoose.Types.ObjectId(ObjectId))
 }
 
 

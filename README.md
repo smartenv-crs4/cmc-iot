@@ -42,6 +42,10 @@ After project download, users do not need to generate documentation to read or b
 ### Run test suite
 
     npm test
+
+### Run performance benchmarks
+
+    npm run test-performance
     
 
 ### Generate final exhaustive API documentation (maintainers)

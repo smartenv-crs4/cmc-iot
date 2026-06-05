@@ -109,11 +109,9 @@ module.exports.connect = function (connectionsOptions,callback) {
             });
 
             redisClient.on("error", function (error) {
-                if(!(error instanceof redis.ReplyError)) {
-                    redisStatus=false;
-                    callback(error);
-                    callback = function () {}; // close callback
-                }
+                redisStatus=false;
+                callback(error);
+                callback = function () {}; // close callback
                 if(connectionsOptions.logError)
                     log.printLog('Redis connection Error ' + error);
             });

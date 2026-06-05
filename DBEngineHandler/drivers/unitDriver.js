@@ -24,6 +24,7 @@
 var units = require('../models/units').Unit
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
+var mongooseCompat = require('./mongooseCompat')
 
 
 /* GET units listing */
@@ -36,49 +37,49 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* Create Unit */
 module.exports.create = function(unit, callback) {
-    units.create(unit, function(err, createdUnit) {
-        callback(err, createdUnit)
-    })
+    mongooseCompat.asCallback(units.create(unit), callback)
 }
 
 
 /* delete Unit */
 module.exports.deleteMany = function(conditions, options, callback) {
-    units.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
+    if(!callback) {
+        callback = options
+        options = {}
+    }
+    mongooseCompat.asCallback(units.deleteMany(conditions, options), callback)
 }
 
 
 /* findOne Unit */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    units.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(units.findOne(conditions, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Unit by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    units.findById(id, projection, options, callback)
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(units.findById(id, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne Unit and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    units.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
+    mongooseCompat.execAsCallback(units.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback)
 }
 
 
 /* findOne Unit by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    units.findByIdAndRemove(id, callback)
+    mongooseCompat.execAsCallback(units.findByIdAndDelete(id), callback)
 }
 
 
 /* GET/SET Unit ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
+    return (new mongoose.Types.ObjectId(ObjectId))
 }
 
 

@@ -72,8 +72,8 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
     });
 
     opt["lean"]=true;
-    model.find(query, fields, opt, function (err, result) {
-        if (!err) {
+    model.find(query, fields, opt).exec()
+        .then(function (result) {
 
             var entities = entityName ? entityName : 'entities';
 
@@ -93,24 +93,21 @@ exports.findAll = function findAll(model, entityName, conditions, fields, option
             results[entities] = result;
 
             if(options && options.totalCount){
-                model.countDocuments(query, function (err, count) {
-
-                    if (!err) {
+                model.countDocuments(query).exec()
+                    .then(function (count) {
                         results._metadata.totalCount=count;
                         callback(null, results);
-                    }
-                    else {
+                    })
+                    .catch(function (err) {
                         callback(err, null);
-                    }
-                });
+                    });
             }else{
                 callback(null, results);
             }
-        }
-        else {
+        })
+        .catch(function (err) {
             callback(err, null);
-        }
-    });
+        });
 };
 
 
@@ -126,7 +123,13 @@ exports.findByIdAndUpdateStrictMode = function findByIdAndUpdateStrictMode(model
                 throw(error);
             }
         }
-        model.findByIdAndUpdate(id,newFields,options,callback);
+        model.findByIdAndUpdate(id,newFields,options).exec()
+            .then(function (result) {
+                callback(null, result);
+            })
+            .catch(function (err) {
+                callback(err);
+            });
     }catch (e) {
         callback(e);
     }
@@ -153,12 +156,10 @@ exports.findAllPopulated = function findAllPopulated(schema, entityName, conditi
         });
 
 
-        query.exec(function (err, result) {
-
-            if (!err) {
-                schema.countDocuments(conditions, function (err, count) {
-
-                    if (!err) {
+        query.exec()
+            .then(function (result) {
+                schema.countDocuments(conditions).exec()
+                    .then(function (count) {
 
                         var entities = entityName ? entityName : 'entities';
 
@@ -173,18 +174,14 @@ exports.findAllPopulated = function findAllPopulated(schema, entityName, conditi
                         results[entities] = result;
 
                         callback(null, results);
-                    }
-                    else {
+                    })
+                    .catch(function (err) {
                         callback(err, null);
-                    }
-                });
-            }
-            else {
+                    });
+            })
+            .catch(function (err) {
                 callback(err, null);
-            }
-
-
-        });
+            });
 
     }
 

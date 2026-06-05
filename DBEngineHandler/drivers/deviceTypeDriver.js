@@ -24,12 +24,13 @@
 var deviceTypes = require('../models/deviceTypes').DeviceType
 var mongooseError = require('../../routes/utility/mongooseError')
 var mongoose = require('mongoose')
+var mongooseCompat = require('./mongooseCompat')
 
 
 
 /* delete DeviceType_Domains. */
 module.exports.aggregate = function(pipeline,callback){
-    deviceTypes.aggregate(pipeline,callback);
+    mongooseCompat.execAsCallback(deviceTypes.aggregate(pipeline), callback);
 };
 
 
@@ -43,49 +44,49 @@ module.exports.findAll = function(conditions, fields, options, callback) {
 
 /* Create DeviceType */
 module.exports.create = function(deviceType, callback) {
-    deviceTypes.create(deviceType, function(err, createdDeviceType) {
-        callback(err, createdDeviceType)
-    })
+    mongooseCompat.asCallback(deviceTypes.create(deviceType), callback)
 }
 
 
 /* delete DeviceTypes */
 module.exports.deleteMany = function(conditions, options, callback) {
-    deviceTypes.deleteMany(conditions, options, function(err) {
-        callback(err)
-    })
+    if(!callback) {
+        callback = options
+        options = {}
+    }
+    mongooseCompat.asCallback(deviceTypes.deleteMany(conditions, options), callback)
 }
 
 
 /* findOne DeviceType */
 module.exports.findOne = function(conditions, projection, options, callback) {
-    deviceTypes.findOne(conditions, projection, options, function(err, results) {
-        callback(err, results)
-    })
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(deviceTypes.findOne(conditions, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne DeviceType by ID */
 module.exports.findById = function(id, projection, options, callback) {
-    deviceTypes.findById(id, projection, options, callback)
+    var normalized = mongooseCompat.normalizeProjectionOptionsCallback(projection, options, callback)
+    mongooseCompat.execAsCallback(deviceTypes.findById(id, normalized.projection, normalized.options), normalized.callback)
 }
 
 
 /* findOne DeviceType and update it */
 module.exports.findByIdAndUpdate = function(id, newFields, callback) {
-    deviceTypes.findByIdAndUpdate(id, newFields, {new: true,runValidators: true}, callback)
+    mongooseCompat.execAsCallback(deviceTypes.findByIdAndUpdate(id, newFields, {returnDocument: 'after',runValidators: true}), callback)
 }
 
 
 /* findOne DeviceType by ID and remove it */
 module.exports.findByIdAndRemove = function(id, callback) {
-    deviceTypes.findByIdAndRemove(id, callback)
+    mongooseCompat.execAsCallback(deviceTypes.findByIdAndDelete(id), callback)
 }
 
 
 /* GET/SET DeviceType ObjectId */
 module.exports.ObjectId = function(ObjectId) {
-    return (mongoose.Types.ObjectId(ObjectId))
+    return (new mongoose.Types.ObjectId(ObjectId))
 }
 
 
