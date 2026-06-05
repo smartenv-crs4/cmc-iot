@@ -5,7 +5,8 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
-    "test": "NODE_ENV=test mocha test/ --timeout 10000"
+    "test": "NODE_ENV=test mocha test/ --timeout 10000 --ignore test/handlerUtility-Test/redisVsMongoPerformance-Test.js",
+    "test-performance": "NODE_ENV=test mocha test/handlerUtility-Test/redisVsMongoPerformance-Test.js --timeout 10000"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",
