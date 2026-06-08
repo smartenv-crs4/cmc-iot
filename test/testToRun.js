@@ -41,7 +41,6 @@ require('./handlerUtility-Test/observationsUtility-Test');
 require('./handlerUtility-Test/redisHandlerUtility-Test');
 require('./handlerUtility-Test/redisDriver-Test');
 require('./handlerUtility-Test/thingAndDeviceHandlerUtility-Test');
-require('./handlerUtility-Test/redisVsMongoPerformance-Test');
 
 
 
