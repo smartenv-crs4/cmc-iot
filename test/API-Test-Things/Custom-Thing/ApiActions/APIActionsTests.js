@@ -431,9 +431,18 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                         });
 
                     }, function (err) {
+                        var nameOccurrences = {};
+                        results.things.forEach(function(thing){
+                            nameOccurrences[thing.name] = (nameOccurrences[thing.name] || 0) + 1;
+                        });
+                        var uniqueNames = Object.keys(nameOccurrences).filter(function(name){
+                            return nameOccurrences[name] === 1;
+                        });
+                        uniqueNames.length.should.be.greaterThan(0);
+
                         var bodyParams = {
                             searchFilters: {
-                                name: [results.things[0].name]
+                                name: [uniqueNames[0]]
                             }
                         };
                         request.post({
@@ -482,9 +491,18 @@ describe('Things API Test - [ACTIONS TESTS]', function () {
                         });
 
                     }, function (err) {
+                        var nameOccurrences = {};
+                        results.things.forEach(function(thing){
+                            nameOccurrences[thing.name] = (nameOccurrences[thing.name] || 0) + 1;
+                        });
+                        var uniqueNames = Object.keys(nameOccurrences).filter(function(name){
+                            return nameOccurrences[name] === 1;
+                        });
+                        uniqueNames.length.should.be.greaterThanOrEqual(2);
+
                         var bodyParams = {
                             searchFilters: {
-                                name: [results.things[1].name, results.things[2].name]
+                                name: [uniqueNames[0], uniqueNames[1]]
                             }
                         };
                         request.post({

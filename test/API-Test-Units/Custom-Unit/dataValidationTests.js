@@ -143,7 +143,7 @@ describe('Units API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode')
                     results.should.have.property('error')
                     results.should.have.property('message')
-                    results.message.should.be.equal("unit validation failed: observedPropertyId: Cast to ObjectId failed for value \"observedPropertyId\" at path \"observedPropertyId\"")
+                    results.message.should.match(/unit validation failed: observedPropertyId: Cast to ObjectId failed for value \"observedPropertyId\"( \(type string\))? at path \"observedPropertyId\"/)
                 }
                 done()
             })

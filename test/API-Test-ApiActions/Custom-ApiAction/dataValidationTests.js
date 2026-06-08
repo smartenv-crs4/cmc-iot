@@ -143,7 +143,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("apiAction validation failed: deviceTypeId: Cast to ObjectId failed for value \"typeId\" at path \"deviceTypeId\"");
+                    results.message.should.match(/apiAction validation failed: deviceTypeId: Cast to ObjectId failed for value \"typeId\"( \(type string\))? at path \"deviceTypeId\"/);
                 }
                 done();
             });
@@ -233,7 +233,7 @@ describe('ApiActions API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"typeId\" at path \"deviceTypeId\"");
+                        results.message.should.match(/Cast to ObjectId failed for value \"typeId\"( \(type string\))? at path \"deviceTypeId\"/);
                     }
                     done();
                 });

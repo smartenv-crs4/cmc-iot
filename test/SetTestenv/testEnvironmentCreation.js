@@ -36,6 +36,14 @@ var authHost = conf.authUrl;
 
 exports.setAuthMsMicroservice=function(doneCallback){
 
+        function wrapError(context, err) {
+            if (err instanceof Error) {
+                err.message = context + ": " + err.message;
+                return err;
+            }
+            return new Error(context + ": " + err);
+        }
+
         async.series([
             function (callback) { // set configuration for test
                 roles.customTestConfig(conf);
@@ -44,7 +52,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
             function (callback) { // check if AuthMs is in dev mode
                 request.get(authHost + "/env", function (error, response, body) {
                     if (error) {
-                        throw error;
+                        return callback(wrapError("check auth env", error));
                     } else {
                         var env = JSON.parse(body).env;
                         if (env == "dev") {
@@ -65,11 +73,11 @@ exports.setAuthMsMicroservice=function(doneCallback){
                                     });
                                 } else {
                                     errorHandler.printErrorLog("Test can not start due to " + err);
-                                    throw (err);
+                                    return callback(wrapError("setup defaults", err));
                                 }
                             });
                         } else {
-                            throw (new Error("authms isn't in dev mode"));
+                            return callback(new Error("authms isn't in dev mode"));
                         }
                     }
                 });
@@ -78,7 +86,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
 
                 redisConnection.connect(function (err, connection) {
                     if (err && conf.redisCache.must) {
-                        throw (new Error("Redis cache Service required as must but isn't available"));
+                        return callback(new Error("Redis cache Service required as must but isn't available"));
                     } else {
                         callback(null, "Redis Done");
                     }
@@ -88,7 +96,7 @@ exports.setAuthMsMicroservice=function(doneCallback){
 
                 redisNotificationConnection.connect(function (err, connection) {
                     if (err && conf.redisPushNotification.must) {
-                        throw (new Error("Redis notification Service required as must but isn't available"));
+                        return callback(new Error("Redis notification Service required as must but isn't available"));
                     } else {
                         callback(null, "Redis Push Done");
                     }
@@ -105,8 +113,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     };
                     request.post(rqparams, function (error, response, body) {
                         if (error) {
-                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create user token in cmc-auth  " + err);
-                            throw error;
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create user token in cmc-auth  " + error);
+                            return clb(wrapError("create user token", error));
                         } else {
                             usersId.push(JSON.parse(body)._id);
                             clb();
@@ -131,8 +139,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     request.post(rqparams, function (error, response, body) {
 
                         if (error) {
-                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create application token type in cmc-auth  " + err);
-                            throw err;
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create application token type in cmc-auth  " + error);
+                            return clb(wrapError("create app token type", error));
 
                         } else {
                             appsId.push(JSON.parse(body)._id);
@@ -153,15 +161,40 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
                 }, function (error, response, body) {
                     if (error) {
-                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete external application login in cmc-auth  " + err);
-                        throw error;
+                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete external application login in cmc-auth  " + error);
+                        return callback(wrapError("authapp signup", error));
                     } else {
                         var results = JSON.parse(response.body);
                         if (!results.error) {
                             conf.testConfig.myWebUITokenToSignUP = results.apiKey.token;
                             conf.testConfig.webUiID = results.userId;
                             callback(null, "four");
-                        } else throw(results.error);
+                        } else if (results.error === "signup_error") {
+                            var signinBody = JSON.stringify({
+                                username: conf.testConfig.webUiAppTest.email,
+                                password: conf.testConfig.webUiAppTest.password
+                            });
+                            request.post({
+                                url: authHost + "/authapp/signin",
+                                body: signinBody,
+                                headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
+                            }, function (signinError, signinResponse) {
+                                if (signinError) {
+                                    return callback(wrapError("authapp signin fallback", signinError));
+                                }
+
+                                var signinResults = JSON.parse(signinResponse.body);
+                                if (!signinResults.error) {
+                                    conf.testConfig.myWebUITokenToSignUP = signinResults.apiKey.token;
+                                    conf.testConfig.webUiID = signinResults.userId;
+                                    return callback(null, "four");
+                                }
+
+                                return callback(new Error(signinResults.error));
+                            });
+                        } else {
+                            return callback(new Error(results.error));
+                        }
 
                     }
                 });
@@ -174,15 +207,17 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     headers: {'content-type': 'application/json', 'Authorization': "Bearer " + conf.auth_token}
                 }, function (error, response, body) {
                     if (error) {
-                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete admin login in cmc-auth  " + err);
-                        throw error;
+                        console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't complete admin login in cmc-auth  " + error);
+                        return callback(wrapError("admin signin", error));
                     } else {
                         var results = JSON.parse(response.body);
                         if (!results.error) {
                             conf.testConfig.adminToken = results.apiKey.token;
                             conf.testConfig.adminID = results.userId;
                             callback(null, "five");
-                        } else throw(results.error);
+                        } else {
+                            return callback(new Error(results.error));
+                        }
                     }
                 });
 
@@ -205,8 +240,8 @@ exports.setAuthMsMicroservice=function(doneCallback){
                     request.post(rqparams, function (error, response, body) {
 
                         if (error) {
-                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create authorisation roles in cmc-auth  " + err);
-                            throw err;
+                            console.log("!!! ERROR:--> Error in setAuthMsMicroservice function due to can't create authorisation roles in cmc-auth  " + error);
+                            return clb(wrapError("create auth role", error));
                         } else {
                             value.id = JSON.parse(body)._id;
                             clb();
@@ -312,9 +347,9 @@ exports.resetAuthMsStatus = function(callback) {
             });
         }
     ],function(err,respo){
-        if(err)
-            throw (err);
-        else{
+        if(err) {
+            return callback(err);
+        } else {
             server.close();
             redisConnection.disconnect();
             redisNotificationConnection.disconnect();

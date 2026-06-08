@@ -169,7 +169,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                     results.should.have.property('statusCode');
                     results.should.have.property('error');
                     results.should.have.property('message');
-                    results.message.should.be.equal("thing validation failed: siteId: Cast to ObjectId failed for value \"siteId\" at path \"siteId\"");
+                    results.message.should.match(/thing validation failed: siteId: Cast to ObjectId failed for value \"siteId\"( \(type string\))? at path \"siteId\"/);
                 }
                 done();
             });
@@ -310,7 +310,7 @@ describe('Things API Test - [DATA VALIDATION]', function () {
                         results.should.have.property('statusCode');
                         results.should.have.property('error');
                         results.should.have.property('message');
-                        results.message.should.be.eql("Cast to ObjectId failed for value \"siteId\" at path \"siteId\"");
+                        results.message.should.match(/Cast to ObjectId failed for value \"siteId\"( \(type string\))? at path \"siteId\"/);
                     }
                     done();
                 });

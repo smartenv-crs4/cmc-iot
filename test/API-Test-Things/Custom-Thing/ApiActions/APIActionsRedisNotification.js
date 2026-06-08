@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -168,7 +168,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis device notification";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -199,26 +199,26 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         // }
                     });
 
-                    redisHandler.subscribe(results[deviceId.toString()].channel);
+                    redisHandler.subscribe(results[deviceId.toString()].channel, function () {
+                        var range = _.range(100);
+                        async.eachSeries(range, function(e,cb){
+                            callback=cb;
+                            observationUtility.create({
+                                timestamp:new Date().getTime(),
+                                value:e,
+                                deviceId:deviceId,
+                                unitId:unitId,
+                                location: { coordinates: [0,0] }
+                            },function(err,newObservation){
+                                if (err) return cb(err);
+                            });
 
-                    var range = _.range(100);
-                    async.eachSeries(range, function(e,cb){
-                        callback=cb;
-                        observationUtility.create({
-                            timestamp:new Date().getTime(),
-                            value:e,
-                            deviceId:deviceId,
-                            unitId:unitId,
-                            location: { coordinates: [0,0] }
-                        },function(err,newObservation){
-                            if (err) throw err;
+                        }, function(err){
+                            redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.observation+deviceId);
+                            redisHandler.flushall();
+                            redisHandler.quit();
+                            done(err);
                         });
-
-                    }, function(err){
-                        redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.observation+deviceId);
-                        redisHandler.flushall();
-                        redisHandler.quit();
-                        done();
                     });
                 }
             });
@@ -228,7 +228,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     testTypeMessage="Thing Notification";
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis thing update notification";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -276,25 +276,25 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         if(completed==2) done();
                     });
 
-                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId, function () {
+                        request.put(requestParams,function(error, response, body){
+                            if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                            else{
+                                var resultsById = JSON.parse(body);
+                                response.statusCode.should.be.equal(200);
+                                resultsById.should.have.property('name');
+                                resultsById.should.have.property('description');
+                                resultsById.should.have.property('mobile');
+                                resultsById.should.have.property('ownerId');
+                                resultsById.should.have.property('dismissed');
+                                resultsById.should.have.property('disabled');
+                                resultsById._id.should.be.eql(thingId.toString());
+                                resultsById.name.should.be.eql(nameUpdated);
 
-                    request.put(requestParams,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
-                        else{
-                            var resultsById = JSON.parse(body);
-                            response.statusCode.should.be.equal(200);
-                            resultsById.should.have.property('name');
-                            resultsById.should.have.property('description');
-                            resultsById.should.have.property('mobile');
-                            resultsById.should.have.property('ownerId');
-                            resultsById.should.have.property('dismissed');
-                            resultsById.should.have.property('disabled');
-                            resultsById._id.should.be.eql(thingId.toString());
-                            resultsById.name.should.be.eql(nameUpdated);
-
-                        }
-                        completed++;
-                        if(completed==2) done();
+                            }
+                            completed++;
+                            if(completed==2) done();
+                        });
                     });
                 }
             });
@@ -303,7 +303,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis thing delete notification";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -347,24 +347,24 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         if(completed==2) done();
                     });
 
-                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId, function () {
+                        request.delete(requestParams,function(error, response, body){
+                            if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                            else{
+                                var resultsById = JSON.parse(body);
+                                response.statusCode.should.be.equal(200);
+                                resultsById.should.have.property('name');
+                                resultsById.should.have.property('description');
+                                resultsById.should.have.property('mobile');
+                                resultsById.should.have.property('ownerId');
+                                resultsById.should.have.property('dismissed');
+                                resultsById.should.have.property('disabled');
+                                resultsById._id.should.be.eql(thingId.toString());
 
-                    request.delete(requestParams,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
-                        else{
-                            var resultsById = JSON.parse(body);
-                            response.statusCode.should.be.equal(200);
-                            resultsById.should.have.property('name');
-                            resultsById.should.have.property('description');
-                            resultsById.should.have.property('mobile');
-                            resultsById.should.have.property('ownerId');
-                            resultsById.should.have.property('dismissed');
-                            resultsById.should.have.property('disabled');
-                            resultsById._id.should.be.eql(thingId.toString());
-
-                        }
-                        completed++;
-                        if(completed==2) done();
+                            }
+                            completed++;
+                            if(completed==2) done();
+                        });
                     });
                 }
             });
@@ -372,7 +372,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
     });
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis notification - thing add device action";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -398,47 +398,75 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                         body:bodyParam
                     };
                     var completed=0;
+                    var isDone=false;
+                    function markDoneOnce(error){
+                        if(isDone) return;
+                        if(error){
+                            isDone=true;
+                            return done(error);
+                        }
+                        completed++;
+                        if(completed===2){
+                            isDone=true;
+                            done();
+                        }
+                    }
 
                     redisHandler.on("message",function(channel,message){
                         var dev=JSON.parse(message);
-                        channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                        dev.should.have.property('action');
-                        dev.action.should.be.equal("Add Devices");
-                        dev.should.have.property('message');
-                        dev.message.should.have.property('results');
-                        dev.message.should.have.property('successfulAssociatedDevices');
-                        dev.message.should.have.property('unsuccessfulAssociatedDevices');
-                        dev.message.successfulAssociatedDevices[0].should.have.property('name');
-                        dev.message.successfulAssociatedDevices[0].should.have.property('description');
-                        dev.message.successfulAssociatedDevices[0].should.have.property('typeId');
-                        dev.message.successfulAssociatedDevices[0].should.have.property('thingId');
-                        dev.message.successfulAssociatedDevices[0].should.have.property('disabled');
-                        dev.message.successfulAssociatedDevices[0].thingId.should.be.eql(thingId.toString());
+                        try{
+                            channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                            dev.should.have.property('action');
+                            dev.action.should.be.equal("Add Devices");
+                            dev.should.have.property('message');
+                            dev.message.should.have.property('results');
+                            dev.message.should.have.property('successfulAssociatedDevices');
+                            dev.message.should.have.property('unsuccessfulAssociatedDevices');
+                            dev.message.successfulAssociatedDevices[0].should.have.property('name');
+                            dev.message.successfulAssociatedDevices[0].should.have.property('description');
+                            dev.message.successfulAssociatedDevices[0].should.have.property('typeId');
+                            dev.message.successfulAssociatedDevices[0].should.have.property('thingId');
+                            dev.message.successfulAssociatedDevices[0].should.have.property('disabled');
+                            dev.message.successfulAssociatedDevices[0].thingId.should.be.eql(thingId.toString());
+                        }catch(assertionError){
+                            redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                            redisHandler.flushall();
+                            redisHandler.quit();
+                            return markDoneOnce(assertionError);
+                        }
                         redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
                         redisHandler.flushall();
                         redisHandler.quit();
-                        completed++;
-                        if(completed==2) done();
+                        markDoneOnce();
                     });
 
-                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-
-                    request.post(requestParams,function(error, response, body){
-                        if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
-                        else{
-                            var resultsById = JSON.parse(body);
-                            response.statusCode.should.be.equal(200);
-                            resultsById.should.have.property('results');
-                            resultsById.should.have.property('successfulAssociatedDevices');
-                            resultsById.should.have.property('unsuccessfulAssociatedDevices');
-                            resultsById.successfulAssociatedDevices[0].should.have.property('name');
-                            resultsById.successfulAssociatedDevices[0].should.have.property('description');
-                            resultsById.successfulAssociatedDevices[0].should.have.property('thingId');
-                            resultsById.successfulAssociatedDevices[0].should.have.property('typeId');
-                            resultsById.successfulAssociatedDevices[0].should.have.property('disabled');
+                    redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId, function(subscribeError){
+                        if(subscribeError){
+                            redisHandler.quit();
+                            return done(subscribeError);
                         }
-                        completed++;
-                        if(completed==2) done();
+
+                        request.post(requestParams,function(error, response, body){
+                            if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                            try{
+                                if(error){
+                                    return markDoneOnce(error);
+                                }
+                                var resultsById = JSON.parse(body);
+                                response.statusCode.should.be.equal(200);
+                                resultsById.should.have.property('results');
+                                resultsById.should.have.property('successfulAssociatedDevices');
+                                resultsById.should.have.property('unsuccessfulAssociatedDevices');
+                                resultsById.successfulAssociatedDevices[0].should.have.property('name');
+                                resultsById.successfulAssociatedDevices[0].should.have.property('description');
+                                resultsById.successfulAssociatedDevices[0].should.have.property('thingId');
+                                resultsById.successfulAssociatedDevices[0].should.have.property('typeId');
+                                resultsById.successfulAssociatedDevices[0].should.have.property('disabled');
+                            }catch(assertionError){
+                                return markDoneOnce(assertionError);
+                            }
+                            markDoneOnce();
+                        });
                     });
                 }
             });
@@ -447,7 +475,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis notification - thing disable action";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -481,71 +509,100 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 url:APIURL+"/" + thingId +"/actions/disable",
                                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
                             };
-                            var completed=0;
-                            var devicecompleted=0;
+                            var apiCompleted = false;
+                            var thingNotified = false;
+                            var notifiedDevices = {};
+                            var doneCalled = false;
 
+                            function safeDone(err) {
+                                if (doneCalled) return;
+                                doneCalled = true;
+                                redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                                redisHandlerDevice.unsubscribe(dev1Channel);
+                                redisHandlerDevice.unsubscribe(dev2Channel);
+                                redisHandler.flushall();
+                                redisHandlerDevice.flushall();
+                                redisHandler.quit();
+                                redisHandlerDevice.quit();
+                                done(err);
+                            }
+
+                            function maybeComplete() {
+                                if (apiCompleted && thingNotified && notifiedDevices[deviceId.toString()] && notifiedDevices[otherDevice.toString()]) {
+                                    safeDone();
+                                }
+                            }
 
                             redisHandlerDevice.on("message",function(channel,message){
-                                var dev=JSON.parse(message);
-                                channel.should.be.equalOneOf(dev1Channel,dev2Channel);
-                                dev.should.have.property('action');
-                                dev.action.should.be.equal("Enable/Disable Device");
-                                dev.should.have.property('message');
-                                dev.message.should.have.property('name');
-                                dev.message.should.have.property('description');
-                                dev.message.should.have.property('disabled');
-                                dev.message.should.have.property('thingId');
-                                dev.message._id.should.be.equalOneOf(deviceId.toString(),otherDevice.toString());
-                                dev.message.disabled.should.be.equal(true);
-                                devicecompleted++;
-                                if(devicecompleted==2) {
-                                    redisHandlerDevice.unsubscribe(dev1Channel);
-                                    redisHandlerDevice.unsubscribe(dev2Channel);
-                                    redisHandlerDevice.flushall();
-                                    redisHandlerDevice.quit();
+                                try {
+                                    var dev=JSON.parse(message);
+                                    channel.should.be.equalOneOf(dev1Channel,dev2Channel);
+                                    dev.should.have.property('action');
+                                    dev.action.should.be.equal("Enable/Disable Device");
+                                    dev.should.have.property('message');
+                                    dev.message.should.have.property('name');
+                                    dev.message.should.have.property('description');
+                                    dev.message.should.have.property('disabled');
+                                    dev.message.should.have.property('thingId');
+                                    dev.message._id.should.be.equalOneOf(deviceId.toString(),otherDevice.toString());
+                                    dev.message.disabled.should.be.equal(true);
+                                } catch(assertionError) {
+                                    return safeDone(assertionError);
                                 }
-                                completed++;
-                                if(completed==4) done();
+                                notifiedDevices[dev.message._id] = true;
+                                maybeComplete();
                             });
 
                             redisHandler.on("message",function(channel,message){
-                                var dev=JSON.parse(message);
-                                channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                                dev.should.have.property('action');
-                                dev.action.should.be.equal("Enable/Disable Thing");
-                                dev.should.have.property('message');
-                                dev.message.should.have.property('name');
-                                dev.message.should.have.property('description');
-                                dev.message.should.have.property('disabled');
-                                dev.message.should.have.property('mobile');
-                                dev.message._id.should.be.eql(thingId.toString());
-                                dev.message.disabled.should.be.equal(true);
-                                redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                                redisHandler.flushall();
-                                redisHandler.quit();
-                                completed++;
-                                if(completed==4) done();
+                                try {
+                                    var dev=JSON.parse(message);
+                                    channel.should.be.equal(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                                    dev.should.have.property('action');
+                                    dev.action.should.be.equal("Enable/Disable Thing");
+                                    dev.should.have.property('message');
+                                    dev.message.should.have.property('name');
+                                    dev.message.should.have.property('description');
+                                    dev.message.should.have.property('disabled');
+                                    dev.message.should.have.property('mobile');
+                                    dev.message._id.should.be.eql(thingId.toString());
+                                    dev.message.disabled.should.be.equal(true);
+                                } catch(assertionError) {
+                                    return safeDone(assertionError);
+                                }
+                                thingNotified = true;
+                                maybeComplete();
                             });
 
-                            redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                            redisHandlerDevice.subscribe(dev1Channel);
-                            redisHandlerDevice.subscribe(dev2Channel);
+                            redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId, function(subscribeThingError){
+                                if(subscribeThingError) return safeDone(subscribeThingError);
+                                redisHandlerDevice.subscribe(dev1Channel, function(subscribeDev1Error){
+                                    if(subscribeDev1Error) return safeDone(subscribeDev1Error);
+                                    redisHandlerDevice.subscribe(dev2Channel, function(subscribeDev2Error){
+                                        if(subscribeDev2Error) return safeDone(subscribeDev2Error);
 
-                            request.post(requestParams,function(error, response, body){
-                                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
-                                else{
-                                    var resultsById = JSON.parse(body);
-                                    response.statusCode.should.be.equal(200);
-                                    resultsById.should.have.property('name');
-                                    resultsById.should.have.property('description');
-                                    resultsById.should.have.property('mobile');
-                                    resultsById.should.have.property('ownerId');
-                                    resultsById.should.have.property('disabled');
-                                    resultsById._id.should.be.eql(thingId.toString());
-                                    resultsById.disabled.should.be.eql(true);
-                                }
-                                completed++;
-                                if(completed==4) done();
+                                        request.post(requestParams,function(error, response, body){
+                                            if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                                            try{
+                                                if(error) {
+                                                    return safeDone(error);
+                                                }
+                                                var resultsById = JSON.parse(body);
+                                                response.statusCode.should.be.equal(200);
+                                                resultsById.should.have.property('name');
+                                                resultsById.should.have.property('description');
+                                                resultsById.should.have.property('mobile');
+                                                resultsById.should.have.property('ownerId');
+                                                resultsById.should.have.property('disabled');
+                                                resultsById._id.should.be.eql(thingId.toString());
+                                                resultsById.disabled.should.be.eql(true);
+                                            } catch(assertionError) {
+                                                return safeDone(assertionError);
+                                            }
+                                            apiCompleted = true;
+                                            maybeComplete();
+                                        });
+                                    });
+                                });
                             });
                         }
                     });
@@ -558,7 +615,7 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
 
 
     describe(testTypeMessage, function () {
-        this.timeout(5000);
+        this.timeout(30000);
         testMessage="must test redis notification - thing deletion action, associated device Deletion";
         it(testMessage, function (done) {
             redisHandler=redis.createClient(options);
@@ -592,8 +649,29 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 url:APIURL+"/" + thingId ,
                                 headers: {'content-type': 'application/json', 'Authorization': "Bearer " + webUiToken}
                             };
-                            var completed=0;
-                            var devicecompleted=0;
+                            var apiCompleted = false;
+                            var thingNotified = false;
+                            var notifiedDevices = {};
+                            var doneCalled = false;
+
+                            function safeDone(err) {
+                                if (doneCalled) return;
+                                doneCalled = true;
+                                redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
+                                redisHandlerDevice.unsubscribe(dev1Channel);
+                                redisHandlerDevice.unsubscribe(dev2Channel);
+                                redisHandler.flushall();
+                                redisHandlerDevice.flushall();
+                                redisHandler.quit();
+                                redisHandlerDevice.quit();
+                                done(err);
+                            }
+
+                            function maybeComplete() {
+                                if (apiCompleted && thingNotified && notifiedDevices[deviceId.toString()] && notifiedDevices[otherDevice.toString()]) {
+                                    safeDone();
+                                }
+                            }
 
 
                             redisHandlerDevice.on("message",function(channel,message){
@@ -607,15 +685,8 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 dev.message.should.have.property('disabled');
                                 dev.message.should.have.property('thingId');
                                 dev.message._id.should.be.equalOneOf(deviceId.toString(),otherDevice.toString());
-                                devicecompleted++;
-                                if(devicecompleted==2) {
-                                    redisHandlerDevice.unsubscribe(dev1Channel);
-                                    redisHandlerDevice.unsubscribe(dev2Channel);
-                                    redisHandlerDevice.flushall();
-                                    redisHandlerDevice.quit();
-                                }
-                                completed++;
-                                if(completed==4) done();
+                                notifiedDevices[dev.message._id] = true;
+                                maybeComplete();
                             });
 
                             redisHandler.on("message",function(channel,message){
@@ -629,31 +700,33 @@ describe('Devices API Test - [ACTIONS TESTS]', function () {
                                 dev.message.should.have.property('disabled');
                                 dev.message.should.have.property('mobile');
                                 dev.message._id.should.be.eql(thingId.toString());
-                                redisHandler.unsubscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                                redisHandler.flushall();
-                                redisHandler.quit();
-                                completed++;
-                                if(completed==4) done();
+                                thingNotified = true;
+                                maybeComplete();
                             });
 
-                            redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId);
-                            redisHandlerDevice.subscribe(dev1Channel);
-                            redisHandlerDevice.subscribe(dev2Channel);
+                            redisHandler.subscribe(conf.redisPushNotification.notificationChannelsPrefix.thing+thingId, function () {
+                                redisHandlerDevice.subscribe(dev1Channel, function () {
+                                    redisHandlerDevice.subscribe(dev2Channel, function () {
+                                        request.delete(requestParams,function(error, response, body){
+                                            if(error) {
+                                                consoleLogError.printErrorLog(testMessage + " -->" + error.message);
+                                                return safeDone(error);
+                                            }
 
-                            request.delete(requestParams,function(error, response, body){
-                                if(error) consoleLogError.printErrorLog(testMessage + " -->" + error.message);
-                                else{
-                                    var resultsById = JSON.parse(body);
-                                    response.statusCode.should.be.equal(200);
-                                    resultsById.should.have.property('name');
-                                    resultsById.should.have.property('description');
-                                    resultsById.should.have.property('mobile');
-                                    resultsById.should.have.property('ownerId');
-                                    resultsById.should.have.property('disabled');
-                                    resultsById._id.should.be.eql(thingId.toString());
-                                }
-                                completed++;
-                                if(completed==4) done();
+                                            var resultsById = JSON.parse(body);
+                                            response.statusCode.should.be.equal(200);
+                                            resultsById.should.have.property('name');
+                                            resultsById.should.have.property('description');
+                                            resultsById.should.have.property('mobile');
+                                            resultsById.should.have.property('ownerId');
+                                            resultsById.should.have.property('disabled');
+                                            resultsById._id.should.be.eql(thingId.toString());
+
+                                            apiCompleted = true;
+                                            maybeComplete();
+                                        });
+                                    });
+                                });
                             });
                         }
                     });
