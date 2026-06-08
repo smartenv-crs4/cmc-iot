@@ -39,12 +39,15 @@ require('./Models-Test/observations');
 // Utility
 require('./handlerUtility-Test/observationsUtility-Test');
 require('./handlerUtility-Test/redisHandlerUtility-Test');
+require('./handlerUtility-Test/redisDriver-Test');
+require('./handlerUtility-Test/thingAndDeviceHandlerUtility-Test');
 require('./handlerUtility-Test/redisVsMongoPerformance-Test');
 
 
 
 
 //Middlewares
+require('./Middlewares-Test/authorisationMiddleware');
 require('./Middlewares-Test/decodeTokenMiddleware');
 require('./Middlewares-Test/paginationFilter');
 require('./Middlewares-Test/searchFilter');
