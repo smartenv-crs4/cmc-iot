@@ -1,5 +1,6 @@
 {
   "name": "CMC (CRS4 Microservice Core) IoT API",
+  "version": "1.0.0",
   "description": "APIs to handle IoT Things",
   "url": "http://smartapi.crs4.it/api/cmc-iot/v1",
   "header": {
@@ -11,7 +12,9 @@
     "filename": "footer.md"
   },
   "sampleUrl":"http://smartapi.crs4.it/api/cmc-iot-demo/v1",
+  "defaultVersion": "1.0.0",
   "template": {
-    "forceLanguage": "en"
+    "forceLanguage": "en",
+    "withCompare": false
   }
 }

@@ -1,5 +1,11 @@
 For more info about the project, please visit the [GitHub project page](https://github.com/smartenv-crs4/cmc)
 
+## New to CMC-IoT?
+
+CMC-IoT organizes managed systems as Things, measurement endpoints as Devices, and their telemetry as Observations. Use the REST API to manage resources and query history; use Redis Pub/Sub when you need low-latency notifications. These approaches are complementary: Pub/Sub is transient, while REST polling supports filtered and paginated reads and recovery of historical data.
+
+Read the [full developer onboarding guide](https://github.com/smartenv-crs4/cmc-iot/blob/master/docs/developer-guide.md) for the resource model, integration workflow, and guidance on choosing between polling and Redis notifications.
+
 **Important!** All parameters described in the API documentation refers to default schema models. If you redefine one or more 
 schema models, you must update all API parameters according to your custom schema model(s).
 

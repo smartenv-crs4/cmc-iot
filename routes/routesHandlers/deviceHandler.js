@@ -254,7 +254,6 @@ function redisNotification(id,message,action){
  * @apiUse NoContent
  * @apiSampleRequest off
  */
-// TODO notificare tramite redis???
 /* Update a Device by id while preserving protected flags. */
 module.exports.updateDevice = function (req, res, next) {
 
@@ -598,9 +597,9 @@ module.exports.getObservations = function (req, res, next) {
  *
  * @apiParam (URL Parameter)    {String}    id                          Device identifier
  *
- * @apiBody  {Object[]}  observations                Array list of Observation objects
- * @apiBody  {String}    observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
- * @apiBody  {Number}    observations.value          Observation value
+ * @apiBody {Object[]} observations                Array list of Observation objects
+ * @apiBody {String}   observations.unitId         Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiBody {Number}   observations.value          Observation value
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/sendObservations
@@ -644,13 +643,103 @@ module.exports.createObservations = function (req, res, next) {
 
 
 
-//TODO: @guido Documentare
+/**
+ * @api {post} /devices/:id/actions/getDeviceObservationsRedisNotification Get Device Observation Notification Channel
+ * @apiVersion 1.0.0
+ * @apiName DeviceGetObservationsRedisNotification
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns the configured Redis connection settings and channel used for observation notifications of a Device. Subscribe to this channel to receive each newly created Observation for the Device as a raw Observation JSON message. Publications are triggered by `POST /observations`, `POST /devices/:id/actions/sendObservations`, and `POST /things/:id/actions/sendObservations` when they create an Observation for this Device. Connection values, including the configured password, are returned without masking; the channel prefix is environment-specific.
+ *
+ * @apiParam (URL Parameter) {String} id Device identifier
+ *
+ * @apiSuccess {Object} redisService Redis connection settings (`host`, `port`, `db`, and `password`)
+ * @apiSuccess {String} channel Redis channel for this Device's observation notifications
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/getDeviceObservationsRedisNotification
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "redisService": {"host": "<configured-host>", "port": 6379, "db": 1, "password": "<configured-password>"},
+ *       "channel": "<configured-observation-prefix>543fdd60579e1281b8f6da92"
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message
+ *     {
+ *       "_id": "543fdd60579e1281b8f6aa32",
+ *       "timestamp": 1590364800,
+ *       "value": 33,
+ *       "deviceId": "543fdd60579e1281b8f6da92",
+ *       "unitId": "543fdd60579e1281b8f6de22"
+ *     }
+ *
+ * @apiUse Unauthorized
+ */
 /* Return the Redis notification payload for device observation channels. */
 module.exports.getDeviceObservationsRedisNotification = function(req, res, next) {
     res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceObservationsRedisNotification(req.params.id));
 };
 
-//TODO: @guido Documentare
+/**
+ * @api {post} /devices/:id/actions/getDeviceRedisNotification Get Device Notification Channel
+ * @apiVersion 1.0.0
+ * @apiName DeviceGetRedisNotification
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Returns the configured Redis connection settings and channel used for Device-level notifications. Subscribe to this channel to receive JSON messages with `action` and `message` properties when `PUT /devices/:id` updates the Device, `POST /devices/:id/actions/disable` or `/enable` changes its state, or `DELETE /devices/:id` deletes or dismisses it. Disable, enable, or deletion of an associated Thing can also publish Device-channel notifications. `action` is `Device Update`, `Enable/Disable Device`, or `This channel must be dismissed because the linked device was deleted. Please unsubscribe`. A no-op enable/disable request does not publish a state-change event. Connection values, including the configured password, are returned without masking; the channel prefix is environment-specific.
+ *
+ * @apiParam (URL Parameter) {String} id Device identifier
+ *
+ * @apiSuccess {Object} redisService Redis connection settings (`host`, `port`, `db`, and `password`)
+ * @apiSuccess {String} channel Redis channel for this Device's notifications
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/getDeviceRedisNotification
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "redisService": {"host": "<configured-host>", "port": 6379, "db": 1, "password": "<configured-password>"},
+ *       "channel": "<configured-device-prefix>543fdd60579e1281b8f6da92"
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message
+ *     {
+ *       "action": "Device Update",
+ *       "message": {
+ *         "_id": "543fdd60579e1281b8f6da92",
+ *         "name": "updatedDevice",
+ *         "description": "Updated device description",
+ *         "disabled": false
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Device enabled or disabled
+ *     {
+ *       "action": "Enable/Disable Device",
+ *       "message": {
+ *         "_id": "543fdd60579e1281b8f6da92",
+ *         "name": "stationSensor",
+ *         "thingId": "543fdd60579e1281b8f6da93",
+ *         "disabled": true
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Unsubscribe after Device deletion
+ *     {
+ *       "action": "This channel must be dismissed because the linked device was deleted. Please unsubscribe",
+ *       "message": {
+ *         "_id": "543fdd60579e1281b8f6da92",
+ *         "name": "stationSensor",
+ *         "thingId": "543fdd60579e1281b8f6da93",
+ *         "dismissed": true
+ *       }
+ *     }
+ *
+ * @apiUse Unauthorized
+ */
 /* Return the Redis notification payload for device channels. */
 module.exports.getDeviceRedisNotification = function(req, res, next) {
     res.httpResponse(null,req.statusCode, thingAndDeviceHandlerUtility.getDeviceRedisNotification(req.params.id));
@@ -659,7 +748,28 @@ module.exports.getDeviceRedisNotification = function(req, res, next) {
 
 
 
-//TODO: @guido Documentare
+/**
+ * @api {get|post|put|delete} /devices/:id/actions/:actionName Invoke a Device ApiAction
+ * @apiVersion 1.0.0
+ * @apiName DeviceDynamicAction
+ * @apiGroup Devices
+ * @apiPermission Access Token
+ *
+ * @apiDescription Proxies a configured ApiAction to the external Device. The action name must be registered for the Device's DeviceType. The downstream HTTP method is taken from that ApiAction configuration; query parameters and body are forwarded, the Thing's configured access token is added as `access_token`, and the Device response is streamed back. Request and response schemas depend on the configured action.
+ *
+ * @apiParam (URL Parameter) {String} id         Device identifier
+ * @apiParam (URL Parameter) {String} actionName Configured ApiAction name
+ * @apiBody {Object} [body] Request body forwarded to the external Device
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /devices/543fdd60579e1281b8f6da92/actions/getTemperature?unit=celsius
+ * Body: {"includeHistory": false}
+ *
+ * @apiSuccess {Object} . Response returned by the external Device; its shape and status depend on the configured ApiAction
+ * @apiUse Unauthorized
+ * @apiUse NotFound
+ * @apiSampleRequest off
+ */
 /* Proxy a dynamic action request to the matching ApiAction definition. */
 module.exports.actionHandler = function(req, res, next) {
     var id = req.params.id;

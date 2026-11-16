@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node ./bin/www",
     "test": "NODE_ENV=test mocha test/ --timeout 10000 --ignore test/handlerUtility-Test/redisVsMongoPerformance-Test.js",
-    "test-performance": "NODE_ENV=test mocha test/handlerUtility-Test/redisVsMongoPerformance-Test.js --timeout 10000"
+    "test-performance": "NODE_ENV=test mocha test/handlerUtility-Test/redisVsMongoPerformance-Test.js --timeout 10000",
+    "docs": "npm exec --yes --package=apidoc@1.2.0 -- apidoc -i ./routes -f '.*\\.js$' -o ./doc"
   },
   "dependencies": {
     "@hapi/boom": "^10.0.1",

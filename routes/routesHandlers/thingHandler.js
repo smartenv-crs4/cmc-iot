@@ -517,53 +517,6 @@ module.exports.getThings = function (req, res, next) {
  * @apiUse NoContent
  */
 
-/**
- * @api {post} /things/:id/actions/disable Disable Thing
- * @apiVersion 1.0.0
- * @apiName ThingDisable
- * @apiGroup Things
- * @apiPermission Access Token
- *
- * @apiDescription Disables a Thing object
- *
- * @apiParam (URL Parameters) {String}  id  The Thing identifier
- *
- * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/disable
- *
- * @apiUse GetAllThingResource
- * @apiUse GetThingResourceExample
- *
- * @apiUse Unauthorized
- * @apiUse NotFound
- * @apiUse BadRequest
- * @apiUse InternalServerError
- * @apiUse NoContent
- */
-
-/**
- * @api {post} /things/:id/actions/enable Enable Thing
- * @apiVersion 1.0.0
- * @apiName ThingEnable
- * @apiGroup Things
- * @apiPermission Access Token
- *
- * @apiDescription Enables a Thing object
- *
- * @apiParam (URL Parameter) {String}  id  The Thing identifier
- *
- * @apiParamExample {json} Request-Example:
- * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/enable
- *
- * @apiUse GetAllThingResource
- * @apiUse GetThingResourceExample
- *
- * @apiUse Unauthorized
- * @apiUse NotFound
- * @apiUse BadRequest
- * @apiUse InternalServerError
- * @apiUse NoContent
- */
 /* Toggle a Thing between enabled and disabled state. */
 module.exports.disableEnableThing = function (req, res, next) {
 
@@ -768,12 +721,12 @@ module.exports.deleteThing = function (req, res, next) {
  *
  * @apiParam (URL Parameter)    {String}    id                          Thing identifier
  *
- * @apiBody  {Object}    observations                                Observations map keyed by Device id
- * @apiBody  {Object[]}  observations.<deviceId>                     Array list of Observation objects for a specific Device
- * @apiBody  {String}    observations.<deviceId>.unitId              Observation Foreign Key to Unit (See `/units` API reference)
- * @apiBody  {Number}    observations.<deviceId>.value               Observation value
- * @apiBody  {Object}    [observations.<deviceId>.location]          Location object. Mandatory for mobile Things, forbidden for non-mobile Things
- * @apiBody  {Point}     [observations.<deviceId>.location.coordinates] Location coordinates in the format [lon, lat]
+ * @apiBody {Object} observations Observations map keyed by Device id
+ * @apiBody {Object[]} observations.<deviceId> Array list of Observation objects for a specific Device
+ * @apiBody {String} observations.<deviceId>.unitId Observation Foreign Key to Unit (See `/units` API reference)
+ * @apiBody {Number} observations.<deviceId>.value Observation value
+ * @apiBody {Object} [observations.<deviceId>.location] Location object. Mandatory for mobile Things, forbidden for non-mobile Things
+ * @apiBody {Point} [observations.<deviceId>.location.coordinates] Location coordinates in the format [lon, lat]
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/sendObservations
@@ -841,10 +794,10 @@ module.exports.createObservations = function (req, res, next) {
  *
  * @apiParam (URL Parameter)   {String}    id                     Thing identifier
  *
- * @apiBody {Object[]}  devices               Array list of Device objects
- * @apiBody {String}    devices.name          Added Device name
- * @apiBody {String}    devices.description   Added Device description
- * @apiBody {String}    devices.typeId        Added Device Foreign key to deviceType (See `/deviceTypes` API reference)
+ * @apiBody {Object[]} devices Array list of Device objects
+ * @apiBody {String} devices.name Added Device name
+ * @apiBody {String} devices.description Added Device description
+ * @apiBody {String} devices.typeId Added Device Foreign key to deviceType (See `/deviceTypes` API reference)
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/addDevices
@@ -1026,7 +979,33 @@ module.exports.getObservations = function (req, res, next) {
 
 
 
-//TODO: @guido Documentare
+/**
+ * @api {post} /things/:id/actions/getThingObservationsRedisNotification Get Thing Observation Notification Channels
+ * @apiVersion 1.0.0
+ * @apiName ThingGetObservationsRedisNotification
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Use this action to subscribe to new measurement data, not Thing or Device state changes. It returns an object keyed by Device identifier; each value contains the Redis connection settings and that Device's Observation channel. Subscribe to each returned channel to receive newly created Observation objects as raw JSON. The response is empty when the Thing has no associated Devices. For Thing/Device lifecycle events, use `POST /things/:id/actions/getThingRedisNotification` instead. Channel names use the configured Observation prefix followed by the Device identifier; prefixes and connection values are environment-specific, and the configured password is returned without masking.
+ *
+ * @apiParam (URL Parameter) {String} id Thing identifier
+ *
+ * @apiSuccess {Object} . Map keyed by Device identifier; each value contains `redisService` and `channel`
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/getThingObservationsRedisNotification
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "543fdd60579e1281b8f6da92": {
+ *         "redisService": {"host": "<configured-host>", "port": 6379, "db": 1, "password": "<configured-password>"},
+ *         "channel": "<configured-observation-prefix>543fdd60579e1281b8f6ce32"
+ *       }
+ *     }
+ *
+ * @apiUse Unauthorized
+ * @apiUse InternalServerError
+ */
 /* Return the Redis notification payload for thing observation channels. */
 module.exports.getThingObservationsRedisNotification = function(req, res, next) {
     thingAndDeviceHandlerUtility.getThingObservationsRedisNotification(req.params.id,function(err,response){
@@ -1035,7 +1014,76 @@ module.exports.getThingObservationsRedisNotification = function(req, res, next) 
 };
 
 
-//TODO: @guido Documentare
+/**
+ * @api {post} /things/:id/actions/getThingRedisNotification Get Thing Notification Channels
+ * @apiVersion 1.0.0
+ * @apiName ThingGetRedisNotification
+ * @apiGroup Things
+ * @apiPermission Access Token
+ *
+ * @apiDescription Use this action for Thing and Device lifecycle events, not measurement data. The top-level `channel` is the Thing channel; `devices` maps each associated Device identifier to its own Device channel and Redis connection settings. Subscribe to the Thing channel for JSON messages shaped as `{action, message}`. Its `action` is `Thing Update`, `Enable/Disable Thing`, `Add Devices`, or `This channel must be dismissed because the linked Thing was deleted. Please unsubscribe`, according to the operation. Device state/deletion events are sent to the corresponding channel inside `devices`, not to the Thing channel. The `devices` map is empty when there are no associated Devices. For new Observation data, use `POST /things/:id/actions/getThingObservationsRedisNotification`. Channel prefixes and connection values are environment-specific; the configured password is returned without masking.
+ *
+ * @apiParam (URL Parameter) {String} id Thing identifier
+ *
+ * @apiSuccess {Object} redisService Redis connection settings for Thing notifications (`host`, `port`, `db`, and `password`)
+ * @apiSuccess {String} channel Redis channel for this Thing's notifications
+ * @apiSuccess {Object} devices Notification settings for associated Devices, keyed by Device identifier; each value contains `redisService` and `channel`
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 POST /things/543fdd60579e1281b8f6da92/actions/getThingRedisNotification
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "redisService": {"host": "<configured-host>", "port": 6379, "db": 1, "password": "<configured-password>"},
+ *       "channel": "<configured-thing-prefix>543fdd60579e1281b8f6da92",
+ *       "devices": {
+ *         "543fdd60579e1281b8f6ce32": {
+ *           "redisService": {"host": "<configured-host>", "port": 6379, "db": 1, "password": "<configured-password>"},
+ *           "channel": "<configured-device-prefix>543fdd60579e1281b8f6ce32"
+ *         }
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Thing update
+ *     {
+ *       "action": "Thing Update",
+ *       "message": {
+ *         "_id": "543fdd60579e1281b8f6da92",
+ *         "name": "updatedThing",
+ *         "description": "Updated Thing description",
+ *         "disabled": false
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Thing enabled or disabled
+ *     {
+ *       "action": "Enable/Disable Thing",
+ *       "message": {
+ *         "_id": "543fdd60579e1281b8f6da92",
+ *         "name": "station",
+ *         "disabled": true
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Devices added
+ *     {
+ *       "action": "Add Devices",
+ *       "message": {
+ *         "results": {"total": 1, "successful": 1, "unsuccessful": 0},
+ *         "successfulAssociatedDevices": [],
+ *         "unsuccessfulAssociatedDevices": []
+ *       }
+ *     }
+ *
+ * @apiExample {json} Redis Pub/Sub message - Unsubscribe after Thing deletion
+ *     {
+ *       "action": "This channel must be dismissed because the linked Thing was deleted. Please unsubscribe",
+ *       "message": {"_id": "543fdd60579e1281b8f6da92", "name": "deletedThing"}
+ *     }
+ *
+ * @apiUse Unauthorized
+ * @apiUse InternalServerError
+ */
 /* Return the Redis notification payload for thing channels. */
 module.exports.getThingRedisNotification = function(req, res, next) {
     thingAndDeviceHandlerUtility.getThingRedisNotification(req.params.id,function(err,response){

@@ -11,6 +11,7 @@ After project download, users do not need to generate documentation to read or b
 
 ### Open documentation from this README
 
+- Developer onboarding guide: [docs/developer-guide.md](docs/developer-guide.md)
 - Local static documentation (repository): [Open API documentation](doc/index.html)
 - Runtime endpoint (service running): [Open /doc endpoint](http://service_base_url/doc)
 - Local runtime example: [http://localhost:3000/doc](http://localhost:3000/doc)
@@ -30,11 +31,7 @@ After project download, users do not need to generate documentation to read or b
 
     sudo npm install -g mocha
 
-#### 2) Install apiDoc (for API documentation):
-
-    sudo npm install -g apidoc
-
-#### 3) Install all dependencies
+#### 2) Install all dependencies
     
     npm install
 
@@ -48,24 +45,20 @@ After project download, users do not need to generate documentation to read or b
     npm run test-performance
     
 
-### Generate final exhaustive API documentation (maintainers)
+### Generate API documentation (maintainers only)
 
 Use this only when apiDoc comments are updated and you want to refresh the committed documentation artifacts.
 
-#### 1) Ensure dependencies are installed
+#### 1) Generate documentation directly into `doc/`
 
-    npm install
+    npm run docs
 
-#### 2) Generate documentation directly into <code>/doc</code>
-
-    apidoc -i ./routes -o ./doc
-
-#### 3) Validate generated output
+#### 2) Validate generated output
 
 - Open <code>doc/index.html</code> in a browser, or
 - Run the service and visit <code>http://service_base_url/doc</code>
 
-#### 4) Commit updated documentation artifacts
+#### 3) Commit updated documentation artifacts
 
 When documentation is intentionally refreshed, include updated files from <code>/doc</code> in the same commit as the related API/doc changes.
     

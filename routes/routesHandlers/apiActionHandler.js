@@ -40,6 +40,8 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiParam (Body Parameter) {String}      apiAction.method                ApiAction HTTP method. Accepted values are `GET`, `POST`, `PUT`, `DELETE`. Optional, default is `GET`
  * @apiParam (Body Parameter) {Object}      [apiAction.header]              ApiAction HTTP header. Default is `{"Content-Type": "application/json" , "Accept":"application/json"}`
  * @apiParam (Body Parameter) {Object}      [apiAction.bodyPrototype]       ApiAction HTTP body prototype
+ * @apiParam (Body Parameter) {Object}      [apiAction.queryPrototype]      ApiAction HTTP query prototype
+ * @apiParam (Body Parameter) {Object}      [apiAction.responsePrototype]   ApiAction HTTP response prototype
  * @apiParam (Body Parameter) {ObjectId}    apiAction.deviceTypeId          ApiAction Foreign Key to DeviceType (See `/deviceTypes` API reference)
  */
 /**
@@ -55,6 +57,8 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiSuccess (201 - CREATED) {String}     method                          Created ApiAction HTTP method
  * @apiSuccess (201 - CREATED) {Object}     header                          Created ApiAction HTTP header
  * @apiSuccess (201 - CREATED) {Object}     bodyPrototype                   Created ApiAction HTTP body prototype
+ * @apiSuccess (201 - CREATED) {Object}     queryPrototype                  Created ApiAction HTTP query prototype
+ * @apiSuccess (201 - CREATED) {Object}     responsePrototype               Created ApiAction HTTP response prototype
  * @apiSuccess (201 - CREATED) {String}     deviceTypeId                    Created ApiAction DeviceType identifier
  */
 /**
@@ -63,6 +67,8 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiSuccess {String}                     method                          Updated ApiAction HTTP method
  * @apiSuccess {Object}                     header                          Updated ApiAction HTTP header
  * @apiSuccess {Object}                     bodyPrototype                   Updated ApiAction HTTP body prototype
+ * @apiSuccess {Object}                     queryPrototype                  Updated ApiAction HTTP query prototype
+ * @apiSuccess {Object}                     responsePrototype               Updated ApiAction HTTP response prototype
  * @apiSuccess {String}                     deviceTypeId                    Updated ApiAction DeviceType identifier
  */
 /**
@@ -73,6 +79,8 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiSuccess {String}                     apiAction.method                ApiAction HTTP method
  * @apiSuccess {Object}                     apiAction.header                ApiAction HTTP header
  * @apiSuccess {Object}                     apiAction.bodyPrototype         ApiAction HTTP body prototype
+ * @apiSuccess {Object}                     apiAction.queryPrototype        ApiAction HTTP query prototype
+ * @apiSuccess {Object}                     apiAction.responsePrototype     ApiAction HTTP response prototype
  * @apiSuccess {String}                     apiAction.deviceTypeId          ApiAction DeviceType identifier
  */
 /**
@@ -80,8 +88,10 @@ var apiActionDriver = require('../../DBEngineHandler/drivers/apiActionDriver');
  * @apiSuccess {String}                     _id                             ApiAction identifier
  * @apiSuccess {String}                     actionName                      ApiAction URL
  * @apiSuccess {String}                     method                          ApiAction HTTP method
- * @apiSuccess {String}                     header                          ApiAction HTTP header
- * @apiSuccess {String}                     bodyPrototype                   ApiAction HTTP body prototype
+ * @apiSuccess {Object}                     header                          ApiAction HTTP header
+ * @apiSuccess {Object}                     bodyPrototype                   ApiAction HTTP body prototype
+ * @apiSuccess {Object}                     queryPrototype                  ApiAction HTTP query prototype
+ * @apiSuccess {Object}                     responsePrototype               ApiAction HTTP response prototype
  * @apiSuccess {String}                     deviceTypeId                    ApiAction DeviceType identifier
  */
 /**
@@ -275,6 +285,34 @@ module.exports.getApiActions = function(req, res, next) {
         res.httpResponse(err, req.statusCode, results)
     })
 }
+
+
+/**
+ * @api {get} /apiActions/test/:id/:actionName Inspect ApiAction request parameters
+ * @apiVersion 1.0.0
+ * @apiName TestApiActionParameters
+ * @apiGroup ApiActions
+ * @apiPermission Access Token
+ *
+ * @apiDescription Diagnostic endpoint that echoes the Device identifier, action name, and query parameters supplied for a dynamic action request.
+ *
+ * @apiParam (URL Parameter) {String} id         Device identifier
+ * @apiParam (URL Parameter) {String} actionName ApiAction name
+ * Any query parameters are echoed in `actionParams`.
+ *
+ * @apiParamExample {json} Request-Example:
+ * HTTP/1.1 GET /apiActions/test/543fdd60579e1281b8f6da92/getTemperature?unit=celsius
+ *
+ * @apiSuccessExample {json} Example: 200 OK, Success Response
+ *     {
+ *       "device": "543fdd60579e1281b8f6da92",
+ *       "actionName": "getTemperature",
+ *       "actionParams": {"unit": "celsius"}
+ *     }
+ *
+ * @apiUse Unauthorized
+ * @apiSampleRequest off
+ */
 
 
 /**

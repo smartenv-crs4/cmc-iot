@@ -2,7 +2,7 @@
  ############################################################################
  ############################### GPL III ####################################
  ############################################################################
- *                         Copyright 2019 CRS4                               *
+ *                         Copyright 2019 CRS4                              *
  *       This file is part of CRS4 Microservice Core - IoT (CMC-IoT).       *
  *                                                                          *
  *     CMC-IoT is free software: you can redistribute it and/or modify      *
@@ -193,11 +193,10 @@ module.exports.postCreateSite = function(req, res, next) {
  * @apiVersion 1.0.0
  * @apiName GetLinkedSites
  * @apiGroup Sites
- * @apiPermission Access Token
  *
- * @apiDescription Returns a paginated list of all linked Sites
+ * @apiDescription Returns the identifiers of the Sites linked directly or transitively to the supplied Site identifiers. This endpoint does not paginate results.
  *
- * @apiBody   {Object}        sites           Array of all Site ids which we want to get the linked sites from
+ * @apiBody {String[]} sites Array of Site identifiers from which to find linked Sites
  *
  * @apiParamExample {json} Request-Example:
  * HTTP/1.1 POST /sites/actions/getLinkedSites
@@ -213,11 +212,8 @@ module.exports.postCreateSite = function(req, res, next) {
  *                     ]
  *     }
  *
- * @apiUse Unauthorized
- * @apiUse NotFound
  * @apiUse BadRequest
  * @apiUse InternalServerError
- * @apiUse NoContent
  */
 /* Resolve transitive linked sites from an input list of site ids. */
 module.exports.getLinkedSites = function(req, res, next) {
@@ -237,9 +233,8 @@ module.exports.getLinkedSites = function(req, res, next) {
  * @apiVersion 1.0.0
  * @apiName SearchSitesByLocation
  * @apiGroup Sites
- * @apiPermission Access Token
  *
- * @apiDescription Returns a paginated list of all Sites located around a particular location
+ * @apiDescription Returns Site identifiers within the requested geographic search area. Results are not paginated; distances are included only when `distanceOptions.returnDistance` is true.
  *
  * @apiUse LocationBodyParams
  *
@@ -247,34 +242,17 @@ module.exports.getLinkedSites = function(req, res, next) {
  * HTTP/1.1 POST /sites/actions/searchSitesByLocation
  * Body:{"location": {"coordinates":[83.4,78.3]}, "distance": "100", "distanceOptions": {"mode":"bbox"}}
  *
- * @apiSuccess  {String[]}      linkedSites     A paginated array list of Site ids
- * @apiSuccess  {String[]}      distances       A paginated array list of the distances of each returned Site from the search coordinates (if returnDistance is true)
+ * @apiSuccess  {String[]}      sites           Site identifiers in the search area
+ * @apiSuccess  {Number[]}      distances       Distances corresponding by index to `sites`; present only when `distanceOptions.returnDistance` is true
  *
  * @apiSuccessExample {json} Example: 200 OK, Success Response
  *     {
- *       "sites": [
- *                 "543fdd60579e1281b8f6da92",
- *                 "543fdd60579e1281saf6dc32",
- *                 ...
- *                ],
- *       "distancies": [
- *                      "25",
- *                      "33",
- *                      ...
- *                     ],
- *       "_metadata": {
- *                     "skip":10,
- *                     "limit":50,
- *                     "totalCount":100
- *                    }
+ *       "sites": ["543fdd60579e1281b8f6da92", "543fdd60579e1281b8f6dc32"],
+ *       "distances": [25, 33]
  *     }
  *
- * @apiUse Metadata
- * @apiUse Unauthorized
- * @apiUse NotFound
  * @apiUse BadRequest
  * @apiUse InternalServerError
- * @apiUse NoContent
 */
 /* Search sites around a center point using geospatial options. */
 module.exports.searchSitesByLocation = function(req, res, next) {
